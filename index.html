@@ -10141,6 +10141,19 @@ html.phone-mode .phone-bottom-nav{
   padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 4px) !important;
 }
 
+/* ── Toast — above bottom nav in phone mode ── */
+html.phone-mode #toast-container{
+  bottom:88px !important;
+  right:12px !important;
+  left:12px !important;
+  align-items:center !important;
+}
+html.phone-mode .toast{
+  min-width:unset !important;
+  width:100% !important;
+  max-width:400px !important;
+}
+
 /* ── Auth card — mobile friendly ── */
 html.phone-mode .auth-card{
   margin:20px 16px;padding:32px 24px;
@@ -10151,10 +10164,9 @@ html.phone-mode .auth-card{
 html.phone-mode .modal{
   max-width:100% !important;
   margin:12px;
-  max-height:calc(100vh - 140px);
-  max-height:calc(100dvh - 140px);
+  max-height:calc(100vh - 100px);
+  max-height:calc(100dvh - 100px);
   border-radius:20px !important;
-  overflow-y:auto;
 }
 
 /* ── View toggle bar — compact pill ── */
@@ -10492,31 +10504,10 @@ html.phone-mode .overlay{
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
   align-items:flex-start;
-  padding-top:max(env(safe-area-inset-top, 0px), 8px);
+  padding-top:5vh;
 }
 html.phone-mode .overlay.open{
   align-items:flex-start;
-}
-/* ── Backup & Countdown overlays — align to top on phone ── */
-html.phone-mode .backup-overlay{
-  align-items:flex-start;
-  padding-top:max(env(safe-area-inset-top, 0px), 8px);
-}
-html.phone-mode .backup-modal{
-  max-height:calc(100dvh - 140px);
-  margin:12px;
-  border-radius:20px !important;
-  overflow-y:auto;
-}
-html.phone-mode .countdown-overlay{
-  align-items:flex-start;
-  padding-top:max(env(safe-area-inset-top, 0px), 8px);
-}
-html.phone-mode .countdown-modal{
-  max-height:calc(100dvh - 140px);
-  margin:12px;
-  border-radius:20px !important;
-  overflow-y:auto;
 }
 
 /* ── Splash screen adjustments for phone ── */
