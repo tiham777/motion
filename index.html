@@ -6886,7 +6886,17 @@ html[data-theme="pure-light"] .settings-time-input { color-scheme:light; }
   flex-shrink:0;gap:10px;background:var(--bg);
   position:sticky;top:0;z-index:8;
 }
-.bvt-date-clock{display:flex;align-items:center;gap:10px;margin-left:auto}
+/* Top date-day bar — always visible across today/week/month/progress sub-views.
+   Sits above the blocks-view-toggle-bar so the date navigation is consistently
+   the topmost layer of the time-blocks page (mirrors the month page layout). */
+.bvt-date-clock-bar{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:6px 14px 6px 14px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;background:var(--bg);
+  position:sticky;top:0;z-index:9;
+}
+.bvt-date-clock{display:flex;align-items:center;gap:10px}
 .bvt-date-clock .day-nav{gap:10px}
 .bvt-date-clock .day-info{min-width:130px}
 .bvt-date-clock .day-name{font-size:18px;font-weight:800;letter-spacing:-.03em;line-height:1}
@@ -10100,6 +10110,9 @@ html.phone-mode .content.blocks-list-active #view-blocks{
 html.phone-mode .content.blocks-list-active #view-blocks-list{
   padding-bottom:80px !important;
 }
+html.phone-mode .content.blocks-list-active .bvt-date-clock-bar{
+  flex-shrink:0 !important;
+}
 /* Block cards — compact, premium */
 html.phone-mode .block-card{
   border-radius:12px !important;
@@ -10547,6 +10560,11 @@ html.phone-mode .bvt-btn{
   font-size:12px !important;
   border-radius:10px !important;
 }
+/* ── Top date-day bar — phone compact ── */
+html.phone-mode .bvt-date-clock-bar{
+  padding:4px 10px !important;
+  flex-shrink:0 !important;
+}
 
 /* ── Phone mode: Calendar (Month/Week) — remove blank space ── */
 html.phone-mode .content.blocks-cal-active{
@@ -10568,6 +10586,9 @@ html.phone-mode .content.blocks-cal-active #view-blocks{
   min-height:0 !important;
 }
 html.phone-mode .content.blocks-cal-active .blocks-view-toggle-bar{
+  flex-shrink:0 !important;
+}
+html.phone-mode .content.blocks-cal-active .bvt-date-clock-bar{
   flex-shrink:0 !important;
 }
 html.phone-mode .content.blocks-cal-active #view-blocks-month{
@@ -12759,7 +12780,22 @@ requestAnimationFrame(draw);
 
     <!-- BLOCKS -->
     <div id="view-blocks" style="display:flex;flex-direction:column;height:100%;min-height:0">
-      <!-- View toggle bar -->
+      <!-- Top date-day bar (always visible across all blocks sub-views: today/week/month/progress) -->
+      <div class="bvt-date-clock-bar">
+        <div class="bvt-date-clock">
+          <div class="day-nav"><button class="theme-dot-toggle" onclick="secretThemeToggle()" aria-label="Cycle theme"></button>
+            <button class="nav-arrow" onclick="shiftDay(-1)" title="Previous day (←)" aria-label="Previous day">&#8249;</button>
+            <div class="day-info">
+              <div class="day-name" id="dayName">—</div>
+              <div class="day-sub" id="daySub">—</div>
+            </div>
+            <span class="day-name-short" id="dayNameShort">—</span>
+            <button class="nav-arrow" onclick="shiftDay(1)" title="Next day (→)" aria-label="Next day">&#8250;</button>
+          </div>
+          <div class="live-clock" id="liveClock" aria-live="off" aria-label="Current time">--:--</div>
+        </div>
+      </div>
+      <!-- View toggle bar (Today / Week / Month / Progress) — same look on every sub-page -->
       <div class="blocks-view-toggle-bar">
         <div class="bvt-btns">
           <button class="bvt-btn active" id="bvt-list" onclick="setBlocksView('list')">
@@ -12790,18 +12826,6 @@ requestAnimationFrame(draw);
           <div class="bvt-nav-label" id="calMonthLabel">—</div>
           <button class="nav-arrow" onclick="calShift(1)" aria-label="Next month">&#8250;</button>
           <button class="bvt-today-btn" onclick="calGoToday()">Today</button>
-        </div>
-        <div class="bvt-date-clock">
-          <div class="day-nav"><button class="theme-dot-toggle" onclick="secretThemeToggle()" aria-label="Cycle theme"></button>
-            <button class="nav-arrow" onclick="shiftDay(-1)" title="Previous day (←)" aria-label="Previous day">&#8249;</button>
-            <div class="day-info">
-              <div class="day-name" id="dayName">—</div>
-              <div class="day-sub" id="daySub">—</div>
-            </div>
-            <span class="day-name-short" id="dayNameShort">—</span>
-            <button class="nav-arrow" onclick="shiftDay(1)" title="Next day (→)" aria-label="Next day">&#8250;</button>
-          </div>
-          <div class="live-clock" id="liveClock" aria-live="off" aria-label="Current time">--:--</div>
         </div>
       </div>
 
@@ -18554,7 +18578,6 @@ function setBlocksView(mode) {
   const progressEl= document.getElementById('view-blocks-progress');
   const navEl     = document.getElementById('bvtCalNav');
   const monthNavEl= document.getElementById('bvtMonthNav');
-  const dayClockEl= document.querySelector('.bvt-date-clock');
 
   // Reset all
   listEl.style.display = 'none';
@@ -18563,7 +18586,8 @@ function setBlocksView(mode) {
   progressEl.style.display = 'none';
   navEl.style.display = 'none';
   monthNavEl.style.display = 'none';
-  if (dayClockEl) dayClockEl.style.display = 'none';
+  // The date-day bar (.bvt-date-clock-bar) is now a persistent top layer and
+  // stays visible across all blocks sub-views (today/week/month/progress).
 
   // Manage content layout for cal/month views
   const contentEl = document.querySelector('.content');
@@ -18576,7 +18600,6 @@ function setBlocksView(mode) {
 
   if (mode === 'list') {
     listEl.style.display = '';
-    if (dayClockEl) dayClockEl.style.display = 'flex';
   } else if (mode === 'month') {
     monthEl.classList.add('visible');
     // Re-trigger entrance animation (use rAF instead of forced reflow)
