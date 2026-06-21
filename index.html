@@ -12638,63 +12638,54 @@ html[data-theme="aot"]        .summary-strip .stat-card:hover{
       spring pop on check. Already well-designed — just tightened
       the hover scale and added a subtle accent ring tint. */
 
-/* ── Base card: layered glass ── */
+/* ── Base card: flat, calm surface — matches Today page's .block-card exactly ──
+   Removed the old layered-glass background, the top-edge ::after highlight,
+   and the left accent-bar grow animation. The Task page now reads as the
+   same visual language as the Today page's timeblock cards. */
 #view-tasks .task-item{
-  background:linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%);
+  background:var(--bg2);
   border:1px solid var(--border);
-  box-shadow:var(--card-depth),var(--inner-shadow);
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
   position:relative;
   overflow:hidden;
   border-radius:var(--radius-sm);
   padding:13px 16px 13px 18px;
+  transition:transform .35s cubic-bezier(.4,0,.2,1),
+             box-shadow .35s cubic-bezier(.4,0,.2,1),
+             border-color .28s ease,
+             background .35s ease;
 }
-/* Subtle top-edge highlight — reads as "light from above" on every theme */
+/* Removed the old top-edge highlight ::after — kept the pseudo-element available
+   for the .done hatch pattern (see below). Default state = no decoration. */
 #view-tasks .task-item::after{
-  content:'';
-  position:absolute;
-  left:0;right:0;top:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--glass2) 30%,var(--glass2) 70%,transparent);
-  pointer-events:none;
-  opacity:.7;
+  content:none;
 }
-
-/* ── Left accent bar: grows from top instead of fading in ── */
+/* Removed the old left accent bar ::before — flat card, no growing accent edge. */
 #view-tasks .task-item::before{
-  content:'';
-  position:absolute;
-  left:0;top:0;
-  width:2.5px;height:0;
-  background:linear-gradient(180deg,var(--accent),var(--accent2));
-  border-radius:0 3px 3px 0;
-  box-shadow:0 0 12px var(--accent-glow5);
-  opacity:0;
-  transition:height .45s cubic-bezier(.22,1,.36,1),opacity .3s ease;
-}
-#view-tasks .task-item:hover::before{
-  height:100%;
-  opacity:1;
+  content:none;
 }
 
-/* ── Hover: subtle vertical lift + multi-layer shadow ── */
+/* ── Hover: pure vertical lift + multi-layer accent halo — IDENTICAL to .block-card:hover ── */
 #view-tasks .task-item:hover{
-  transform:translateY(-1px);
+  transform:translateY(-2px);
   border-color:var(--accent-glow4);
-  background:linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 60%,var(--bg2) 100%);
+  background:var(--bg2);
   box-shadow:
-    0 8px 28px rgba(0,0,0,.28),
+    0 10px 28px rgba(0,0,0,.34),
     0 0 0 1px var(--accent-glow3),
-    0 0 24px var(--accent-glow3),
-    var(--inner-shadow);
+    0 0 18px var(--accent-glow3);
 }
-/* Per-theme hover shadow tuning — light themes need softer shadows */
+/* Light theme: softer shadows, same accent halo */
 html[data-theme="light"]      #view-tasks .task-item:hover,
 html[data-theme="pure-light"] #view-tasks .task-item:hover{
   box-shadow:
-    0 6px 22px rgba(0,0,0,.10),
+    0 8px 22px rgba(24,24,27,.10),
     0 0 0 1px var(--accent-glow3),
-    0 0 18px var(--accent-glow3),
-    var(--inner-shadow);
+    0 0 14px var(--accent-glow3);
+}
+#view-tasks .task-item:active{
+  transform:translateY(-1px);
+  transition-duration:.1s;
 }
 
 /* ── Priority badges: dot + label, color-tinted ── */
@@ -12746,14 +12737,20 @@ html[data-theme="pure-light"] #view-tasks .task-priority::before{
 
 /* ── Done state: refined ghosting instead of brute-force opacity ── */
 /* Keep the card itself at full opacity — only dim the text + badge.
-   The checkbox stays vibrant so completion still feels rewarding. */
+   The checkbox stays vibrant so completion still feels rewarding.
+   Base surface stays flat var(--bg2), same as Today page's block-card. */
 #view-tasks .task-item.done{
   opacity:1;
   background:var(--bg2);
   border-color:var(--border);
 }
-/* Diagonal hatch pattern overlay — signals "archived" without dimming */
+/* Diagonal hatch pattern overlay — signals "archived" without dimming.
+   Uses ::after which is now free (we removed the top-edge highlight above).
+   Must re-set content:'' here because the base rule sets content:none. */
 #view-tasks .task-item.done::after{
+  content:'';
+  position:absolute;
+  inset:0;
   background:repeating-linear-gradient(
     135deg,
     transparent 0,
@@ -12761,7 +12758,7 @@ html[data-theme="pure-light"] #view-tasks .task-priority::before{
     var(--glass) 8px,
     var(--glass) 9px
   );
-  height:100%;
+  pointer-events:none;
   opacity:.4;
 }
 #view-tasks .task-item.done .task-text{
@@ -12776,7 +12773,7 @@ html[data-theme="pure-light"] #view-tasks .task-priority::before{
 }
 #view-tasks .task-item.done:hover{
   opacity:1;
-  background:var(--bg3);
+  background:var(--bg2);
 }
 
 /* ── Checkbox: tightened hover + accent ring tint ── */
