@@ -128,6 +128,17 @@ body>:not(#motion-splash-screen){visibility:hidden}
   to{opacity:1;transform:scaleX(1)}
 }
 
+/* ── Splash content wrapper ──
+   Wraps name/tagline/bar so phone-mode can apply a single uniform
+   `transform: scale()` to the whole stack — guaranteeing the EXACT
+   same visual proportions as PC, just sized down for the phone.
+   The wrapper itself is invisible in PC mode (no transform set);
+   it only carries a transform in phone-mode (see v11 block below). */
+#motion-splash-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+
 /* ── Light theme ── */
 html[data-theme="light"] #motion-splash-screen,
 html[data-theme="pure-light"] #motion-splash-screen{background:var(--bg,#fbfbfd)}
@@ -16300,6 +16311,451 @@ html.phone-mode .api-key-item input{
   font-size:11px !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v7 SETTINGS PAGE — EXACT PC DESIGN, SCALED DOWN
+   ══════════════════════════════════════════════════════════════════
+   Goal: User wants the phone-mode Settings page to look EXACTLY
+   like the PC-mode Settings page (just sized down for phone).
+
+   Problem with previous phone-mode settings overrides:
+     • v3 block (~line 11103): shrank fonts, changed paddings,
+       added flex-wrap, made the design "mobile-optimized" which
+       drifted away from the PC look.
+     • v5 block (~line 14618): added gradient backgrounds, rounded
+       corners (16px), and toggle redesign — further divergence.
+     • v6 block (~line 16140): another full rewrite that also
+       disabled transitions and added flex-wrap.
+
+   Solution: This v7 block is placed AFTER v6 (last in source
+   order) and uses !important to override all previous phone-mode
+   rules. It restores EVERY settings property to its EXACT PC
+   value (defined at lines ~7419-7715), then applies a single
+   uniform `transform: scale(0.92)` to the .settings-page wrapper.
+
+   Because CSS transforms compose uniformly, EVERYTHING — fonts,
+   paddings, gaps, border-radii, the toggle, the about card, even
+   the entrance animations — renders at the exact PC proportion
+   but at 92% of the size, fitting comfortably on a 360–430px
+   phone screen.
+
+   Scale factor 0.92 chosen because:
+     - PC .settings-page max-width is 720px; on a 390px phone we
+       need ~0.54× width scaling to fit, but text remains readable
+       at 0.92× because PC font sizes (14px label, 12px desc,
+       26px hero title) are already generous.
+     - 0.92 keeps the design feeling "PC-grade premium" while
+       fitting the viewport.
+
+   PC mode is 100% untouched — every rule below is scoped to
+   html.phone-mode.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Layout container — restore PC values ── */
+html.phone-mode .content.settings-active{
+  padding:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  display:block !important;
+  contain:none !important;
+}
+html.phone-mode .content.settings-active #view-settings{
+  flex:initial !important;
+  zoom:1 !important;
+  display:block !important;
+}
+html.phone-mode .settings-page{
+  max-width:720px !important;
+  margin:0 auto !important;
+  padding:0 20px 60px 20px !important;        /* PC: padding-bottom 60px, sides 20px */
+  transform:scale(0.92);
+  transform-origin:top center;
+}
+
+/* ── 2. Hero — restore PC values ── */
+html.phone-mode .settings-hero{
+  padding:28px 0 22px !important;             /* PC value */
+  border-bottom:1px solid var(--border) !important;
+  margin-bottom:28px !important;              /* PC value */
+  animation:settingsHeroIn 1s cubic-bezier(.16,1,.3,1) both !important;
+}
+html.phone-mode .settings-hero-eyebrow{
+  font-size:10px !important;                  /* PC value */
+  font-weight:700 !important;
+  letter-spacing:.18em !important;
+  text-transform:uppercase !important;
+  color:var(--accent) !important;
+  margin-bottom:7px !important;               /* PC value */
+  opacity:.8 !important;
+}
+html.phone-mode .settings-hero-title{
+  font-family:var(--font-head) !important;
+  font-size:26px !important;                  /* PC value */
+  font-weight:800 !important;
+  letter-spacing:-.04em !important;
+  color:var(--text) !important;
+  margin-bottom:6px !important;               /* PC value */
+}
+html.phone-mode .settings-hero-sub{
+  font-size:13.5px !important;                /* PC value */
+  color:var(--text2) !important;
+  line-height:1.6 !important;
+}
+
+/* ── 3. Section grouping — restore PC values ── */
+html.phone-mode .settings-section{
+  margin-bottom:30px !important;              /* PC value */
+  animation:settingsSectionIn 1.05s cubic-bezier(.16,1,.3,1) both !important;
+}
+html.phone-mode .settings-section-title{
+  font-size:9.5px !important;                 /* PC value */
+  font-weight:800 !important;
+  letter-spacing:.18em !important;
+  text-transform:uppercase !important;
+  color:var(--text3) !important;
+  padding-bottom:10px !important;             /* PC value */
+  margin-bottom:14px !important;              /* PC value */
+  border-bottom:1px solid var(--border) !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;                         /* PC value */
+}
+html.phone-mode .settings-section-title svg{
+  width:13px !important;                      /* PC: viewBox 13×13 */
+  height:13px !important;
+  opacity:.6 !important;
+}
+
+/* ── 4. Settings card — restore PC values ── */
+html.phone-mode .settings-card{
+  padding:0 !important;
+  background:var(--bg2) !important;           /* PC value */
+  border:1px solid var(--border) !important;  /* PC value */
+  border-radius:var(--radius) !important;     /* PC value */
+  overflow:hidden !important;
+  box-shadow:var(--shadow-xs) !important;     /* PC value */
+  transition:box-shadow .8s cubic-bezier(.16,1,.3,1), border-color .8s !important;
+}
+html.phone-mode .settings-card:hover{
+  box-shadow:var(--shadow-sm) !important;
+  border-color:var(--border2) !important;
+}
+
+/* ── 5. Settings row — restore PC values (no flex-wrap, no active state) ── */
+html.phone-mode .settings-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  padding:15px 20px !important;               /* PC value */
+  gap:16px !important;                        /* PC value */
+  border-bottom:1px solid var(--border) !important;
+  flex-wrap:nowrap !important;                /* PC: nowrap, not wrap */
+  transition:background .75s cubic-bezier(.16,1,.3,1),
+             transform .75s cubic-bezier(.16,1,.3,1),
+             box-shadow .75s cubic-bezier(.16,1,.3,1) !important;
+  position:relative !important;
+  animation:settingsRowIn .85s cubic-bezier(.16,1,.3,1) both !important;
+}
+html.phone-mode .settings-row:active{
+  background:transparent !important;          /* undo v3/v5 active state */
+}
+html.phone-mode .settings-row:last-child{
+  border-bottom:none !important;
+}
+html.phone-mode .settings-row:hover{
+  background:var(--glass2) !important;
+  transform:translateX(3px) !important;
+  transition:background .32s cubic-bezier(.16,1,.3,1),
+             transform .42s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .settings-row-left{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:3px !important;                         /* PC value */
+  flex:1 !important;
+  min-width:0 !important;
+}
+html.phone-mode .settings-row-label{
+  font-size:14px !important;                  /* PC value */
+  font-weight:600 !important;
+  color:var(--text) !important;
+  letter-spacing:-.01em !important;
+  transition:color .55s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .settings-row:hover .settings-row-label{
+  color:var(--accent2) !important;
+}
+html.phone-mode .settings-row-desc{
+  font-size:12px !important;                  /* PC value */
+  color:var(--text3) !important;
+  line-height:1.5 !important;                 /* PC value */
+}
+
+/* ── 6. Toggle switch — restore PC values ── */
+html.phone-mode .settings-toggle{
+  position:relative !important;
+  width:44px !important;                      /* PC value */
+  height:24px !important;                     /* PC value */
+  flex-shrink:0 !important;
+  border-radius:0 !important;                 /* undo v5's 13px */
+  background:transparent !important;          /* undo v5's bg3 */
+  border:none !important;                     /* undo v5's border */
+}
+html.phone-mode .settings-toggle input{
+  opacity:0 !important;
+  width:0 !important;
+  height:0 !important;
+  position:absolute !important;
+}
+html.phone-mode .settings-toggle-slider{
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:99px !important;              /* PC value */
+  background:var(--border2) !important;       /* PC value */
+  cursor:pointer !important;
+  transition:background .72s cubic-bezier(.16,1,.3,1),
+             box-shadow .72s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .settings-toggle input:checked + .settings-toggle-slider{
+  background:var(--accent) !important;
+  box-shadow:0 0 14px var(--accent-glow) !important;
+}
+html.phone-mode .settings-toggle-slider::before{
+  content:'' !important;
+  position:absolute !important;
+  width:18px !important;                      /* PC value */
+  height:18px !important;                     /* PC value */
+  border-radius:50% !important;
+  left:3px !important;                        /* PC value */
+  top:3px !important;                         /* PC value */
+  background:var(--text2) !important;         /* PC value */
+  transition:transform .65s cubic-bezier(.34,1.56,.64,1),
+              background .35s,
+              box-shadow .55s cubic-bezier(.16,1,.3,1) !important;
+  box-shadow:0 1px 4px rgba(0,0,0,.35) !important;
+}
+html.phone-mode .settings-toggle input:checked + .settings-toggle-slider::before{
+  transform:translateX(20px) !important;      /* PC value */
+  background:var(--btn-text) !important;
+  box-shadow:0 0 8px var(--accent-glow), 0 1px 4px rgba(0,0,0,.5) !important;
+}
+
+/* ── 7. Select dropdown — restore PC values ── */
+html.phone-mode .settings-select{
+  padding:7px 30px 7px 12px !important;       /* PC: 7px 12px + 30px right for arrow */
+  border-radius:var(--radius-xs) !important;  /* PC value */
+  border:1px solid var(--border2) !important;
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  font-family:var(--font-body) !important;
+  font-size:13px !important;                  /* PC value */
+  font-weight:500 !important;
+  cursor:pointer !important;
+  outline:none !important;
+  min-width:130px !important;                 /* PC value */
+  max-width:none !important;                  /* undo v3/v6's max-width:50% */
+  flex:initial !important;                    /* undo v3/v6's flex:0 1 auto */
+  transition:border-color .3s, box-shadow .3s !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;
+  background-position:right 10px center !important;
+}
+html.phone-mode .settings-select:focus{
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 3px var(--accent-glow) !important;
+}
+
+/* ── 8. Number input — restore PC values ── */
+html.phone-mode .settings-number{
+  width:72px !important;                      /* PC value */
+  padding:7px 10px !important;                /* PC value */
+  border-radius:var(--radius-xs) !important;
+  border:1px solid var(--border2) !important;
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  font-family:var(--font-mono) !important;
+  font-size:13px !important;                  /* PC value */
+  text-align:center !important;
+  outline:none !important;
+  transition:border-color .3s, box-shadow .3s !important;
+}
+html.phone-mode .settings-number:focus{
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 3px var(--accent-glow) !important;
+}
+
+/* ── 9. Time input — restore PC values ── */
+html.phone-mode .settings-time-input{
+  width:100px !important;                     /* PC value */
+  padding:7px 10px !important;                /* PC value */
+  border-radius:var(--radius-xs) !important;
+  border:1px solid var(--border2) !important;
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  font-family:var(--font-mono) !important;
+  font-size:13px !important;                  /* PC value */
+  outline:none !important;
+  transition:border-color .3s, box-shadow .3s !important;
+}
+html.phone-mode .settings-time-input:focus{
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 3px var(--accent-glow) !important;
+}
+
+/* ── 10. Action button — restore PC values ── */
+html.phone-mode .settings-action-btn{
+  padding:7px 16px !important;                /* PC value */
+  border-radius:var(--radius-xs) !important;
+  border:1px solid var(--border2) !important;
+  background:var(--surface2) !important;
+  color:var(--text2) !important;
+  font-family:var(--font-body) !important;
+  font-size:13px !important;                  /* PC value */
+  font-weight:600 !important;
+  cursor:pointer !important;
+  min-height:0 !important;                    /* undo v3/v6's 38px */
+  white-space:nowrap !important;
+  transition:border-color .72s cubic-bezier(.16,1,.3,1),
+              color .72s cubic-bezier(.16,1,.3,1),
+              background .72s cubic-bezier(.16,1,.3,1),
+              transform .72s cubic-bezier(.16,1,.3,1),
+              box-shadow .72s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .settings-action-btn:hover{
+  border-color:var(--accent) !important;
+  color:var(--accent2) !important;
+  background:var(--accent-glow2) !important;
+  transform:translateY(-2px) scale(1.02) !important;
+  box-shadow:0 6px 18px var(--accent-glow) !important;
+}
+html.phone-mode .settings-action-btn.danger:hover{
+  border-color:var(--red) !important;
+  color:var(--red) !important;
+  background:rgba(240,82,82,.08) !important;
+  box-shadow:0 6px 18px rgba(240,82,82,.15) !important;
+}
+
+/* ── 11. Keyboard shortcuts grid — restore PC 2-column layout ── */
+html.phone-mode .kbd-grid{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;   /* PC value */
+  gap:2px !important;                         /* PC value */
+}
+html.phone-mode .kbd-shortcuts-section{
+  display:block !important;                   /* undo v3/v6's display:none */
+}
+html.phone-mode .kbd-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  padding:11px 20px !important;               /* PC value */
+  gap:12px !important;                        /* PC value */
+  border-radius:0 !important;
+  transition:background var(--spring-fast) !important;
+}
+html.phone-mode .kbd-row:hover{
+  background:var(--glass) !important;
+}
+html.phone-mode .kbd-action{
+  font-size:13px !important;                  /* PC value */
+  color:var(--text2) !important;
+  flex:1 !important;
+}
+html.phone-mode .kbd-combo{
+  display:flex !important;
+  align-items:center !important;
+  gap:4px !important;
+  flex-shrink:0 !important;
+}
+html.phone-mode .kbd-key{
+  font-family:var(--font-mono) !important;
+  font-size:11px !important;                  /* PC value */
+  font-weight:600 !important;
+  background:var(--surface2) !important;
+  border:1px solid var(--border2) !important;
+  border-bottom:2.5px solid var(--border2) !important;
+  border-radius:5px !important;
+  padding:2px 7px !important;                 /* PC value */
+  color:var(--text) !important;
+  box-shadow:0 1px 0 var(--border) !important;
+  cursor:pointer !important;
+  transition:all var(--spring-fast) !important;
+  user-select:none !important;
+}
+html.phone-mode .kbd-key:hover{
+  background:var(--accent-glow) !important;
+  border-color:var(--accent-glow5) !important;
+  color:var(--accent2) !important;
+  box-shadow:0 1px 4px var(--accent-glow2) !important;
+  transform:translateY(-1px) !important;
+}
+html.phone-mode .kbd-plus{
+  font-size:10px !important;
+  color:var(--text3) !important;
+}
+
+/* ── 12. About card — restore PC values ── */
+html.phone-mode .settings-about-card{
+  background:linear-gradient(135deg, var(--accent-glow2) 0%, transparent 100%) !important;
+  border:1px solid var(--accent-glow) !important;
+  border-radius:var(--radius) !important;     /* PC value */
+  padding:22px 24px !important;               /* PC value */
+  display:flex !important;
+  align-items:center !important;
+  gap:18px !important;                        /* PC value */
+}
+html.phone-mode .settings-about-logo{
+  width:52px !important;                      /* PC value */
+  height:52px !important;                     /* PC value */
+  border-radius:15px !important;              /* PC value */
+  flex-shrink:0 !important;
+  background:linear-gradient(160deg, var(--bg2) 0%, var(--bg3) 100%) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-shadow:0 0 0 1px var(--border2), 0 8px 32px var(--logo-shadow), 0 2px 8px rgba(0,0,0,.6) !important;
+  position:relative !important;
+  overflow:hidden !important;
+}
+html.phone-mode .settings-about-name{
+  font-family:var(--font-head) !important;
+  font-size:18px !important;                  /* PC value */
+  font-weight:800 !important;
+  letter-spacing:-.04em !important;
+  color:var(--text) !important;
+  margin-bottom:3px !important;               /* PC value */
+}
+html.phone-mode .settings-about-name span{
+  color:var(--accent) !important;
+}
+html.phone-mode .settings-about-ver{
+  font-size:11px !important;                  /* PC value */
+  color:var(--text3) !important;
+  font-family:var(--font-mono) !important;
+  margin-bottom:5px !important;               /* PC value */
+}
+html.phone-mode .settings-about-tagline{
+  font-size:12.5px !important;                /* PC value */
+  color:var(--text2) !important;
+}
+
+/* ── 13. API key items — restore reasonable PC-like values ── */
+html.phone-mode .api-key-item{
+  padding:11px 20px !important;               /* match PC .settings-row padding */
+  border-radius:0 !important;                 /* undo v3/v6's 10px */
+}
+html.phone-mode .api-key-item input{
+  font-size:13px !important;                  /* match PC .settings-select */
+}
+
+/* ── 14. Accent swatch row (color picker) — restore PC feel ── */
+html.phone-mode .accent-swatch-row{
+  display:flex !important;
+  gap:8px !important;
+  flex-wrap:wrap !important;
+}
+
 /* ═══ 2. AI ASSISTANT PAGE — carbon copy from reference ═══ */
 html.phone-mode .asst-layout{
   height:calc(var(--v4-vh, 100vh) - 52px - 80px) !important;
@@ -16929,6 +17385,75 @@ html.phone-mode #motion-splash-bar{
   margin-left:-12px !important;          /* keep base alignment */
   height:4px !important;                 /* keep base thickness */
   border-radius:99px !important;         /* keep base shape */
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v11 OPENING ANIMATION — EXACT PC MATCH, SCALED DOWN
+   ══════════════════════════════════════════════════════════════════
+   Goal: User wants the phone-mode opening animation to look EXACTLY
+   like the PC mode, just sized down for the phone screen.
+
+   Problem with previous phone-mode splash rules (v4 line ~14741,
+   v6 line ~15391, v9 line ~16922): each independently shrunk the
+   font-size, letter-spacing, bar width, and bar margin-top to
+   *different* ratios. The result was *close* to PC but not exact —
+   e.g. PC name has letter-spacing/font-size = 16/36 = 0.444, but
+   v9 phone has 12/28 = 0.428. These tiny proportional drifts make
+   the phone splash feel subtly different from PC.
+
+   Solution: wrap name/tagline/bar in a #motion-splash-content
+   wrapper (HTML change at the splash markup), keep EVERY splash
+   property at its exact PC value, and apply a single uniform
+   `transform: scale(0.78)` to the wrapper in phone mode. Because
+   CSS transforms compose uniformly, EVERYTHING (font-size,
+   letter-spacing, bar width, margins, gaps, even the bar's
+   margin-left:-12px offset) scales by the same 0.78 factor —
+   guaranteeing the EXACT same visual proportions as PC.
+
+   Scale factor 0.78 = 28/36, so the name renders at ~28px on phone
+   (matching the previous v9 phone font-size, which was already
+   tested to fit comfortably on 360–430px-wide screens).
+
+   The canvas (absolutely positioned, full viewport) is NOT scaled
+   — it already adapts to viewport size via its own resize() handler
+   in the splash JS. Only the text/bar stack is scaled.
+
+   PC mode is 100% untouched — every rule below is scoped to
+   html.phone-mode.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Brand name — reset to EXACT PC value (undo v4 32px / v6 36px-no-scale / v9 28px) */
+html.phone-mode #motion-splash-name{
+  font-size:36px !important;
+  letter-spacing:16px !important;
+  font-weight:800 !important;
+}
+
+/* Tagline — reset to EXACT PC value (undo v4 12px/.05em/.8 + v9 11px/6px) */
+html.phone-mode #motion-splash-tagline{
+  font-size:11px !important;
+  letter-spacing:6px !important;
+  margin-top:10px !important;
+  opacity:0 !important; /* let .visible animation drive it, same as PC */
+}
+
+/* Progress bar — reset to EXACT PC value (undo v4 220px/36px + v6 260px/42px + v9 200px/32px) */
+html.phone-mode #motion-splash-bar{
+  width:260px !important;
+  height:4px !important;
+  margin-top:42px !important;
+  margin-left:-12px !important;
+  border-radius:99px !important;
+}
+
+/* Uniformly scale the splash content stack to fit the phone screen.
+   transform-origin:center keeps the scaled content centered within
+   the full-viewport #motion-splash-screen (which is unchanged).
+   The canvas is a sibling of #motion-splash-content and is NOT
+   affected by this transform. */
+html.phone-mode #motion-splash-content{
+  transform:scale(0.78);
+  transform-origin:center center;
 }
 
 
@@ -18015,6 +18540,763 @@ html.phone-mode .asst-header-actions{
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v13 AI ASSISTANT PAGE — EXACT PC DESIGN, SCALED DOWN
+   ══════════════════════════════════════════════════════════════════
+   Goal: User wants the phone-mode AI Assistant page design AND function
+   to match the PC-mode AI Assistant page (just sized for phone).
+
+   Problem with v12 phone-mode AI block (lines 18247-18540):
+     • Shrank fonts (model badge 11px vs PC 12px, msg content compact,
+       empty h2 18px vs PC 26px)
+     • Changed paddings (header 8/12 vs PC 10/20, messages 12/14 vs PC
+       28/36/28/24, composer 8/10/10 vs PC 12/20/16)
+     • Changed button sizes (34×34 vs PC 30×30, radius 10 vs PC 8)
+     • Changed bubble radii (14px vs PC 20px) and padding (14/16 vs PC 20/24)
+     • HID the context panel entirely (display:none) — function loss
+     • Restyled composer-inner (radius 12 vs PC 14, padding 6/10 vs PC 8/12)
+     • Hid corner new chat (PC shows it)
+
+   Solution: This v13 block is placed AFTER v12 (last in source order)
+   and uses !important to override. It restores EVERY AI assistant
+   property to its EXACT PC value (defined at lines 9219-10360), then
+   keeps the sidebar as a sliding overlay (physically necessary on
+   phone — 290px sidebar + main + 300px context panel cannot fit
+   side-by-side on a 390px screen) but restores PC inner styling.
+   The context panel is RESTORED as a sliding overlay from the right
+   so its function (Insights/Memory/Actions tabs) is preserved.
+
+   PC mode is 100% untouched — every rule below is scoped to
+   html.phone-mode.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Page wrapper — restore PC values ── */
+html.phone-mode .content.assistant-active{
+  padding:0 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+html.phone-mode .content.assistant-active #view-assistant{
+  flex:1 !important;
+  display:flex !important;
+  min-height:0 !important;
+  height:calc(100dvh - 52px) !important;
+}
+html.phone-mode .content.assistant-active .assistant-page{
+  flex:1 !important;
+  display:flex !important;
+  height:100% !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  background:var(--bg) !important;
+  position:relative !important;
+  font-family:var(--font-body) !important;
+}
+
+/* ── 2. Sidebar — keep as sliding overlay (phone necessity) but restore PC inner styling ── */
+html.phone-mode .asst-sidebar{
+  position:fixed !important;
+  top:0 !important;
+  left:0 !important;
+  bottom:0 !important;
+  width:85vw !important;
+  max-width:320px !important;
+  min-width:0 !important;
+  z-index:50 !important;
+  transform:translateX(-100%) !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  transition:transform var(--spring-fast),opacity var(--spring-fast) !important;
+  box-shadow:0 0 40px rgba(0,0,0,.3) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  /* PC values for inner styling */
+  background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%) !important;
+  border-right:1px solid var(--border) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  flex-shrink:0 !important;
+}
+html.phone-mode .asst-sidebar.mobile-open{
+  transform:translateX(0) !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  box-shadow:0 0 60px rgba(0,0,0,.5) !important;
+}
+/* PC sidebar header values */
+html.phone-mode .asst-sidebar-header{
+  padding:22px 18px 14px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  border-bottom:1px solid var(--border) !important;
+}
+html.phone-mode .asst-sidebar-title{
+  font-family:var(--font-head) !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  color:var(--text3) !important;
+  flex:1 !important;
+  letter-spacing:.1em !important;
+  text-transform:uppercase !important;
+}
+html.phone-mode .asst-sidebar-search{
+  padding:10px 14px 6px !important;
+  position:relative !important;
+}
+html.phone-mode .asst-sidebar-search input{
+  width:100% !important;
+  padding:9px 12px 9px 34px !important;
+  border-radius:10px !important;
+  background:var(--surface) !important;
+  border:1px solid var(--border) !important;
+  color:var(--text) !important;
+  font-size:12px !important;
+  font-family:var(--font-body) !important;
+  outline:none !important;
+  transition:var(--t-common) .3s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .asst-sidebar-search input:focus{
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 3px var(--accent-glow2),0 2px 12px var(--accent-glow) !important;
+}
+html.phone-mode .asst-sidebar-search svg{
+  position:absolute !important;
+  left:26px !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  color:var(--text3) !important;
+  pointer-events:none !important;
+}
+html.phone-mode .asst-conversations{
+  flex:1 !important;
+  overflow-y:auto !important;
+  padding:6px 10px !important;
+  scrollbar-width:thin !important;
+  scrollbar-color:var(--border) transparent !important;
+}
+
+/* ── 3. Chat header — restore PC values (10px 20px padding, 12px gap) ── */
+html.phone-mode .asst-chat-header{
+  padding:10px 20px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  border-bottom:1px solid var(--border) !important;
+  background:var(--bg2) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+  z-index:5 !important;
+  position:relative !important;
+  flex-shrink:0 !important;
+}
+
+/* ── 4. Header buttons — restore PC values (30×30, 8px radius) ── */
+html.phone-mode .asst-header-btn{
+  width:30px !important;
+  height:30px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:8px !important;
+  border:none !important;
+  background:transparent !important;
+  color:var(--text3) !important;
+  cursor:pointer !important;
+  transition:var(--t-common) .15s !important;
+  flex-shrink:0 !important;
+}
+html.phone-mode .asst-header-btn:hover{
+  background:var(--glass2) !important;
+  color:var(--text2) !important;
+}
+html.phone-mode .asst-header-btn svg{
+  width:15px !important;
+  height:15px !important;
+}
+
+/* ── 5. Model badge — restore PC values (12px font, 160px max model-name) ── */
+html.phone-mode .asst-model-badge{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  padding:4px 10px 4px 8px !important;
+  border-radius:8px !important;
+  background:var(--glass2) !important;
+  border:1px solid var(--border) !important;
+  font-size:12px !important;
+  color:var(--text3) !important;
+  cursor:pointer !important;
+  transition:var(--t-common) .2s !important;
+  font-family:var(--font-body) !important;
+  flex:1 !important;
+  min-width:0 !important;
+}
+html.phone-mode .asst-model-badge:hover{
+  border-color:var(--border2) !important;
+  background:var(--surface) !important;
+}
+html.phone-mode .asst-model-badge svg{
+  width:13px !important;
+  height:13px !important;
+  color:var(--text3) !important;
+}
+html.phone-mode .asst-model-badge .model-name{
+  font-weight:600 !important;
+  color:var(--text2) !important;
+  max-width:160px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+html.phone-mode .asst-model-badge .model-provider{
+  font-size:10px !important;
+  color:var(--text3) !important;
+}
+
+/* ── 6. Corner new chat — restore PC visibility (PC shows it) ── */
+html.phone-mode .asst-corner-new-chat{
+  position:absolute !important;
+  top:12px !important;
+  right:20px !important;
+  z-index:10 !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:4px !important;
+  padding:5px 10px !important;
+  border-radius:8px !important;
+  background:var(--glass2) !important;
+  color:var(--text3) !important;
+  font-size:10.5px !important;
+  font-weight:600 !important;
+  border:1px solid var(--border) !important;
+  cursor:pointer !important;
+  font-family:var(--font-body) !important;
+  letter-spacing:.01em !important;
+  transition:var(--t-common) .2s ease !important;
+}
+html.phone-mode .asst-corner-new-chat:hover{
+  background:var(--surface) !important;
+  color:var(--text2) !important;
+  border-color:var(--border2) !important;
+}
+html.phone-mode .asst-corner-new-chat:active{
+  transform:scale(.97) !important;
+  transition-duration:.1s !important;
+}
+html.phone-mode .asst-corner-new-chat svg{
+  width:11px !important;
+  height:11px !important;
+  opacity:.5 !important;
+}
+/* Header new chat — restore PC (hidden on PC, shown via corner button) */
+html.phone-mode .asst-header-new-chat{
+  display:none !important;
+}
+
+/* ── 7. Messages area — restore PC values (28px 36px 28px 24px padding) ── */
+html.phone-mode .asst-messages{
+  flex:1 !important;
+  overflow-y:auto !important;
+  padding:28px 36px 28px 24px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:2px !important;
+  min-height:0 !important;
+  scrollbar-width:thin !important;
+  scrollbar-color:var(--border) transparent !important;
+  width:100% !important;
+  -webkit-overflow-scrolling:touch;
+}
+html.phone-mode .asst-messages::-webkit-scrollbar{
+  width:5px !important;
+}
+html.phone-mode .asst-messages::-webkit-scrollbar-thumb{
+  background:var(--border) !important;
+  border-radius:4px !important;
+}
+/* Message separator — PC value */
+html.phone-mode .asst-msg+.asst-msg{
+  border-top:1px solid var(--border) !important;
+  margin-top:2px !important;
+  padding-top:18px !important;
+}
+
+/* ── 8. Message rows — restore PC values (16px 0 padding, 14px gap) ── */
+html.phone-mode .asst-msg{
+  display:flex !important;
+  gap:14px !important;
+  padding:16px 0 !important;
+  position:relative !important;
+  animation:asstMsgIn .5s cubic-bezier(.16,1,.3,1) both !important;
+}
+html.phone-mode .asst-msg-avatar{
+  width:36px !important;
+  height:36px !important;
+  border-radius:10px !important;
+  flex-shrink:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  margin-top:3px !important;
+  transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s ease !important;
+}
+html.phone-mode .asst-msg:hover .asst-msg-avatar{
+  transform:scale(1.08) !important;
+  box-shadow:0 4px 16px var(--accent-glow) !important;
+}
+html.phone-mode .asst-msg.user .asst-msg-avatar{
+  background:var(--accent-glow) !important;
+  color:var(--accent) !important;
+  border:1px solid var(--accent-glow2) !important;
+  box-shadow:0 2px 8px var(--accent-glow3) !important;
+}
+html.phone-mode .asst-msg.ai .asst-msg-avatar{
+  background:linear-gradient(145deg,var(--accent),var(--accent2)) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 4px 18px var(--accent-glow),0 0 0 1px var(--accent-glow2) !important;
+}
+html.phone-mode .asst-msg-body{
+  flex:1 !important;
+  min-width:0 !important;
+}
+html.phone-mode .asst-msg-header{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin-bottom:8px !important;
+}
+html.phone-mode .asst-msg-name{
+  font-size:12.5px !important;
+  font-weight:700 !important;
+  color:var(--text) !important;
+  font-family:var(--font-chat) !important;
+  letter-spacing:-.01em !important;
+}
+html.phone-mode .asst-msg-time{
+  font-size:10.5px !important;
+  color:var(--text3) !important;
+  font-variant-numeric:tabular-nums !important;
+}
+
+/* ── 9. Message content — restore PC font (14.5px, line-height 1.8) ── */
+html.phone-mode .asst-msg-content{
+  font-family:var(--font-chat) !important;
+  font-size:14.5px !important;
+  line-height:1.8 !important;
+  color:var(--text2) !important;
+  word-break:break-word !important;
+  letter-spacing:-.003em !important;
+  font-feature-settings:'liga' 1,'kern' 1 !important;
+  -webkit-font-smoothing:antialiased !important;
+  -moz-osx-font-smoothing:grayscale !important;
+}
+/* User bubble — restore PC values (20px 20px 20px 6px radius, 14/20 padding) */
+html.phone-mode .asst-msg.user .asst-msg-content{
+  background:linear-gradient(145deg,var(--surface),var(--surface2)) !important;
+  border:1px solid var(--border) !important;
+  padding:14px 20px !important;
+  border-radius:20px 20px 20px 6px !important;
+  display:inline-block !important;
+  max-width:88% !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04) !important;
+  position:relative !important;
+}
+/* AI bubble — restore PC values (20px 20px 6px 20px radius, 20/24 padding) */
+html.phone-mode .asst-msg.ai .asst-msg-content{
+  background:linear-gradient(155deg,rgba(255,255,255,.04),rgba(255,255,255,.01) 60%,rgba(255,255,255,.03)) !important;
+  border:1px solid rgba(255,255,255,.06) !important;
+  padding:20px 24px !important;
+  border-radius:20px 20px 6px 20px !important;
+  display:inline-block !important;
+  max-width:96% !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06),0 12px 40px rgba(0,0,0,.04),0 0 0 1px rgba(255,255,255,.02) inset !important;
+  position:relative !important;
+  overflow:hidden !important;
+  backdrop-filter:blur(8px) !important;
+}
+/* AI bubble top-edge accent — restore PC pseudo-element */
+html.phone-mode .asst-msg.ai .asst-msg-content::before{
+  content:'' !important;
+  position:absolute !important;
+  top:0 !important;
+  left:20px !important;
+  right:20px !important;
+  height:1px !important;
+  background:linear-gradient(90deg,transparent 5%,var(--accent-glow5) 50%,transparent 95%) !important;
+  opacity:.6 !important;
+}
+/* AI bubble inner ambient — restore PC pseudo-element */
+html.phone-mode .asst-msg.ai .asst-msg-content::after{
+  content:'' !important;
+  position:absolute !important;
+  top:-20% !important;
+  left:-10% !important;
+  width:50% !important;
+  height:50% !important;
+  background:radial-gradient(ellipse at 50% 50%,var(--accent-glow3),transparent 70%) !important;
+  pointer-events:none !important;
+  opacity:.7 !important;
+}
+
+/* ── 10. Message action buttons — restore PC values ── */
+html.phone-mode .asst-msg-actions{
+  display:flex !important;
+  align-items:center !important;
+  gap:2px !important;
+  margin-top:6px !important;
+  opacity:0 !important;
+  transition:opacity .2s ease !important;
+}
+html.phone-mode .asst-msg:hover .asst-msg-actions{
+  opacity:1 !important;
+}
+html.phone-mode .asst-act-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:28px !important;
+  height:28px !important;
+  border-radius:8px !important;
+  border:1px solid transparent !important;
+  background:transparent !important;
+  color:var(--text3) !important;
+  cursor:pointer !important;
+  transition:var(--t-common) .2s cubic-bezier(.16,1,.3,1) !important;
+  position:relative !important;
+}
+html.phone-mode .asst-act-btn svg{
+  width:14px !important;
+  height:14px !important;
+  pointer-events:none !important;
+}
+
+/* ── 11. Empty state — restore PC values (26px h2, 48px 32px padding) ── */
+html.phone-mode .asst-empty{
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  padding:48px 32px !important;
+  gap:20px !important;
+}
+html.phone-mode .asst-empty-icon{
+  width:80px !important;
+  height:80px !important;
+  border-radius:24px !important;
+  background:linear-gradient(145deg,var(--accent-glow2),var(--accent-glow)) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-shadow:0 12px 40px var(--accent-glow),0 0 80px var(--accent-glow2) !important;
+  animation:asstPulse 3s ease-in-out infinite !important;
+  position:relative !important;
+}
+html.phone-mode .asst-empty-icon svg{
+  width:38px !important;
+  height:38px !important;
+  color:var(--accent) !important;
+}
+html.phone-mode .asst-empty h2{
+  font-family:var(--font-head) !important;
+  font-size:26px !important;
+  font-weight:900 !important;
+  color:var(--text) !important;
+  letter-spacing:-.03em !important;
+}
+html.phone-mode .asst-empty p{
+  font-size:13.5px !important;
+  color:var(--text2) !important;
+  max-width:440px !important;
+  line-height:1.7 !important;
+  letter-spacing:-.005em !important;
+}
+html.phone-mode .asst-empty-suggestions{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:10px !important;
+  justify-content:center !important;
+  margin-top:12px !important;
+  max-width:500px !important;
+}
+html.phone-mode .asst-suggestion{
+  padding:9px 18px !important;
+  border-radius:12px !important;
+  background:var(--glass2) !important;
+  border:1px solid var(--border) !important;
+  color:var(--text2) !important;
+  font-size:12px !important;
+  font-weight:500 !important;
+  cursor:pointer !important;
+  transition:var(--t-common) .25s cubic-bezier(.16,1,.3,1) !important;
+  font-family:var(--font-body) !important;
+}
+
+/* ── 12. Composer — restore PC values (12px 20px 16px padding) ── */
+html.phone-mode .asst-composer{
+  padding:12px 20px 16px !important;
+  position:relative !important;
+  z-index:5 !important;
+  border-top:1px solid var(--border) !important;
+  background:var(--bg2) !important;
+  flex-shrink:0 !important;
+}
+html.phone-mode .asst-composer-inner{
+  display:flex !important;
+  align-items:flex-end !important;
+  gap:8px !important;
+  padding:8px 12px !important;
+  border-radius:14px !important;
+  background:var(--surface) !important;
+  border:1px solid var(--border) !important;
+  transition:border-color .2s,box-shadow .2s !important;
+}
+html.phone-mode .asst-composer-inner:focus-within{
+  border-color:var(--border2) !important;
+  box-shadow:0 0 0 2px var(--accent-glow2) !important;
+}
+html.phone-mode .asst-composer-input{
+  flex:1 !important;
+  border:none !important;
+  background:none !important;
+  resize:none !important;
+  /* Keep 16px to prevent iOS zoom on focus — this is a functional phone
+     necessity, not a design difference. PC uses 14px but iOS Safari
+     auto-zooms when input < 16px, which breaks the layout. */
+  font-size:16px !important;
+  color:var(--text) !important;
+  font-family:var(--font-chat) !important;
+  outline:none !important;
+  min-height:24px !important;
+  max-height:120px !important;
+  line-height:1.6 !important;
+  padding:4px 0 !important;
+  letter-spacing:-.01em !important;
+}
+html.phone-mode .asst-composer-input::placeholder{
+  color:var(--text3) !important;
+}
+html.phone-mode .asst-composer-actions{
+  display:flex !important;
+  gap:5px !important;
+  align-items:flex-end !important;
+}
+html.phone-mode .asst-composer-btn{
+  width:32px !important;
+  height:32px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:8px !important;
+  border:none !important;
+  background:transparent !important;
+  color:var(--text3) !important;
+  cursor:pointer !important;
+  transition:var(--t-common) .15s !important;
+  flex-shrink:0 !important;
+}
+html.phone-mode .asst-composer-btn:hover{
+  background:var(--glass2) !important;
+  color:var(--text2) !important;
+}
+html.phone-mode .asst-composer-btn.send{
+  background:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 2px 8px var(--accent-glow) !important;
+  border-radius:9px !important;
+  transition:background .25s cubic-bezier(.16,1,.3,1),box-shadow .25s cubic-bezier(.16,1,.3,1),transform .18s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .asst-composer-btn.send:hover{
+  box-shadow:0 3px 14px var(--accent-glow3) !important;
+  filter:brightness(1.1) !important;
+}
+html.phone-mode .asst-composer-btn.send:disabled{
+  opacity:.3 !important;
+  cursor:default !important;
+  box-shadow:none !important;
+  filter:none !important;
+}
+html.phone-mode .asst-composer-btn.send.is-streaming{
+  background:var(--accent) !important;
+  color:var(--btn-text) !important;
+  animation:asstStopPulse 1.6s ease-out infinite !important;
+}
+html.phone-mode .asst-composer-btn svg{
+  width:15px !important;
+  height:15px !important;
+}
+/* Web search toggle — restore PC values */
+html.phone-mode .asst-websearch-btn{
+  position:relative !important;
+  transition:var(--t-common) .2s cubic-bezier(.16,1,.3,1) !important;
+}
+html.phone-mode .asst-websearch-btn.active{
+  color:var(--accent) !important;
+  background:var(--accent-glow2) !important;
+}
+html.phone-mode .asst-websearch-btn:not(.active){
+  color:var(--text3) !important;
+  opacity:.6 !important;
+}
+
+/* ── 13. Context panel — RESTORE function (sliding overlay from right)
+   v12 hid it entirely (display:none) which broke the Insights/Memory/Actions
+   function. Restore as a sliding overlay so the function works on phone. ── */
+html.phone-mode .asst-context-panel{
+  position:fixed !important;
+  top:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:85vw !important;
+  max-width:320px !important;
+  z-index:50 !important;
+  transform:translateX(100%) !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  transition:transform var(--spring-fast),opacity var(--spring-fast) !important;
+  box-shadow:0 0 40px rgba(0,0,0,.3) !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%) !important;
+  border-left:1px solid var(--border) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+}
+html.phone-mode .asst-context-panel.open{
+  transform:translateX(0) !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  box-shadow:0 0 60px rgba(0,0,0,.5) !important;
+}
+html.phone-mode .asst-ctx-inner{
+  width:100% !important;
+  height:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+html.phone-mode .asst-ctx-header{
+  padding:16px 18px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  border-bottom:1px solid var(--border) !important;
+}
+html.phone-mode .asst-ctx-header h3{
+  font-size:14px !important;
+  font-weight:800 !important;
+  color:var(--text) !important;
+  flex:1 !important;
+  letter-spacing:-.01em !important;
+}
+html.phone-mode .asst-ctx-tabs{
+  display:flex !important;
+  border-bottom:1px solid var(--border) !important;
+  padding:0 14px !important;
+}
+html.phone-mode .asst-ctx-tab{
+  padding:11px 14px !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  color:var(--text3) !important;
+  cursor:pointer !important;
+  border-bottom:2px solid transparent !important;
+  transition:var(--t-common) .2s !important;
+  font-family:var(--font-body) !important;
+  background:none !important;
+  border-top:none !important;
+  border-left:none !important;
+  border-right:none !important;
+  letter-spacing:.02em !important;
+}
+html.phone-mode .asst-ctx-tab:hover{
+  color:var(--text2) !important;
+}
+html.phone-mode .asst-ctx-tab.active{
+  color:var(--accent) !important;
+  border-bottom-color:var(--accent) !important;
+}
+
+/* ── 14. Header actions — restore PC gap (6px) ── */
+html.phone-mode .asst-header-actions{
+  display:flex !important;
+  gap:6px !important;
+  flex-shrink:0 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v13 TASK PAGE — PRIORITY + DURATION ON SAME LINE
+   ══════════════════════════════════════════════════════════════════
+   Goal: User wants Priority + Duration fields on the SAME LINE in the
+   task page (both Anytime/Unscheduled panel and Daily/Today panel),
+   matching how they appear in the Unscheduled panel.
+
+   Problem: The base .task-meta-row uses flex-wrap:wrap (line 3550),
+   which lets fields wrap to new lines when they don't fit. On narrow
+   phones, the Duration field's long placeholder ("e.g. 30m, 2h, 1d,
+   2day 4h") can force it to wrap below Priority.
+
+   Solution: Force flex-wrap:nowrap on .task-meta-row in phone mode,
+   and ensure Priority + Duration fields share the row 50/50 via
+   flex:1 1 0. This guarantees they stay on the same line regardless
+   of placeholder length or viewport width.
+
+   Note: The Anytime panel has 3 visible fields (Priority + Duration +
+   Deadline) — they'll all share the row 33/33/33. The Daily panel
+   has 2 visible fields (Priority + Duration) — they'll share 50/50.
+   Both panels keep Priority + Duration on the same line, as requested.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Force meta-row to never wrap on phone — all visible fields stay on one line */
+html.phone-mode .task-meta-row{
+  flex-wrap:nowrap !important;
+  gap:6px !important;
+  margin-top:7px !important;
+}
+
+/* All visible meta fields share the row equally — flex:1 1 0 with min-width:0
+   so they can shrink below their content's natural width if needed */
+html.phone-mode .task-meta-row .task-meta-field{
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  gap:3px !important;
+}
+
+/* Override the earlier v4 rule (line 15356) that set Daily panel fields
+   to calc(50% - 3px). With flex:1 1 0, both fields naturally share 50/50
+   AND don't wrap, which is what we want. */
+html.phone-mode #taskPanelDaily .task-meta-row .task-meta-field{
+  flex:1 1 0 !important;
+}
+
+/* Ensure inputs/selects in meta fields don't force the row to overflow */
+html.phone-mode .task-meta-field .task-pri-sel,
+html.phone-mode .task-meta-field .task-dur-inp,
+html.phone-mode .task-meta-field .task-time-inp,
+html.phone-mode .task-meta-field .task-cat-inp{
+  width:100% !important;
+  min-width:0 !important;
+  padding:8px 9px !important;
+  font-size:12.5px !important;
+  border-radius:9px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+/* Duration input placeholder — shorter on phone to avoid forcing width */
+html.phone-mode .task-dur-inp::placeholder{
+  text-overflow:ellipsis !important;
+  overflow:hidden !important;
+  white-space:nowrap !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
    PHONE MODE — v12 TODAY PAGE DAY-NAME BAR (EVEN SMALLER)
    ══════════════════════════════════════════════════════════════════
    Goal: Make the Today page day-changing bar (task-mode-bar + task-daily-date)
@@ -18068,6 +19350,90 @@ html.phone-mode .task-daily-date .tdd-dot{
   height:3px !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v13 TODAY PAGE DAY-CHANGING BAR (A LITTLE BIT BIGGER)
+   ══════════════════════════════════════════════════════════════════
+   Goal: User says the day-changing bar on the Today page feels too
+   small after v12's "even smaller" reduction. Restore it to a
+   comfortable but still phone-friendly size — bigger than v12, still
+   smaller than the PC layout.
+   Was v12: bar padding 2/0/2 gap 4, toggle padding 1 radius 8,
+            btn padding 3/9 font 10 radius 6, svg 8×8,
+            mode-count font 7.5 padding 0/4,
+            date font 8 padding 1/5 radius 4, dot 3×3.
+   Now v13: bar padding 6/0/5 gap 9, toggle padding 2 radius 14,
+            btn padding 7/15 font 12.5 radius 9, svg 11×11,
+            mode-count font 9.5 padding 0/6,
+            date font 10.5 padding 3/9 radius 6, dot 4×4.
+   ══════════════════════════════════════════════════════════════════ */
+
+html.phone-mode .task-mode-bar{
+  padding:6px 0 5px !important;
+  margin-bottom:3px !important;
+  gap:9px !important;
+  flex-wrap:nowrap !important;
+}
+html.phone-mode .task-mode-toggle{
+  padding:2px !important;
+  border-radius:14px !important;
+  gap:2px !important;
+}
+html.phone-mode .task-mode-btn{
+  padding:7px 15px !important;
+  font-size:12.5px !important;
+  font-weight:600 !important;
+  border-radius:9px !important;
+  gap:5px !important;
+  letter-spacing:.015em !important;
+}
+html.phone-mode .task-mode-btn svg{
+  width:11px !important;
+  height:11px !important;
+}
+html.phone-mode .task-mode-btn .mode-count{
+  font-size:9.5px !important;
+  padding:0 6px !important;
+  border-radius:99px !important;
+}
+html.phone-mode .task-daily-date{
+  font-size:10.5px !important;
+  padding:3px 9px !important;
+  border-radius:6px !important;
+  letter-spacing:.015em !important;
+  gap:4px !important;
+}
+html.phone-mode .task-daily-date .tdd-dot{
+  width:4px !important;
+  height:4px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PHONE MODE — v13 REMOVE PILL-SHAPED ACTIVE TAB INDICATOR
+   ══════════════════════════════════════════════════════════════════
+   User reports: a pill-shaped indicator appears above (or near) the
+   selected bottom-nav icon, marking the active page. They want it
+   removed entirely. The ::after pseudo-element on .phone-nav-item.active
+   is the indicator — hide it. Also disable the upward icon translate
+   that previously paired with the indicator, so the active icon stays
+   put and the only visible "active" cue is the accent color + soft
+   glow behind the icon.
+   ══════════════════════════════════════════════════════════════════ */
+
+html.phone-mode .phone-nav-item.active::after{
+  content:none !important;
+  display:none !important;
+  width:0 !important;
+  height:0 !important;
+  opacity:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+/* Keep the active icon centered (no upward lift, since the indicator
+   that justified the lift is gone). */
+html.phone-mode .phone-nav-item.active svg{
+  transform:scale(1.12) !important;
+}
+
 </style>
 <body>
 
@@ -18092,9 +19458,11 @@ html.phone-mode .task-daily-date .tdd-dot{
 <!-- PREMIUM LOADING SPLASH v20 — CLEAN & MINIMAL -->
 <div id="motion-splash-screen">
   <canvas id="motion-splash-canvas"></canvas>
-  <div id="motion-splash-name">Motion</div>
-  <div id="motion-splash-tagline">Own your time</div>
-  <div id="motion-splash-bar"></div>
+  <div id="motion-splash-content">
+    <div id="motion-splash-name">Motion</div>
+    <div id="motion-splash-tagline">Own your time</div>
+    <div id="motion-splash-bar"></div>
+  </div>
 </div>
 <script id="motion-splash-js">
 (function(){
