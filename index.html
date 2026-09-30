@@ -2543,14 +2543,14 @@ html.sidebar-zoom .main:has(.content.assistant-active){
 html.immersive-zoom .main:has(.content.assistant-active){
   zoom: 1;
 }
-/* ▸ Dashboard page: do NOT zoom when the sidebar is collapsed.
-     The sidebar still hides (more horizontal room), but content
-     stays at its natural size — per user request. */
+/* ▸ Dashboard page: zoom up slightly when the sidebar is collapsed.
+     The sidebar hides (more horizontal room) and the dashboard grows
+     a touch to fill the extra space — per user request. */
 html.sidebar-zoom .main:has(.content.dashboard-active){
-  zoom: 1;
+  zoom: 1.06;
 }
 html.immersive-zoom .main:has(.content.dashboard-active){
-  zoom: 1;
+  zoom: 1.06;
 }
 html.immersive-zoom .main:has(.content.blocks-cal-active){
   zoom: 1.05;
