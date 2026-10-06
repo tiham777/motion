@@ -6137,7 +6137,7 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]) #overlay .close-bt
 /* ═══════════════════════════════════════════════════════════
    5. FOCUS ANALYTICS — Split panel
    ═══════════════════════════════════════════════════════════ */
-.da-focus{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.da-focus{display:grid;grid-template-columns:1fr;gap:14px}
 .da-focus-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.18);transition:border-color .3s,box-shadow .3s}
 .da-focus-card:hover{border-color:var(--accent-glow2);box-shadow:0 8px 36px var(--accent-glow2)}
 .da-focus-glow{position:absolute;top:-24px;right:-24px;width:90px;height:70px;border-radius:50%;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none;opacity:.2;filter:blur(16px)}
@@ -6151,10 +6151,14 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]) #overlay .close-bt
 .da-heatmap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 .da-heatmap-row{display:flex;gap:3px;align-items:center}
 .da-heatmap-row-label{font-size:7.5px;font-weight:700;color:var(--text3);font-family:var(--font-mono);width:24px;text-align:right;flex-shrink:0;letter-spacing:.04em}
-.da-heatmap-cell{width:15px;height:15px;border-radius:4px;background:var(--bg3);transition:transform .15s cubic-bezier(.22,1,.36,1),box-shadow .15s,border-color .15s;cursor:default;flex-shrink:0;position:relative}
-.da-heatmap-cell.has-data{box-shadow:inset 0 0 0 .5px rgba(255,255,255,.04)}
-.da-heatmap-cell:hover{transform:scale(1.5);z-index:4;border:1.5px solid var(--accent);box-shadow:0 0 10px var(--accent-glow2)}
-.da-heatmap-cell.today{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 10px var(--accent-glow)}
+.da-heatmap-cell{width:15px;height:15px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);transition:transform .15s cubic-bezier(.22,1,.36,1),box-shadow .15s,border-color .15s;cursor:default;flex-shrink:0;position:relative;overflow:hidden}
+.da-heatmap-cell::before{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--text3);opacity:0;transition:opacity .45s cubic-bezier(.16,1,.3,1);pointer-events:none}
+.da-heatmap-cell.lv1::before{opacity:.16}
+.da-heatmap-cell.lv2::before{opacity:.34}
+.da-heatmap-cell.lv3::before{opacity:.56}
+.da-heatmap-cell.lv4::before{opacity:.8}
+.da-heatmap-cell:hover{transform:scale(1.5);z-index:4;border-color:var(--accent);box-shadow:0 0 10px var(--accent-glow2)}
+.da-heatmap-cell.today{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 10px var(--accent-glow);z-index:3}
 
 /* ═══════════════════════════════════════════════════════════
    6. INTELLIGENCE — AI insight cards
@@ -19674,18 +19678,6 @@ html:not([data-theme]) .premium-card{
 }
 
 /* ══════════════════════════════════════════
-   PROGRESS BARS
-   ══════════════════════════════════════════ */
-
-.db-fi-progress-track{
-  box-shadow:inset 0 1px 3px rgba(0,0,0,.12) !important;
-}
-.db-fi-progress-fill{
-  box-shadow:0 0 8px rgba(0,0,0,.10) !important;
-  transition:width 1.2s cubic-bezier(.16,1,.3,1) !important;
-}
-
-/* ══════════════════════════════════════════
    DAY NAV — better buttons
    ══════════════════════════════════════════ */
 
@@ -20058,13 +20050,6 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):hover{
    ══════════════════════════════════════════ */
 #view-dashboard .db-hero-left{
   gap:8px !important;
-}
-
-/* ── Eyebrow — smaller, more refined ── */
-#view-dashboard .db-hero-eyebrow{
-  font-size:10px !important;
-  letter-spacing:.16em !important;
-  margin-bottom:2px !important;
 }
 
 /* ── Greeting — bolder, more presence ── */
@@ -22588,9 +22573,6 @@ requestAnimationFrame(draw);
         </div>
         <div class="sound-grid" id="snd-ambient-grid"></div>
 
-        <!-- Tip -->
-        <div class="sound-tip">💡 <strong>Pro tip:</strong> Combine one noise color + one brainwave tone for peak focus. Brown noise + Gamma is a proven deep-work stack.</div>
-
       </div>
     </div>
 
@@ -24276,8 +24258,8 @@ function triggerFocusComplete(){
   focusSessionLog.unshift({task:'Focus session',dur,time:timeStr});
   /* Persist today's running total into the daily focus history map
      (ft_focus_log_v1). focusSessionLog is in-memory and resets on every
-     page load, so without this the Dashboard's Focus Insights widget, the
-     range charts and the streak helper would all report 0 after a reload.
+     page load, so without this the range charts and the streak helper
+     would all report 0 after a reload.
      Accumulate rather than overwrite — the in-memory log only knows about
      sessions completed since this page was opened. */
   try{
@@ -26745,18 +26727,6 @@ function renderDashboard(){
   const ringC = 2 * Math.PI * 52;
   const ringPct = Math.min(100, Math.max(0, heroScore || 0));
   const ringOff = ringC * (1 - ringPct/100);
-  /* Eyebrow reports state instead of offering encouragement — a dashboard
-     should tell you where you stand, not cheer at you. Falls back to a
-     time-of-day label before any data exists. */
-  const _blocksLeft = Math.max(0, blocksTotal - blocksDone);
-  const _tasksLeft  = Math.max(0, tasksTotal - tasksDone);
-  const eyebrow = _blocksLeft > 0
-    ? _blocksLeft + ' block' + (_blocksLeft === 1 ? '' : 's') + ' left'
-    : _tasksLeft > 0
-      ? _tasksLeft + ' task' + (_tasksLeft === 1 ? '' : 's') + ' left'
-      : (blocksTotal === 0 && tasksTotal === 0)
-        ? (hr < 12 ? 'Nothing scheduled' : 'Nothing scheduled')
-        : 'All clear';
   /* Theme toggle button — moon icon in dark mode, sun icon in light mode */
   var _curTheme = localStorage.getItem('ft_theme') || 'dark';
   var _isDarkTheme = (_curTheme !== 'light' && _curTheme !== 'pure-light');
@@ -26766,7 +26736,6 @@ function renderDashboard(){
   var _themeBtnTitle = _isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode';
   h += `<div class="db-hero db-reveal" style="animation-delay:60ms">
     <div class="db-hero-left">
-      <div class="db-hero-eyebrow">${eyebrow}</div>
       <div class="db-hero-hello">${greet}</div>
       <div class="db-hero-date">${dateStr} · ${now.getFullYear()}</div>
       <div class="db-hero-stats">
@@ -26806,7 +26775,7 @@ function renderDashboard(){
      hidden with display:none, so every render still paid for 5 cards and
      5 sparklines that nobody could see. */
 
-  /* DONUT + TIME FLOW ROW */
+  /* TIME ALLOCATION + HABITS — one row */
   h += `<div class="db-row-2">`;
 
   /* Time Allocation — theme-adaptive segmented bar */
@@ -26854,153 +26823,53 @@ function renderDashboard(){
   } else {
     h += `<div class="db-empty" style="flex:1">No time blocks in this period — <button class="db-link" onclick="setView('blocks',null)">add a block</button> to see allocation.</div>`;
   }
-  h += `</div></div>`;
 
-  /* Focus Insights — sits in the wide right cell of .db-row-2 so the row
-     never leaves a dead column next to the 420px Time Allocation card. */
-  /* Daily goal — read from the shared 'motion_focus_goal' key so this ring
-     always matches what the Focus page's goal ring shows (720m fallback). */
-  let fiTarget = 720;
+  /* Focus mini-bar — today's focus minutes vs daily goal, a slim line
+     inside the Time Allocation card (same bar language as the allocation
+     segments above). */
+  let fbGoal = 720;
   try{
-    const g = JSON.parse(localStorage.getItem('motion_focus_goal') || 'null');
-    if(g && g.minutes >= 5) fiTarget = Math.min(1440, Number(g.minutes));
+    const fbG = JSON.parse(localStorage.getItem('motion_focus_goal') || 'null');
+    if(fbG && fbG.minutes >= 5) fbGoal = Math.min(1440, Number(fbG.minutes));
   }catch(e){}
-  const fiFocusLog = lsGet('ft_focus_log_v1', {});
-  const fiReadMins = (e) => (typeof e === 'number') ? e : (e ? (e.mins || e.minutes || 0) : 0);
-  const fiReadSess = (e) => (e && typeof e === 'object') ? (e.sessions || 0) : 0;
-  const fiKeyOf = (d) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const fiToday = focusMins;
-  const fiPct = Math.min(100, Math.round(fiToday / fiTarget * 100));
-  const fiRemain = Math.max(0, fiTarget - fiToday);
-
-  /* Rolling 7-day history (oldest → newest) plus the week before it, so the
-     card can report a real trend instead of one stale number. Entries are
-     written by triggerFocusComplete(). */
-  const fiWeek = [], fiPrevWeek = [];
-  for(let i = 13; i >= 0; i--){
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const k = fiKeyOf(d);
-    let m = fiReadMins(fiFocusLog[k]);
-    if(k === realTodayStr) m = Math.max(m, fiToday);
-    const row = { label: DS7[(d.getDay()+6)%7], mins: m, sessions: fiReadSess(fiFocusLog[k]), isToday: (i === 0) };
-    (i < 7 ? fiWeek : fiPrevWeek).push(row);
-  }
-  const fiWeekMins = fiWeek.reduce((s,d) => s + d.mins, 0);
-  const fiPrevMins = fiPrevWeek.reduce((s,d) => s + d.mins, 0);
-  const fiDelta = fiPrevMins > 0 ? Math.round((fiWeekMins - fiPrevMins) / fiPrevMins * 100) : null;
-  const fiBest = fiWeek.reduce((a,b) => (b.mins > a.mins ? b : a), fiWeek[0]);
-  const fiSessToday = Math.max(
-    (typeof focusSessionLog !== 'undefined' && Array.isArray(focusSessionLog)) ? focusSessionLog.length : 0,
-    fiReadSess(fiFocusLog[realTodayStr])
-  );
-
-  /* Most recent completed session — the in-memory log has a clock time for
-     today's entries; otherwise fall back to the newest day with data. */
-  let fiLastVal = '—', fiLastLabel = 'No sessions yet';
-  const fiSessLog = (typeof focusSessionLog !== 'undefined' && Array.isArray(focusSessionLog)) ? focusSessionLog : [];
-  if(fiSessLog.length){
-    fiLastVal = (Number(fiSessLog[0].dur) || 0) + ' min';
-    fiLastLabel = 'Last: today ' + fiSessLog[0].time;
-  } else {
-    for(let i = 1; i <= 13; i++){
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const e = fiFocusLog[fiKeyOf(d)];
-      if(fiReadMins(e) > 0){
-        fiLastVal = fmtDur(fiReadMins(e));
-        fiLastLabel = 'Last: ' + DAYS[d.getDay()].slice(0,3);
-        break;
-      }
-    }
-  }
-
-  /* Pace against the goal, judged on how much of the day is already gone. */
-  const fiNow = new Date();
-  const fiElapsed = fiNow.getHours()*60 + fiNow.getMinutes();
-  const fiExpected = fiTarget * (fiElapsed / 1440);
-  let fiPaceCls = 'db-fi-pace--behind', fiPaceTxt = 'Behind pace';
-  if(fiToday >= fiTarget){ fiPaceCls = 'db-fi-pace--done'; fiPaceTxt = 'Goal reached'; }
-  else if(fiToday >= fiExpected){ fiPaceCls = 'db-fi-pace--ahead'; fiPaceTxt = 'Ahead of pace'; }
-  else if(fiToday >= fiExpected * 0.6){ fiPaceCls = ''; fiPaceTxt = 'On pace'; }
-  else if(fiToday <= 0){ fiPaceCls = ''; fiPaceTxt = 'Not started'; }
-
-  /* Mini 7-day bar chart — scaled against the busiest day, with a 60m floor
-     so a single short session doesn't fill an otherwise empty week. */
-  const fiMax = Math.max(60, ...fiWeek.map(d => d.mins));
-  const fiBars = fiWeek.map(d => {
-    const h = d.mins > 0 ? Math.max(6, Math.round(d.mins / fiMax * 100)) : 0;
-    const tip = d.label + ' — ' + (d.mins > 0
-      ? fmtDur(d.mins) + ' · ' + d.sessions + ' session' + (d.sessions === 1 ? '' : 's')
-      : 'no focus logged');
-    return `<div class="db-fi-bar${d.isToday ? ' is-today' : ''}" title="${tip}"><i style="height:${h}%"></i></div>`;
-  }).join('');
-  const fiDayLabels = fiWeek.map(d => `<span class="${d.isToday ? 'is-today' : ''}">${d.label.slice(0,2)}</span>`).join('');
-
-  const fiRingC = 2 * Math.PI * 28;
-  const fiRingOff = fiRingC * (1 - fiPct/100);
-
-  h += `<div class="db-focus-insights db-reveal" style="animation-delay:480ms">
-    <div class="db-section-head">
-      <div class="db-section-title" role="heading" aria-level="2">
-        <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-        Focus Insights
-      </div>
-      <button class="db-link" onclick="setView('focus',null)">Open ›</button>
+  const fbPct = focusMins > 0 ? Math.min(100, Math.round(focusMins / fbGoal * 100)) : 0;
+  h += `<div class="db-focus-mini">
+    <div class="db-focus-mini-head">
+      <span>Focus today</span>
+      <span class="db-focus-mini-val">${fmtDur(focusMins)} of ${fmtDur(fbGoal)}</span>
     </div>
-    <div class="db-fi-body">
-      <div class="db-fi-ring">
-        <svg viewBox="0 0 64 64" width="64" height="64">
-          <defs>
-            <linearGradient id="dbFiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="var(--accent2)"/>
-              <stop offset="100%" stop-color="var(--accent)"/>
-            </linearGradient>
-          </defs>
-          <circle cx="32" cy="32" r="28" fill="none" stroke="var(--bg3)" stroke-width="5"/>
-          <circle cx="32" cy="32" r="28" fill="none" stroke="url(#dbFiGrad)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 32 32)" style="stroke-dasharray:${fiRingC};stroke-dashoffset:${fiRingOff};transition:stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1)"/>
-        </svg>
-        <div class="db-fi-ring-center">
-          <div class="db-fi-pct">${fiPct}%</div>
-        </div>
-      </div>
-      <div class="db-fi-stats">
-        <div class="db-fi-stat">
-          <div class="db-fi-stat-val">${fmtDur(fiToday)}</div>
-          <div class="db-fi-stat-label">Focused today</div>
-        </div>
-        <div class="db-fi-stat">
-          <div class="db-fi-stat-val">${fiSessToday}</div>
-          <div class="db-fi-stat-label">Session${fiSessToday === 1 ? '' : 's'} today</div>
-        </div>
-        <div class="db-fi-stat">
-          <div class="db-fi-stat-val">${streak}</div>
-          <div class="db-fi-stat-label">Day streak</div>
-        </div>
-        <div class="db-fi-stat">
-          <div class="db-fi-stat-val">${fiLastVal}</div>
-          <div class="db-fi-stat-label" title="${fiLastLabel}">${fiLastLabel}</div>
-        </div>
-      </div>
-    </div>
-    <div class="db-fi-week">
-      <div class="db-fi-week-head">
-        <span class="db-fi-week-title">Last 7 days</span>
-        <span class="db-fi-week-meta" title="${fiWeekMins > 0 && fiBest.mins > 0 ? 'Best day: ' + fiBest.label + ' — ' + fmtDur(fiBest.mins) : ''}">${fiWeekMins > 0
-          ? `${fmtDur(fiWeekMins)}${fiDelta !== null ? ` <b class="${fiDelta >= 0 ? 'up' : 'down'}">${fiDelta >= 0 ? '▲' : '▼'} ${Math.abs(fiDelta)}%</b>` : ''}`
-          : 'Finish a session to start your history'}</span>
-      </div>
-      <div class="db-fi-bars">${fiBars}</div>
-      <div class="db-fi-days">${fiDayLabels}</div>
-    </div>
-    <div class="db-fi-progress">
-      <div class="db-fi-progress-label">
-        <span>Daily goal<span class="db-fi-pace ${fiPaceCls}"> · ${fiPaceTxt}</span></span>
-        <span>${fmtDur(fiToday)} / ${fmtDur(fiTarget)}${fiRemain > 0 ? ' · ' + fmtDur(fiRemain) + ' to go' : ''}</span>
-      </div>
-      <div class="db-fi-progress-track">
-        <div class="db-fi-progress-fill" style="width:${fiPct}%"></div>
-      </div>
+    <div class="db-focus-mini-track">
+      <div class="db-focus-mini-fill" style="width:${fbPct}%"></div>
     </div>
   </div>`;
+
+  h += `</div></div>`;
+
+  /* Habits (with inline toggle + streaks) — sits beside Time Allocation */
+  if(habits.length){
+    h += `<div class="db-section db-reveal" style="animation-delay:480ms">
+      <div class="db-section-head">
+        <div class="db-section-title" role="heading" aria-level="2">
+          <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+          Habits Today
+        </div>
+        <button class="db-link" onclick="setView('tracker',null)">Open ›</button>
+      </div>
+      <div class="db-habit-list">`;
+    habitStreaks.slice(0,6).forEach(hb => {
+      const entry = habitLog[today];
+      const done = entry && entry[hb.id];
+      const streakNum = hb.streak || 0;
+      const hCheck = viewingToday ? `onclick="event.stopPropagation();dbToggleHabit('${hb.id}')"` : '';
+      const hTitle = viewingToday ? (done?'Uncheck':'Mark done') : 'Read-only — switch to Today to edit';
+      h += `<div class="db-habit-item${done?' done':''}${viewingToday?'':' ro'}">
+        <button type="button" class="db-habit-check${done?' checked':''}" ${hCheck} title="${hTitle}" aria-pressed="${done?'true':'false'}" aria-label="${esc(hb.name||'Habit')}"${viewingToday?'':' disabled'}>${done?'✓':''}</button>
+        <span class="db-habit-name">${esc(hb.name||'Habit')}</span>
+        <span class="db-habit-streak${streakNum===0?' zero':''}">${streakNum>0?'🔥 '+streakNum:'—'}</span>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
 
   h += `</div>`; /* end row-2 */
 
@@ -27066,34 +26935,8 @@ function renderDashboard(){
 
   h += `</div>`; /* end left col */
 
-  /* RIGHT COLUMN: Habits + Quick actions */
+  /* RIGHT COLUMN: Quick actions */
   h += `<div class="db-col-right">`;
-
-  /* Habits (with inline toggle + streaks) */
-  if(habits.length){
-    h += `<div class="db-section db-reveal" style="animation-delay:680ms">
-      <div class="db-section-head">
-        <div class="db-section-title" role="heading" aria-level="2">
-          <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
-          Habits Today
-        </div>
-        <button class="db-link" onclick="setView('tracker',null)">Open ›</button>
-      </div>
-      <div class="db-habit-list">`;
-    habitStreaks.slice(0,6).forEach(hb => {
-      const entry = habitLog[today];
-      const done = entry && entry[hb.id];
-      const streakNum = hb.streak || 0;
-      const hCheck = viewingToday ? `onclick="event.stopPropagation();dbToggleHabit('${hb.id}')"` : '';
-      const hTitle = viewingToday ? (done?'Uncheck':'Mark done') : 'Read-only — switch to Today to edit';
-      h += `<div class="db-habit-item${done?' done':''}${viewingToday?'':' ro'}">
-        <button type="button" class="db-habit-check${done?' checked':''}" ${hCheck} title="${hTitle}" aria-pressed="${done?'true':'false'}" aria-label="${esc(hb.name||'Habit')}"${viewingToday?'':' disabled'}>${done?'✓':''}</button>
-        <span class="db-habit-name">${esc(hb.name||'Habit')}</span>
-        <span class="db-habit-streak${streakNum===0?' zero':''}">${streakNum>0?'🔥 '+streakNum:'—'}</span>
-      </div>`;
-    });
-    h += `</div></div>`;
-  }
 
   /* Quick actions */
   h += `<div class="db-section db-reveal" style="animation-delay:740ms">
@@ -27164,65 +27007,6 @@ function renderDashboard(){
 
   /* Initialize journal context AFTER the HTML is in the DOM */
   /* (deferred to after wrap.innerHTML = h below) */
-
-  /* ── Eisenhower Matrix ── */
-  const eisenData = dbEisenLoad();
-  const eisenQuads = [
-    {q:1, tag:'Do First',  meta:'Urgent · Important',     color:'#ff6b6b'},
-    {q:2, tag:'Schedule',  meta:'Important · Not urgent', color:'#4ade80'},
-    {q:3, tag:'Delegate',  meta:'Urgent · Not important', color:'#fbbf24'},
-    {q:4, tag:'Eliminate', meta:'Not urgent · Not important', color:'#9ca3af'}
-  ];
-  h += `<div class="db-section db-reveal" style="animation-delay:1040ms">
-    <div class="db-section-head">
-      <div class="db-section-title" role="heading" aria-level="2">
-        <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg></span>
-        Eisenhower Matrix
-      </div>
-      <span class="db-section-sub">Drag tasks from the pool → sort by urgency × importance</span>
-    </div>
-    <div class="db-eisen-layout">
-      <div class="db-eisen-pool" id="dbEisenPool" ondragover="dbEisenDragOver(event)" ondragleave="dbEisenDragLeave(event)" ondrop="dbEisenDrop(event,0)">
-        <div class="db-eisen-pool-head"><span>Task Pool</span><span>drag →</span></div>
-        <div class="db-eisen-pool-add">
-          <input type="text" class="db-eisen-input" id="dbEisenPoolInput" aria-label="Add a task to the pool" placeholder="Add a task…" maxlength="80" onkeydown="if(event.key==='Enter')dbEisenPoolAdd()"/>
-          <button class="db-eisen-add-btn" onclick="dbEisenPoolAdd()">+</button>
-        </div>
-        <div class="db-eisen-pool-list" id="dbEisenPoolList">${(eisenData.pool||[]).length
-          ? (eisenData.pool||[]).map(it =>
-              '<div class="db-eisen-pool-item" draggable="true" ondragstart="dbEisenDragStart(event,\'pool\',0,'+it.id+')" ondragend="this.classList.remove(\'dragging\')">' +
-                '<span class="db-eisen-grip" title="Drag">⠿</span>' +
-                '<span class="db-eisen-pool-item-text">' + esc(it.text) + '</span>' +
-                '<button class="db-eisen-pool-item-del" onclick="dbEisenPoolDel('+it.id+')" title="Remove">×</button>' +
-              '</div>'
-            ).join('')
-          : '<div class="db-eisen-empty">Add tasks, then drag →</div>'}</div>
-      </div>
-      <div class="db-eisen-grid">`;
-  eisenQuads.forEach(eq => {
-    const items = eisenData[eq.q] || [];
-    const listHtml = items.length
-      ? items.map(it =>
-          '<div class="db-eisen-item" draggable="true" ondragstart="dbEisenDragStart(event,\'q\','+eq.q+','+it.id+')" ondragend="this.classList.remove(\'dragging\')">' +
-            '<span class="db-eisen-grip" title="Drag">⠿</span>' +
-            '<span class="db-eisen-item-text">' + esc(it.text) + '</span>' +
-            '<button class="db-eisen-item-del" onclick="dbEisenDel('+eq.q+','+it.id+')" title="Remove">×</button>' +
-          '</div>'
-        ).join('')
-      : '<div class="db-eisen-empty">Drop tasks here</div>';
-    h += `<div class="db-eisen-cell db-eisen-q${eq.q}" ondragover="dbEisenDragOver(event)" ondragleave="dbEisenDragLeave(event)" ondrop="dbEisenDrop(event,${eq.q})">
-      <div class="db-eisen-head">
-        <span class="db-eisen-tag">${eq.tag}</span>
-        <span class="db-eisen-meta">${eq.meta}</span>
-      </div>
-      <div class="db-eisen-add">
-        <input type="text" class="db-eisen-input" id="dbEisenInput${eq.q}" aria-label="Add a task to ${eq.tag}" placeholder="Add…" maxlength="80" onkeydown="if(event.key==='Enter')dbEisenAdd(${eq.q})"/>
-        <button class="db-eisen-add-btn" onclick="dbEisenAdd(${eq.q})">+</button>
-      </div>
-      <div class="db-eisen-list" id="dbEisenList${eq.q}">${listHtml}</div>
-    </div>`;
-  });
-  h += `</div></div></div>`;
 
   /* ── Daily Intentions + Water + Pomodoro (3-col grid) ── */
   const intentions = dbIntentionsLoad();
@@ -27303,10 +27087,69 @@ function renderDashboard(){
 
   h += `</div>`; /* end 3-col grid */
 
+  /* ── Eisenhower Matrix ── */
+  const eisenData = dbEisenLoad();
+  const eisenQuads = [
+    {q:1, tag:'Do First',  meta:'Urgent · Important'},
+    {q:2, tag:'Schedule',  meta:'Important · Not urgent'},
+    {q:3, tag:'Delegate',  meta:'Urgent · Not important'},
+    {q:4, tag:'Eliminate', meta:'Not urgent · Not important'}
+  ];
+  h += `<div class="db-section db-reveal" style="animation-delay:1340ms">
+    <div class="db-section-head">
+      <div class="db-section-title" role="heading" aria-level="2">
+        <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg></span>
+        Eisenhower Matrix
+      </div>
+      <span class="db-section-sub">Drag tasks from the pool → sort by urgency × importance</span>
+    </div>
+    <div class="db-eisen-layout">
+      <div class="db-eisen-pool" id="dbEisenPool" ondragover="dbEisenDragOver(event)" ondragleave="dbEisenDragLeave(event)" ondrop="dbEisenDrop(event,0)">
+        <div class="db-eisen-pool-head"><span>Task Pool</span><span>drag →</span></div>
+        <div class="db-eisen-pool-add">
+          <input type="text" class="db-eisen-input" id="dbEisenPoolInput" aria-label="Add a task to the pool" placeholder="Add a task…" maxlength="80" onkeydown="if(event.key==='Enter')dbEisenPoolAdd()"/>
+          <button class="db-eisen-add-btn" onclick="dbEisenPoolAdd()">+</button>
+        </div>
+        <div class="db-eisen-pool-list" id="dbEisenPoolList">${(eisenData.pool||[]).length
+          ? (eisenData.pool||[]).map(it =>
+              '<div class="db-eisen-pool-item" draggable="true" ondragstart="dbEisenDragStart(event,\'pool\',0,'+it.id+')" ondragend="this.classList.remove(\'dragging\')">' +
+                '<span class="db-eisen-grip" title="Drag">⠿</span>' +
+                '<span class="db-eisen-pool-item-text">' + esc(it.text) + '</span>' +
+                '<button class="db-eisen-pool-item-del" onclick="dbEisenPoolDel('+it.id+')" title="Remove">×</button>' +
+              '</div>'
+            ).join('')
+          : '<div class="db-eisen-empty">Add tasks, then drag →</div>'}</div>
+      </div>
+      <div class="db-eisen-grid">`;
+  eisenQuads.forEach(eq => {
+    const items = eisenData[eq.q] || [];
+    const listHtml = items.length
+      ? items.map(it =>
+          '<div class="db-eisen-item" draggable="true" ondragstart="dbEisenDragStart(event,\'q\','+eq.q+','+it.id+')" ondragend="this.classList.remove(\'dragging\')">' +
+            '<span class="db-eisen-grip" title="Drag">⠿</span>' +
+            '<span class="db-eisen-item-text">' + esc(it.text) + '</span>' +
+            '<button class="db-eisen-item-del" onclick="dbEisenDel('+eq.q+','+it.id+')" title="Remove">×</button>' +
+          '</div>'
+        ).join('')
+      : '<div class="db-eisen-empty">Drop tasks here</div>';
+    h += `<div class="db-eisen-cell db-eisen-q${eq.q}" ondragover="dbEisenDragOver(event)" ondragleave="dbEisenDragLeave(event)" ondrop="dbEisenDrop(event,${eq.q})">
+      <div class="db-eisen-head">
+        <span class="db-eisen-tag">${eq.tag}</span>
+        <span class="db-eisen-meta">${eq.meta}</span>
+      </div>
+      <div class="db-eisen-add">
+        <input type="text" class="db-eisen-input" id="dbEisenInput${eq.q}" aria-label="Add a task to ${eq.tag}" placeholder="Add…" maxlength="80" onkeydown="if(event.key==='Enter')dbEisenAdd(${eq.q})"/>
+        <button class="db-eisen-add-btn" onclick="dbEisenAdd(${eq.q})">+</button>
+      </div>
+      <div class="db-eisen-list" id="dbEisenList${eq.q}">${listHtml}</div>
+    </div>`;
+  });
+  h += `</div></div></div>`;
+
   /* ── Year Progress ── (same as the Progress page's year bar). */
   const dbYearProgress = Math.round((now.getMonth()*30+now.getDate())/(now.getFullYear()%4===0?366:365)*100);
   const dbDaysLeft = (now.getFullYear()%4===0?366:365) - (now.getMonth()*30+now.getDate());
-  h += `<div class="db-year-bar db-reveal" style="animation-delay:1400ms">
+  h += `<div class="db-year-bar db-reveal" style="animation-delay:1600ms">
     <div class="db-year-top">
       <span class="db-year-label">${now.getFullYear()} Progress</span>
       <span class="db-year-pct">${dbYearProgress}%</span>
@@ -31817,17 +31660,21 @@ const TOOLS_LIST=[
   {id:'currency',cat:'Converters',name:'Currency Converter',desc:'Convert between currencies (live rates)',icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
   {id:'timezone',cat:'Converters',name:'Time Zone Converter',desc:'See time across world zones',icon:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'},
   {id:'baseconv',cat:'Converters',name:'Number Base Converter',desc:'Binary · octal · decimal · hex',icon:'<path d="M4 7V5a2 2 0 0 1 2-2h2"/><path d="M16 3h2a2 2 0 0 1 2 2v2"/><path d="M20 17v2a2 2 0 0 1-2 2h-2"/><path d="M8 21H6a2 2 0 0 1-2-2v-2"/><rect x="8" y="8" width="8" height="8" rx="1"/>'},
+  {id:'base64',cat:'Converters',name:'Base64 Encoder / Decoder',desc:'Encode text to Base64 and back',icon:'<polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>'},
   // ── Calculators ──
   {id:'calculator',cat:'Calculators',name:'Calculator',desc:'Basic calculator with history',icon:'<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/><circle cx="16" cy="13" r="1"/><circle cx="8" cy="17" r="1"/><circle cx="12" cy="17" r="1"/><circle cx="16" cy="17" r="1"/>'},
   {id:'bmi',cat:'Calculators',name:'BMI Calculator',desc:'Body Mass Index from height & weight',icon:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'},
   {id:'age',cat:'Calculators',name:'Age Calculator',desc:'Calculate age from birthdate',icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'},
   {id:'percentage',cat:'Calculators',name:'Percentage Calculator',desc:'Find %, increase, decrease',icon:'<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'},
   {id:'datediff',cat:'Calculators',name:'Days Between Dates',desc:'Count days between two dates',icon:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="14" x2="9" y2="18"/><line x1="15" y1="14" x2="15" y2="18"/>'},
+  {id:'emi',cat:'Calculators',name:'Loan EMI Calculator',desc:'Monthly payment, total & interest',icon:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M15.5 9A3.5 3.5 0 0 0 12 7.5h-.5a2 2 0 0 0 0 4h1a2 2 0 0 1 0 4H12a3.5 3.5 0 0 1-3.5-1.5"/>'},
   // ── Text Tools ──
   {id:'wordcount',cat:'Text Tools',name:'Word Counter',desc:'Count words, chars, sentences, reading time',icon:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>'},
   {id:'caseconv',cat:'Text Tools',name:'Case Converter',desc:'UPPER · lower · Title · Sentence case',icon:'<path d="M4 7V5a2 2 0 0 1 2-2h2"/><path d="M16 3h2a2 2 0 0 1 2 2v2"/><path d="M20 17v2a2 2 0 0 1-2 2h-2"/><path d="M8 21H6a2 2 0 0 1-2-2v-2"/><polyline points="9 11 12 17 15 11"/><line x1="10" y1="14" x2="14" y2="14"/>'},
   {id:'loremipsum',cat:'Text Tools',name:'Lorem Ipsum Generator',desc:'Generate placeholder text',icon:'<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="14" y2="14"/><line x1="4" y1="18" x2="18" y2="18"/>'},
   {id:'textreverse',cat:'Text Tools',name:'Text Reverser',desc:'Reverse text, flip lines, mirror words',icon:'<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'},
+  {id:'regex',cat:'Text Tools',name:'Regex Tester',desc:'Test patterns with live highlighting',icon:'<path d="M17 3v10"/><path d="M12.5 7.5L21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>'},
+  {id:'markdown',cat:'Text Tools',name:'Markdown Preview',desc:'Write Markdown with live preview',icon:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 15V9l3 3 3-3v6"/><path d="M17 9v6"/><path d="M14.5 12.5L17 15l2.5-2.5"/>'},
   // ── Generators ──
   {id:'password',cat:'Generators',name:'Password Generator',desc:'Strong random passwords',icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'},
   {id:'qrcode',cat:'Generators',name:'QR Code Generator',desc:'Generate QR codes from text/URL',icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="18" y1="14" x2="18" y2="18"/><line x1="14" y1="18" x2="18" y2="18"/>'},
@@ -41317,10 +41164,9 @@ function renderProgressPanel() {
         const item = heatData[w * 7 + d];
         if (!item) { html += '<div class="da-heatmap-cell"></div>'; continue; }
         const intensity = item.mins > 0 ? Math.min(4, Math.ceil(item.mins / 120)) : 0;
-        const cls = intensity > 0 ? ' has-data' : '';
+        const cls = intensity > 0 ? ' has-data lv' + intensity : '';
         const todayCls = item.isToday ? ' today' : '';
-        const colorVar = intensity === 0 ? '' : 'background:var(--accent);opacity:' + (0.18 + intensity * 0.22).toFixed(2) + ';';
-        html += '<div class="da-heatmap-cell' + cls + todayCls + '" style="' + colorVar + '" title="' + item.ds + ': ' + Math.round(item.mins/60*10)/10 + 'h"></div>';
+        html += '<div class="da-heatmap-cell' + cls + todayCls + '" title="' + item.ds + ': ' + Math.round(item.mins/60*10)/10 + 'h"></div>';
       }
       html += '</div>';
     }
@@ -41573,7 +41419,7 @@ function renderProgressPanel() {
 
   /* ── 5. FOCUS ANALYTICS ── */
   html += '<div class="da-sec da-cascade da-d7"><div class="da-sec-head"><span class="da-sec-label">Focus Analytics</span></div></div>';
-  html += '<div class="da-focus da-cascade da-d7"><div class="da-focus-card"><div class="da-focus-glow"></div><div class="da-focus-card-title">Deep Work Trend</div>'+buildDeepWorkChart(deepWorkArr)+'</div><div class="da-focus-card"><div class="da-focus-glow"></div><div class="da-focus-card-title">Activity Heatmap</div>'+buildHeatmap()+'</div></div>';
+  html += '<div class="da-focus da-cascade da-d7"><div class="da-focus-card"><div class="da-focus-glow"></div><div class="da-focus-card-title">Deep Work Trend</div>'+buildDeepWorkChart(deepWorkArr)+'</div></div>';
 
   /* ── 6. INTELLIGENCE ── */
   const insights = buildInsights();
@@ -41644,6 +41490,9 @@ function renderProgressPanel() {
   html += '</div><div class="da-review-col opp"><div class="da-review-title"><span class="da-review-title-icon">'+daIcon('compass')+'</span>Opportunities</div>';
   opportunities.forEach(w => { html += '<div class="da-review-item">'+w+'</div>'; });
   html += '</div></div>';
+
+  /* ── 10b. ACTIVITY HEATMAP ── neutral, theme-driven cells; sits directly above the year bar ── */
+  html += '<div class="da-focus-card da-cascade da-d11"><div class="da-focus-card-title">Activity Heatmap</div>'+buildHeatmap()+'</div>';
 
   /* ── 11. YEAR PROGRESS ── */
   const daysLeft = (today.getFullYear()%4===0?366:365) - (today.getMonth()*30+today.getDate());
@@ -53856,10 +53705,6 @@ html[data-theme="bleach"] .db-hero::before{
 }
 .db-hero>*{position:relative;z-index:1;}
 .db-hero-left{display:flex;flex-direction:column;gap:6px;min-width:0;}
-.db-hero-eyebrow{
-  font:700 11px var(--font-mono);color:var(--accent);
-  text-transform:uppercase;letter-spacing:.14em;
-}
 .db-hero-hello{
   font:800 30px var(--font-head);color:var(--text);
   letter-spacing:-.03em;line-height:1.05;
@@ -54068,7 +53913,7 @@ html[data-theme="bleach"] .db-hero::before{
   text-transform:uppercase;letter-spacing:.06em;
 }
 
-/* ── Donut + Time Flow grid ── */
+/* ── Time Allocation + Habits row ── */
 .db-row-2{
   display:grid;grid-template-columns:420px 1fr;gap:10px;align-items:stretch;
 }
@@ -54163,6 +54008,33 @@ html[data-theme="bleach"] .db-hero::before{
 .db-talloc-pct{
   font:700 12px var(--font-mono);color:var(--text2);
   width:36px;text-align:right;flex-shrink:0;
+}
+
+/* ── Focus mini-bar — slim today-focus progress inside Time Allocation ──
+   A quiet companion to the allocation rows: reads the shared focus goal,
+   no card chrome of its own. */
+.db-focus-mini{
+  display:flex;flex-direction:column;gap:7px;
+  border-top:1px solid var(--border);
+  padding-top:12px;
+}
+.db-focus-mini-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  font:600 11px var(--font-mono);color:var(--text3);
+  letter-spacing:.02em;
+}
+.db-focus-mini-val{
+  font:700 11px var(--font-mono);color:var(--text2);
+  letter-spacing:.02em;font-variant-numeric:tabular-nums;
+}
+.db-focus-mini-track{
+  height:5px;border-radius:99px;overflow:hidden;
+  background:color-mix(in srgb,var(--text) 7%,transparent);
+}
+.db-focus-mini-fill{
+  height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent));
+  transition:width 1.2s cubic-bezier(.16,1,.3,1);
 }
 
 /* ── Time flow chart ── */
@@ -54467,131 +54339,6 @@ html[data-theme="bleach"] .db-hero::before{
   grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:10px;
 }
-
-/* ── Focus Insights widget (wide right cell of .db-row-2) ──
-   In the wide cell the ring + stats are laid out horizontally so the card
-   fills its column instead of leaving a hollow middle. */
-.db-row-2 .db-fi-body{gap:26px;flex-wrap:wrap;}
-.db-row-2 .db-fi-stats{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));
-  gap:10px 16px;align-content:center;min-width:0;
-}
-.db-row-2 .db-fi-stat{
-  flex-direction:column;align-items:flex-start;gap:4px;min-width:0;
-}
-.db-focus-insights{
-  background:linear-gradient(160deg,var(--bg2) 0%,var(--bg3) 100%);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:13px 16px;
-  display:flex;flex-direction:column;gap:11px;
-  box-shadow:var(--card-depth);
-}
-.db-fi-body{
-  display:flex;align-items:center;gap:14px;
-}
-.db-fi-ring{
-  position:relative;width:64px;height:64px;flex-shrink:0;
-}
-.db-fi-ring svg{filter:drop-shadow(0 0 4px var(--accent-glow));}
-.db-fi-ring-center{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-.db-fi-pct{
-  font:800 13px var(--font-head);color:var(--text);
-  letter-spacing:-.02em;line-height:1;
-}
-.db-fi-stats{
-  flex:1;display:flex;flex-direction:column;gap:7px;min-width:0;
-}
-.db-fi-stat{
-  display:flex;align-items:baseline;gap:6px;
-}
-.db-fi-stat-val{
-  font:800 14px var(--font-head);color:var(--text);
-  letter-spacing:-.02em;line-height:1;white-space:nowrap;
-}
-.db-fi-stat-label{
-  font:600 9.5px var(--font-body);color:var(--text3);
-  text-transform:uppercase;letter-spacing:.06em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.db-fi-progress{
-  display:flex;flex-direction:column;gap:5px;
-}
-.db-fi-progress-label{
-  display:flex;justify-content:space-between;align-items:center;gap:8px;
-  font:600 9.5px var(--font-mono);color:var(--text3);
-  letter-spacing:.02em;
-}
-.db-fi-progress-track{
-  height:6px;background:var(--bg3);border:1px solid var(--border);
-  border-radius:99px;overflow:hidden;
-}
-.db-fi-progress-fill{
-  height:100%;border-radius:99px;
-  background:linear-gradient(90deg,var(--accent2),var(--accent));
-  box-shadow:0 0 8px var(--accent-glow);
-  transition:width 1.2s cubic-bezier(.16,1,.3,1);
-}
-/* Week-over-week delta — plain mono text in the chart header */
-.db-fi-week-meta b{font-weight:800;color:var(--text3)}
-.db-fi-week-meta b.up{color:var(--green)}
-.db-fi-week-meta b.down{color:var(--red)}
-/* 7-day focus history chart */
-.db-fi-week{display:flex;flex-direction:column;gap:6px;min-width:0;}
-.db-fi-week-head{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  min-width:0;
-}
-.db-fi-week-title{
-  font:700 9.5px var(--font-body);color:var(--text3);
-  text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;
-}
-.db-fi-week-meta{
-  font:600 10px var(--font-mono);color:var(--text3);letter-spacing:.02em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.db-fi-bars{display:flex;align-items:flex-end;gap:6px;height:54px;}
-.db-fi-bar{
-  flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;
-  background:color-mix(in srgb,var(--bg3) 75%,transparent);
-  border:1px solid var(--border);border-radius:5px;overflow:hidden;
-  transition:transform .2s ease,border-color .2s ease;
-}
-.db-fi-bar:hover{
-  transform:translateY(-2px);
-  border-color:color-mix(in srgb,var(--accent) 50%,var(--border));
-}
-.db-fi-bar i{
-  display:block;width:100%;height:0;border-radius:4px 4px 0 0;
-  background:linear-gradient(180deg,var(--accent2),var(--accent));
-  transition:height 1s cubic-bezier(.16,1,.3,1);
-}
-.db-fi-bar.is-today{
-  border-color:color-mix(in srgb,var(--accent) 55%,var(--border));
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent);
-}
-.db-fi-bar.is-today i{
-  background:linear-gradient(180deg,var(--accent),var(--accent2));
-  box-shadow:0 0 8px var(--accent-glow);
-}
-.db-fi-days{display:flex;gap:6px;}
-.db-fi-days span{
-  flex:1;min-width:0;text-align:center;
-  font:700 9px var(--font-mono);color:var(--text3);letter-spacing:.04em;
-}
-.db-fi-days span.is-today{color:var(--accent)}
-/* Pace status — reads as part of the goal label, no badge chrome */
-.db-fi-pace{
-  font:inherit;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--text3);white-space:nowrap;
-}
-.db-fi-pace--ahead,
-.db-fi-pace--done{color:var(--green)}
-.db-fi-pace--behind{color:var(--orange)}
 
 /* ── Goal Tracker ── */
 .db-goals{
@@ -54918,11 +54665,9 @@ html[data-theme="bleach"] .db-hero::before{
 .db-eisen-cell::before{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   border-radius:14px 14px 0 0;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  opacity:.6;
 }
-.db-eisen-q1::before{background:linear-gradient(90deg,#ff4444,#ff7777);}
-.db-eisen-q2::before{background:linear-gradient(90deg,#22c55e,#4ade80);}
-.db-eisen-q3::before{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
-.db-eisen-q4::before{background:linear-gradient(90deg,#6b7280,#9ca3af);}
 .db-eisen-head{
   display:flex;flex-direction:column;gap:2px;
 }
@@ -54931,10 +54676,6 @@ html[data-theme="bleach"] .db-hero::before{
   font-size:14px;font-weight:700;letter-spacing:-.01em;
   color:var(--text);
 }
-.db-eisen-q1 .db-eisen-tag{color:#ff6b6b;}
-.db-eisen-q2 .db-eisen-tag{color:#4ade80;}
-.db-eisen-q3 .db-eisen-tag{color:#fbbf24;}
-.db-eisen-q4 .db-eisen-tag{color:#9ca3af;}
 .db-eisen-meta{
   font-size:10px;color:var(--text3);
   letter-spacing:.06em;text-transform:uppercase;font-weight:600;
@@ -55364,10 +55105,6 @@ html[data-theme="bleach"] .db-hero::before{
   transform:translateY(-1px) !important;
   box-shadow:0 3px 10px rgba(0,0,0,.12) !important;
 }
-.db-eisen-cell::before{
-  /* top color bar — kept solid, glow removed */
-  opacity:.95 !important;
-}
 
 /* ── Quick note — premium feel ── */
 .db-quicknote{
@@ -55788,10 +55525,10 @@ html[data-theme="aot"] .db-range-pills{
     transform:translateY(0) scale(1);
   }
 }
-.db-eisen-cell:nth-child(1){animation-delay:1050ms;}
-.db-eisen-cell:nth-child(2){animation-delay:1120ms;}
-.db-eisen-cell:nth-child(3){animation-delay:1190ms;}
-.db-eisen-cell:nth-child(4){animation-delay:1260ms;}
+.db-eisen-cell:nth-child(1){animation-delay:1350ms;}
+.db-eisen-cell:nth-child(2){animation-delay:1410ms;}
+.db-eisen-cell:nth-child(3){animation-delay:1470ms;}
+.db-eisen-cell:nth-child(4){animation-delay:1530ms;}
 
 /* ── Schedule items — list cascade ── */
 .db-sched-item{
@@ -56317,7 +56054,7 @@ if(!REDUCED && !COARSE){
 
   /* Hover state — cached selector, single closest() call.
      Expanded to include dashboard-specific interactive elements. */
-  var INTERACTIVE_SEL = 'a, button, .nav-item, .tab-btn, .bvt-btn, .stat-card, .block-card, .task-item, .habit-card, [role="button"], input, textarea, select, [contenteditable], .db-kpi, .db-section, .db-hero-stat, .db-action-btn, .db-link, .db-day-nav-btn, .db-range-pill, .db-pomo-btn, .db-water-cup, .db-water-btn, .db-habit-item, .db-sched-item, .db-task-item, .da-pulse-card, .db-fi-stat, .sidebar-item';
+  var INTERACTIVE_SEL = 'a, button, .nav-item, .tab-btn, .bvt-btn, .stat-card, .block-card, .task-item, .habit-card, [role="button"], input, textarea, select, [contenteditable], .db-kpi, .db-section, .db-hero-stat, .db-action-btn, .db-link, .db-day-nav-btn, .db-range-pill, .db-pomo-btn, .db-water-cup, .db-water-btn, .db-habit-item, .db-sched-item, .db-task-item, .da-pulse-card, .sidebar-item';
   document.addEventListener('mouseover', function(e){
     if(e.target && typeof e.target.closest === 'function' && e.target.closest(INTERACTIVE_SEL)){
       dot.classList.add('hovering');
@@ -56498,7 +56235,7 @@ if(!REDUCED){
    5. CARD SPOTLIGHT — mouse-following radial glow
    ─────────────────────────────────────────────────────── */
 if(!REDUCED && !COARSE){
-  var SPOT_SEL = '.stat-card, .block-card, .task-item, .habit-card, .note-card, .sound-card, .db-kpi, .db-section, .da-pulse-card, .db-focus-insights, .db-year-bar';
+  var SPOT_SEL = '.stat-card, .block-card, .task-item, .habit-card, .note-card, .sound-card, .db-kpi, .db-section, .da-pulse-card, .db-year-bar';
   var lastSpot = null;
 
   document.addEventListener('mousemove', function(e){
@@ -57384,12 +57121,6 @@ html[data-theme="pure-light"] .da-pulse-bar{
 html[data-theme="light"] .db-pulse-grid,
 html[data-theme="pure-light"] .db-pulse-grid{
   /* grid container inherits — no extra bg needed */
-}
-html[data-theme="light"] .db-focus-insights,
-html[data-theme="pure-light"] .db-focus-insights{
-  background:linear-gradient(160deg,#ffffff 0%,#f5f6fa 100%);
-  border-color:rgba(0,0,0,.08);
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
 }
 
 /* ══ Dark theme goal cards — richer depth & subtle accent ══ */
@@ -65534,13 +65265,6 @@ html[data-theme="pure-light"] .db-hero-stat{
   border-right-color:rgba(15,17,33,.10) !important;
 }
 
-html[data-theme="light"] .db-hero-eyebrow{
-  color:#4f46e5 !important;
-}
-html[data-theme="pure-light"] .db-hero-eyebrow{
-  color:#bd5f29 !important;
-}
-
 html[data-theme="light"] .db-hero-hello,
 html[data-theme="pure-light"] .db-hero-hello{
   color:#15171f !important;
@@ -69750,7 +69474,7 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
 }
 
 /* 7. Secondary dashboard sections (journal, quicknote, intentions, water,
-      pomo, focus-insights, year-bar, goals) — darker gradient matching
+      pomo, year-bar, goals) — darker gradient matching
       the main db-section treatment. These were using a brighter gradient. */
 html[data-theme="deep"] .db-journal,
 html[data-theme="dark"] .db-journal,
@@ -69782,12 +69506,6 @@ html[data-theme="aot"] .db-pomo,
 html[data-theme="turquoise"] .db-pomo,
 html[data-theme="matcha"] .db-pomo,
 html[data-theme="bleach"] .db-pomo,
-html[data-theme="deep"] .db-focus-insights,
-html[data-theme="dark"] .db-focus-insights,
-html[data-theme="aot"] .db-focus-insights,
-html[data-theme="turquoise"] .db-focus-insights,
-html[data-theme="matcha"] .db-focus-insights,
-html[data-theme="bleach"] .db-focus-insights,
 html[data-theme="deep"] .db-year-bar,
 html[data-theme="dark"] .db-year-bar,
 html[data-theme="aot"] .db-year-bar,
@@ -69805,7 +69523,6 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-intentions,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-water,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-pomo,
-html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-focus-insights,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-year-bar,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-goals{
   background:transparent !important;
@@ -70042,12 +69759,6 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
 }
 
 /* 13. Progress tracks + year track — darker */
-html[data-theme="deep"] .db-fi-progress-track,
-html[data-theme="dark"] .db-fi-progress-track,
-html[data-theme="aot"] .db-fi-progress-track,
-html[data-theme="turquoise"] .db-fi-progress-track,
-html[data-theme="matcha"] .db-fi-progress-track,
-html[data-theme="bleach"] .db-fi-progress-track,
 html[data-theme="deep"] .db-year-track,
 html[data-theme="dark"] .db-year-track,
 html[data-theme="aot"] .db-year-track,
@@ -70060,7 +69771,6 @@ html[data-theme="aot"] .db-hero-score-bar,
 html[data-theme="turquoise"] .db-hero-score-bar,
 html[data-theme="matcha"] .db-hero-score-bar,
 html[data-theme="bleach"] .db-hero-score-bar,
-html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-fi-progress-track,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-year-track,
 html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) .db-hero-score-bar{
   background-color:color-mix(in srgb, var(--bg) 75%, #000 25%) !important;
@@ -75600,45 +75310,17 @@ html[data-theme="pure-light"] #view-dashboard .db-eisen-cell:hover{
   transform:translateY(-1px) !important;
 }
 
-/* Eisenhower top-stripe — keep visible on light bg (saturated) */
-html[data-theme="light"] #view-dashboard .db-eisen-q1::before,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q1::before{
-  background:linear-gradient(90deg,#dc2626,#ef4444) !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q2::before,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q2::before{
-  background:linear-gradient(90deg,#059669,#10b981) !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q3::before,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q3::before{
-  background:linear-gradient(90deg,#d97706,#f59e0b) !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q4::before,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q4::before{
-  background:linear-gradient(90deg,#6b7280,#9ca3af) !important;
+/* Eisenhower top-stripe + tags — theme accent (no per-quadrant colors) */
+html[data-theme="light"] #view-dashboard .db-eisen-cell::before,
+html[data-theme="pure-light"] #view-dashboard .db-eisen-cell::before{
+  background:linear-gradient(90deg,var(--accent),transparent) !important;
+  opacity:.5 !important;
 }
 
-/* Eisenhower quadrant tags — readable saturated colors */
-html[data-theme="light"] #view-dashboard .db-eisen-q1 .db-eisen-tag,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q1 .db-eisen-tag{
-  color:#dc2626 !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q2 .db-eisen-tag,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q2 .db-eisen-tag{
-  color:#059669 !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q3 .db-eisen-tag,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q3 .db-eisen-tag{
-  color:#d97706 !important;
-}
-html[data-theme="light"] #view-dashboard .db-eisen-q4 .db-eisen-tag,
-html[data-theme="pure-light"] #view-dashboard .db-eisen-q4 .db-eisen-tag{
-  color:#6b7280 !important;
-}
 /* Eisenhower meta text — softer */
 html[data-theme="light"] #view-dashboard .db-eisen-meta,
 html[data-theme="pure-light"] #view-dashboard .db-eisen-meta{
-  color:#9ca3af !important;
+  color:var(--text3) !important;
 }
 
 /* Eisenhower add button — accent gradient + sheen */
@@ -79907,7 +79589,7 @@ html[data-theme="pure-light"] #view-blocks-progress .progress-fill{
 /* ══════════════════════════════════════════════════════════════════════
    DASHBOARD — SUBTLE ADDITIONAL POLISH (light themes)
    Small refinements to KPI cards, hero, range pills, insight cards,
-   weekly chart bars, and focus insights — the elements not yet
+   and weekly chart bars — the elements not yet
    covered by the earlier dashboard polish blocks.
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -80029,58 +79711,6 @@ html[data-theme="pure-light"] #view-dashboard .db-ws-val{
 html[data-theme="light"] #view-dashboard .db-ws-label,
 html[data-theme="pure-light"] #view-dashboard .db-ws-label{
   color:#9ca3af !important;
-}
-
-/* ── Focus insights widget — premium surface ── */
-html[data-theme="light"] #view-dashboard .db-focus-insights,
-html[data-theme="pure-light"] #view-dashboard .db-focus-insights{
-  background:linear-gradient(160deg,#ffffff 0%,#fbfbfd 100%) !important;
-  border:1px solid rgba(15,17,33,.08) !important;
-  border-top:1px solid rgba(79,70,229,.10) !important;
-  box-shadow:0 1px 2px rgba(15,17,33,.04),0 2px 8px -2px rgba(15,17,33,.05) !important;
-}
-/* Focus insights progress track — refined */
-html[data-theme="light"] #view-dashboard .db-fi-progress-track,
-html[data-theme="pure-light"] #view-dashboard .db-fi-progress-track{
-  background:#eceef4 !important;
-  border:1px solid rgba(15,17,33,.06) !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-progress-fill,
-html[data-theme="pure-light"] #view-dashboard .db-fi-progress-fill{
-  background:linear-gradient(90deg,#6366f1,#4f46e5) !important;
-  box-shadow:0 0 6px rgba(79,70,229,.20) !important;
-}
-/* Focus insights stat — readable */
-html[data-theme="light"] #view-dashboard .db-fi-stat-val,
-html[data-theme="pure-light"] #view-dashboard .db-fi-stat-val{
-  color:#1f2937 !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-stat-label,
-html[data-theme="pure-light"] #view-dashboard .db-fi-stat-label{
-  color:#9ca3af !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-pct,
-html[data-theme="pure-light"] #view-dashboard .db-fi-pct{
-  color:#4f46e5 !important;
-}
-/* Focus insights — status text needs deeper hues on white */
-html[data-theme="light"] #view-dashboard .db-fi-pace--ahead,
-html[data-theme="pure-light"] #view-dashboard .db-fi-pace--ahead,
-html[data-theme="light"] #view-dashboard .db-fi-pace--done,
-html[data-theme="pure-light"] #view-dashboard .db-fi-pace--done{
-  color:#0d9668 !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-pace--behind,
-html[data-theme="pure-light"] #view-dashboard .db-fi-pace--behind{
-  color:#b45309 !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-week-meta b.up,
-html[data-theme="pure-light"] #view-dashboard .db-fi-week-meta b.up{
-  color:#0d9668 !important;
-}
-html[data-theme="light"] #view-dashboard .db-fi-week-meta b.down,
-html[data-theme="pure-light"] #view-dashboard .db-fi-week-meta b.down{
-  color:#dc2626 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -80472,19 +80102,6 @@ html[data-theme="matcha"] #view-dashboard .db-section,
 html[data-theme="bleach"] #view-dashboard .db-section,
 html[data-theme="aot"] #view-dashboard .db-section,
 html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-dashboard .db-section{
-  border-top:1px solid color-mix(in srgb,var(--accent-glow3) 25%,var(--border)) !important;
-  box-shadow:0 1px 3px rgba(0,0,0,.2),0 2px 10px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.02) !important;
-}
-
-
-/* ── Focus insights widget — subtle refined surface ── */
-html[data-theme="deep"] #view-dashboard .db-focus-insights,
-html[data-theme="dark"] #view-dashboard .db-focus-insights,
-html[data-theme="turquoise"] #view-dashboard .db-focus-insights,
-html[data-theme="matcha"] #view-dashboard .db-focus-insights,
-html[data-theme="bleach"] #view-dashboard .db-focus-insights,
-html[data-theme="aot"] #view-dashboard .db-focus-insights,
-html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-dashboard .db-focus-insights{
   border-top:1px solid color-mix(in srgb,var(--accent-glow3) 25%,var(--border)) !important;
   box-shadow:0 1px 3px rgba(0,0,0,.2),0 2px 10px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.02) !important;
 }
@@ -86431,11 +86048,6 @@ html[data-theme="aot"] .db-hero::after{
 }
 
 /* Hero typography — slightly smaller greeting, tighter hierarchy */
-.db-hero-eyebrow{
-  font-size: 10.5px !important;
-  letter-spacing: 0.16em !important;
-  opacity: 0.85;
-}
 .db-hero-hello{
   font-size: 26px !important;
   letter-spacing: -0.025em !important;
@@ -86695,12 +86307,10 @@ html[data-theme="aot"] .db-hero::after{
   transform: translateX(3px) !important;
   box-shadow: 0 4px 12px -4px rgba(0,0,0,0.3);
 }
-
-/* ── Donut + Time Flow row — consistent tighter gap ── */
-.db-row-2{
+.db-grid{
   gap: 9px !important;
 }
-.db-grid{
+.db-row-2{
   gap: 9px !important;
 }
 .db-col-left, .db-col-right{
