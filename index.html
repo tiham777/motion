@@ -20696,7 +20696,7 @@ requestAnimationFrame(draw);
   <hr class="sb-div">
 
   <div id="countdownList"></div>
-  <button class="countdown-add-btn" onclick="openCountdownModal()">＋ Add Event</button>
+  <button class="countdown-add-btn" onclick="openCountdownModal()">+ Add Event</button>
   <button class="sb-backup-btn" onclick="openBackup()"><span class="sb-backup-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span> Backup &amp; Restore</button>
   <div class="mini-stats" style="margin-top:10px">
     <div class="ms-label">Today's Progress</div>
@@ -20849,7 +20849,7 @@ requestAnimationFrame(draw);
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             Habits
           </div>
-          <button class="home-section-link" onclick="homeOpenHabits()">Open ›</button>
+          <button class="home-section-link" onclick="homeOpenHabits()">View all</button>
         </div>
         <div class="home-habits-row" id="homeHabitsRow">
           <div class="home-empty-mini">No habits yet</div>
@@ -20887,7 +20887,7 @@ requestAnimationFrame(draw);
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Recent Notes
           </div>
-          <button class="home-section-link" onclick="setView('notes',null)">Open ›</button>
+          <button class="home-section-link" onclick="setView('notes',null)">View all</button>
         </div>
         <div class="home-card" id="homeRecentNotes">
           <div class="home-empty-mini">No notes yet</div>
@@ -21609,7 +21609,7 @@ requestAnimationFrame(draw);
           <div class="habit-add-row">
             <input class="habit-emoji-inp" id="habitEmoji" type="text" placeholder="◆" maxlength="4" value=""/>
             <input class="habit-name-inp" id="habitName" type="text" placeholder="New habit (e.g. Namaz, Gym, Read 30min…)" maxlength="40" onkeydown="if(event.key==='Enter')addHabit()"/>
-            <button class="habit-add-btn" onclick="addHabit()">＋ Add Habit</button>
+            <button class="habit-add-btn" onclick="addHabit()">+ Add Habit</button>
           </div>
           <div class="habit-table-wrap">
             <table class="habit-table" id="habitTable">
@@ -22660,7 +22660,7 @@ requestAnimationFrame(draw);
       <label class="form-label">Event date</label>
       <input class="form-input" type="date" id="cdDate"/>
     </div>
-    <button class="btn btn-save" style="width:100%;margin-bottom:16px" onclick="addCountdownEvent()">＋ Add Event</button>
+    <button class="btn btn-save" style="width:100%;margin-bottom:16px" onclick="addCountdownEvent()">+ Add Event</button>
     <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Your Events</div>
     <div id="cdEventsList"></div>
   </div>
@@ -24007,7 +24007,7 @@ function renderRules(){
             <div class="rule-entry">
               <span class="rule-entry-num">${ei+1}.</span>
               <div class="rule-entry-text">${esc(e)}</div>
-              <button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">✕</button>
+              <button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>
             </div>`).join('')}
         </div>
         <div class="rule-acc-footer">
@@ -24050,7 +24050,7 @@ function addEntry(ci){
     const ei=rules[ci].entries.length-1;
     const div=document.createElement('div');
     div.className='rule-entry';
-    div.innerHTML=`<span class="rule-entry-num">${ei+1}.</span><div class="rule-entry-text">${esc(text)}</div><button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">✕</button>`;
+    div.innerHTML=`<span class="rule-entry-num">${ei+1}.</span><div class="rule-entry-text">${esc(text)}</div><button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>`;
     // NOTE: no direct addEventListener here — a document-level delegated handler
     // at .rule-entry-del already routes clicks to delEntry. Adding a direct
     // listener would cause delEntry to fire twice per click and delete two
@@ -25948,7 +25948,7 @@ function setView(v,sideEl){
       el.classList.remove('view-enter');
       el.classList.add('anim-paused');
     }
-    const t=document.getElementById('tab-'+n);if(t)t.classList.toggle('active',n===v);
+    const t=document.getElementById('tab-'+n);if(t){t.classList.toggle('active',n===v);if(n===v){t.setAttribute('aria-current','page')}else{t.removeAttribute('aria-current')}}
   });
   document.querySelectorAll('.sidebar .nav-item').forEach(el=>{el.classList.remove('active');el.removeAttribute('aria-current');});
   if(sideEl){sideEl.classList.add('active');sideEl.setAttribute('aria-current','page');}
@@ -26416,7 +26416,7 @@ function dbQuickAddTask(){
       const rows = dbTopTasksList();
       list.innerHTML = rows.length
         ? rows.map(dbTaskRowHtml).join('')
-        : '<div class="db-empty">No tasks for today.</div>';
+        : '<div class="db-empty">Nothing due today. Add one below.</div>';
     }
 
     inp.value = '';
@@ -26916,7 +26916,7 @@ function renderDashboard(){
     });
     h += `</div>`;
   } else {
-    h += `<div class="db-empty" style="flex:1">No time blocks in this period — <button class="db-link" onclick="setView('blocks',null)">add a block</button> to see allocation.</div>`;
+    h += `<div class="db-empty" style="flex:1">Nothing scheduled for this period. <button class="db-link" onclick="setView('blocks',null)">Add a time block</button></div>`;
   }
 
   h += `</div></div>`;
@@ -27008,7 +27008,7 @@ function renderDashboard(){
         <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
         Today's Schedule
       </div>
-      <button class="db-link" onclick="setView('blocks',null)">Open ›</button>
+      <button class="db-link" onclick="setView('blocks',null)">View all</button>
     </div>
     <div class="db-sched-list">`;
   if(sortedBlocks.length){
@@ -27028,7 +27028,7 @@ function renderDashboard(){
       </div>`;
     });
   } else {
-    h += `<div class="db-empty">No blocks yet — <button class="db-link" onclick="setView('blocks',null)">add a time block</button>.</div>`;
+    h += `<div class="db-empty">Your day is still open. <button class="db-link" onclick="setView('blocks',null)">Add a time block</button></div>`;
   }
   h += `</div></div>`;
 
@@ -27039,13 +27039,12 @@ function renderDashboard(){
         <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
         Top Tasks
       </div>
-      <button class="db-link" onclick="setView('tasks',null)">Open ›</button>
+      <button class="db-link" onclick="setView('tasks',null)">View all</button>
     </div>
     <div class="db-task-list">`;
   if(topTasks.length){
     topTasks.forEach(t => { h += dbTaskRowHtml(t); });
-  } else {
-    h += `<div class="db-empty">No tasks for today.</div>`;
+  } else {      h += `<div class="db-empty">Nothing due today. Add one below.</div>`;
   }
   h += `</div>
     <div class="db-inline-add">
@@ -27069,7 +27068,7 @@ function renderDashboard(){
           <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
           Habits Today
         </div>
-        <button class="db-link" onclick="setView('tracker',null)">Open ›</button>
+        <button class="db-link" onclick="setView('tracker',null)">View all</button>
       </div>
       <div class="db-habit-list">`;
     habitStreaks.slice(0,6).forEach(hb => {
@@ -27267,7 +27266,7 @@ function renderDashboard(){
                 '<button class="db-eisen-pool-item-del" onclick="dbEisenPoolDel('+it.id+')" title="Remove">×</button>' +
               '</div>'
             ).join('')
-          : '<div class="db-eisen-empty">Add tasks, then drag →</div>'}</div>
+          : '<div class="db-eisen-empty">Add tasks, then drag them into a quadrant.</div>'}</div>
       </div>
       <div class="db-eisen-grid">`;
   eisenQuads.forEach(eq => {
@@ -27991,7 +27990,7 @@ function dbEisenRenderPool(){
   const eisen = dbEisenLoad();
   const items = eisen.pool || [];
   if(!items.length){
-    listEl.innerHTML = '<div class="db-eisen-empty">Add tasks, then drag →</div>';
+    listEl.innerHTML = '<div class="db-eisen-empty">Add tasks, then drag them into a quadrant.</div>';
     return;
   }
   listEl.innerHTML = items.map(it =>
@@ -28710,7 +28709,7 @@ function renderHabits(){
         <td style="text-align:center">
           ${streak>0?`<span class="habit-streak"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3 1.7-5.6 4.1-7-.3 1.2-.1 2.5.7 3.5C10 9.9 11.4 7.6 11 5c2.4 1.8 4 4.7 4 7.8 0 .5 0 1-.1 1.5.5-.5.9-1.2 1.1-1.9C18 13.6 18 14.8 18 16c0 3.9-2.7 7-6 7z"/></svg> ${streak}</span>`:`<span style="font-size:12px;color:var(--text3)">—</span>`}
         </td>
-        <td><button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">✕</button></td>
+        <td><button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">×</button></td>
       </tr>`;
     }).join('');
   }
@@ -28730,7 +28729,7 @@ function renderHabits(){
             <div class="habit-card-name">${esc(h.name)}</div>
             <div class="habit-card-actions">
               ${streak>0?`<span class="habit-streak"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3 1.7-5.6 4.1-7-.3 1.2-.1 2.5.7 3.5C10 9.9 11.4 7.6 11 5c2.4 1.8 4 4.7 4 7.8 0 .5 0 1-.1 1.5.5-.5.9-1.2 1.1-1.9C18 13.6 18 14.8 18 16c0 3.9-2.7 7-6 7z"/></svg> ${streak}d</span>`:''}
-              <button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">✕</button>
+              <button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">×</button>
             </div>
           </div>
           <div class="habit-card-days">
@@ -36767,7 +36766,7 @@ function renderCdEventsList(){
         <div style="font-size:13px;font-weight:600">${esc(ev.name)}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">${ev.date} · <span style="color:var(--accent2)">${label}</span></div>
       </div>
-      <button class="task-del" onclick="delCountdownEvent(${ev.id})" title="Delete">✕</button>
+      <button class="task-del" onclick="delCountdownEvent(${ev.id})" title="Delete">×</button>
     </div>`;
   }).join('');
 }
@@ -89609,6 +89608,244 @@ html:not([data-theme]) #view-settings .settings-row-desc{
 }
 #view-sound .sound-section-label{ font-size:10.5px !important; }
 #view-sound .sound-hero-sub{ opacity:.9 !important; }
+</style>
+
+<style id="surface-polish">
+/* ════════════════════════════════════════════════════════════════════
+   SURFACE POLISH — four areas, one rule: nothing about the theme changes.
+   ───────────────────────────────────────────────────────────────────────
+   No color token, no glow token and no font stack is redefined here. Every
+   declaration is a size, weight, tracking, spacing, radius, border or copy
+   change, and each one reuses a token the app already defines.
+
+   1. TYPOGRAPHY & HIERARCHY — Outfit was sitting at almost one size across
+      the whole dashboard, so nothing led. The scale is now stepped:
+      greeting 40 → stat value 26 → section title 15.5 → label 10.5.
+   2. CARD LAYOUT & SPACING — the hero and every section card shared one
+      radius, so the hero read as just another card. It gets its own tier,
+      plus more padding, and section heads get real breathing room.
+   3. BUTTONS & CONTROLS — text actions were sizeless. Empty-state calls to
+      action now have a button shape, and hit targets are consistent.
+   4. EMPTY STATES — the placeholder box was heavier than the card holding
+      it (1.5px dashed inside a 1px card) and its copy was a run-on. Both
+      are pulled back.
+
+   Last <style> in the document — wins every cascade tie. Remove to revert.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. TYPE SCALE ───────────────────────────────────────────────────── */
+#view-dashboard .db-hero-hello{
+  font-size:40px !important;
+  font-weight:800 !important;
+  letter-spacing:-.04em !important;
+  line-height:1.02 !important;
+}
+/* Off DM Mono: this is a sentence, not a readout. Mono stays on the numbers. */
+#view-dashboard .db-hero-date{
+  font-family:var(--font-body) !important;
+  font-size:13px !important;
+  font-weight:500 !important;
+  letter-spacing:.01em !important;
+  color:var(--text3) !important;
+}
+#view-dashboard .db-hero-stat-val{
+  font-size:26px !important;
+  font-weight:800 !important;
+  letter-spacing:-.03em !important;
+  font-variant-numeric:tabular-nums;
+  line-height:1.05 !important;
+}
+#view-dashboard .db-hero-stat-label{
+  font-size:10.5px !important;
+  letter-spacing:.06em !important;
+  margin-top:5px !important;
+}
+#view-dashboard .db-section-title{
+  font-size:15.5px !important;
+  font-weight:700 !important;
+  letter-spacing:-.015em !important;
+}
+
+/* ── 2. CARD TIERS & RHYTHM ────────────────────────────────────────────
+   Radius now steps by importance instead of being one value everywhere:
+   hero 18 → card 16 (unchanged) → inner 11 → chip 8. */
+#view-dashboard .db-hero{
+  border-radius:18px !important;
+  padding:22px 26px !important;
+}
+#view-dashboard .db-section-head{
+  margin-bottom:14px !important;
+}
+/* The empty placeholder used to out-specify the card around it. */
+#view-dashboard .db-empty{
+  padding:26px 18px !important;
+  border-width:1px !important;
+  font-size:13px !important;
+  line-height:1.55 !important;
+  border-radius:var(--radius-sm) !important;
+}
+
+/* ── 3. CONTROLS ─────────────────────────────────────────────────────── */
+/* Calls to action inside empty states were bare inline text. Give them a
+   shape and a hit target using neutral tokens that already exist — the
+   label keeps the accent it already had. */
+.db-empty .db-link{
+  display:inline-block !important;
+  padding:6px 13px !important;
+  border-radius:8px !important;
+  background:var(--glass2) !important;
+  border:1px solid var(--border2) !important;
+  font-size:12.5px !important;
+  font-weight:600 !important;
+  margin-left:4px;
+  transition:background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.db-empty .db-link:hover{
+  background:var(--accent-glow3) !important;
+  border-color:var(--border2) !important;
+  transform:translateY(-1px);
+}
+.db-empty .db-link:active{ transform:translateY(0) scale(.98); }
+/* Consistent radius + a little more room on the text actions everywhere else */
+.db-link{
+  padding:5px 11px !important;
+  border-radius:8px !important;
+  font-size:12.5px !important;
+}
+#view-dashboard .db-range-pill{
+  padding:7px 15px !important;
+  font-size:12px !important;
+}
+#view-dashboard .db-day-nav-btn{
+  width:32px !important;height:32px !important;
+}
+.db-inline-add-btn{
+  border-radius:8px !important;
+  padding:7px 15px !important;
+  font-size:12px !important;
+}
+
+/* ── 4. EMPTY-STATE DENSITY ──────────────────────────────────────────── */
+.task-empty{ padding:36px 20px !important; }
+.task-empty-icon{ opacity:.7 !important; }
+.task-empty h3{
+  font-size:16px !important;
+  font-weight:700 !important;
+  letter-spacing:-.01em !important;
+}
+
+/* ── 5. NARROW VIEWPORTS — keep the stepped scale readable ───────────── */
+@media (max-width:900px){
+  #view-dashboard .db-hero-hello{ font-size:30px !important; }
+  #view-dashboard .db-hero-stat-val{ font-size:22px !important; }
+  #view-dashboard .db-hero{ padding:18px 20px !important; }
+}
+</style>
+
+<style id="pages-polish">
+/* ════════════════════════════════════════════════════════════════════
+   PAGES POLISH — the dashboard pass, extended to every other view.
+   ───────────────────────────────────────────────────────────────────────
+   Same contract as <style id="surface-polish">: no colour token, no glow
+   token, no font stack is touched. Sizes, weights and tracking only,
+   using tokens where a token applies.
+
+   The inventory across all 11 views found one systematic problem: a
+   second tier of 8–10px micro-labels that the existing `pages-microtype`
+   pass hadn't reached (it covered Focus stat labels, Settings row
+   descriptions and Sound Studio eyebrows — nothing else). The dashboard
+   was lifted to a 10.5px label floor; these pages were not, which is
+   why the app still reads flatter away from the dashboard.
+
+   Two empty-state headings also sit at weight 600 while the dashboard's
+   sit at 700 — same size, less presence. Aligned.
+
+   Last <style> in the document — wins every cascade tie. Remove to revert.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. LABEL TIER — floor at 10.5px, matching the dashboard ────────── */
+/* Time Blocks + Tracker stat labels (Planned time, Completed, …) */
+.sc-label{font-size:10.5px !important}
+/* Date under the big day name */
+#view-blocks .day-sub{font-size:10.5px !important}
+/* Day Timeline strip */
+.timeline-label{font-size:10.5px !important}
+.timeline-pct{font-size:10.5px !important}
+/* Hour ticks on the timeline axis (8px was unreadable) */
+#view-blocks .timeline-hour-marks span{
+  font-size:10px !important;
+  letter-spacing:.02em !important;
+}
+/* Tasks — the FREE TEXT / AM·PM chips beside the composer fields.
+   ID-scoped to beat the earlier `#view-tasks .task-meta-hint{10px}`
+   rule (ID > class regardless of order); we're last, so we win. */
+#view-tasks .task-meta-hint{font-size:10.5px !important}
+/* Focus — stat sublabels and the energy scale words */
+.fs-sub,.fd-sub,.fgc-label,.fe-word{font-size:10.5px !important}
+/* Assistant — conversation date groups + insight cards.
+   Same ID-scoping reason as .task-meta-hint above. */
+#view-assistant .asst-conv-group-label{font-size:10.5px !important}
+.insight-label,.insight-trend{font-size:10.5px !important}
+/* AI Hub — card category labels */
+.aih-card-cat{font-size:10.5px !important}
+/* Settings — hero eyebrow + section titles */
+.settings-hero-eyebrow,.settings-section-title{font-size:10.5px !important}
+/* Sound Studio — badges on cards */
+.sound-badge{font-size:10.5px !important}
+/* Tracker — day numbers inside the habit-grid day headers */
+#view-tracker .day-col span{font-size:10.5px !important}
+
+/* ── 2. EMPTY-STATE HEADINGS — weight 700, matching the dashboard ──── */
+#view-blocks .empty-state h3{font-weight:700 !important}
+.nb-empty-title{
+  font-weight:700 !important;
+  letter-spacing:-.01em !important;
+}
+</style>
+
+<style id="production-polish">
+/* ════════════════════════════════════════════════════════════════════
+   PRODUCTION POLISH — de-genericize pass, evidence-driven
+   ───────────────────────────────────────────────────────────────────────
+   An audit of all 12 views found three classes of "AI-slop" tells. No
+   colour, glow or font-stack token is touched — monospace is not removed
+   from the stack, only reassigned off prose:
+
+   1. MIXED GLYPHS (fixed in markup): add-buttons mixed a full-width CJK
+      "＋" (U+FF0B) with ASCII "+" across views; delete buttons mixed ✕
+      (U+2715) with × (U+00D7). All action glyphs are now one family.
+   2. MONOSPACE ON PROSE: DM Mono was rendering dates and section meta —
+      decorative use of a mono face is a template tell, and it disagreed
+      with the hero date, which already moved to the body face. Mono stays
+      reserved for what it is good at: clocks, timers, axis ticks, versions.
+   3. ARROW-SUFFIXED LINKS (fixed in markup): "Open ›" → "View all".
+
+   Also: aria-current="page" now set on the topbar tabs (the sidebar had
+   it; the topbar branch of setView only toggled .active).
+   Last <style> in the document — wins every cascade tie. Remove to revert.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Section meta — was `font: 600 … var(--font-mono)`, now the body face.
+   Covers "1m planned", "Avg 0% · last 7 days" and the Eisenhower
+   instruction sentence, which was full prose in monospace. */
+#view-dashboard .db-section-sub{
+  font-family:var(--font-body) !important;
+}
+/* Dashboard day-nav date — pairs with the hero date (also body face). */
+#view-dashboard .db-day-nav-date{
+  font-family:var(--font-body) !important;
+}
+/* Time Blocks day/date lines (the .bvt variant re-declares mono at two
+   classes, so it needs its own selector to win the specificity tie). */
+.day-sub,
+.bvt-date-clock .day-sub{
+  font-family:var(--font-body) !important;
+}
+/* Tasks — top-right date pill + daily composer date. */
+#taskDateLabel,
+#dailyComposerDate{
+  font-family:var(--font-body) !important;
+}
 </style>
 
 </body>
