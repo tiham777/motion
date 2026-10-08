@@ -1672,10 +1672,14 @@ html[data-theme="dark"]{
      accent, +4 on accent2, for a more luminous sheen against the
      graphite darks. Still strictly neutral (no chroma). */
   --accent:#e4e7ec;--accent2:#f4f6f8;
-  /* Glows — slightly more visible. +0.02 / +0.015 / +0.005 alpha
-     so hover halos actually register on the darker base. */
-  --accent-glow:rgba(255,255,255,0.12);
-  --accent-glow2:rgba(255,255,255,0.07);
+  /* Glows — CRISPER PASS (user: "undo … then make it better other
+     ways" → picked "crisper, less glowy"). The white halos are dimmed
+     ~1/3 so hover/active states read as a tight edge instead of a
+     milky fog on black. The RING tokens (--accent-glow3 / --accent-
+     glow4) are deliberately left untouched — they draw 1px borders
+     and inset rings, which is the crisp half of the system. */
+  --accent-glow:rgba(255,255,255,0.08);
+  --accent-glow2:rgba(255,255,255,0.045);
   --accent-glow3:rgba(255,255,255,0.04);
   --green:#34d399;--green-bg:rgba(52,211,153,0.10);
   --red:#f87171;--orange:#fb923c;
@@ -1690,7 +1694,9 @@ html[data-theme="dark"]{
   --shadow:0 4px 16px rgba(0,0,0,.42),0 2px 6px rgba(0,0,0,.32),0 1px 2px rgba(0,0,0,.26);
   --shadow-sm:0 2px 8px rgba(0,0,0,.30),0 1px 2px rgba(0,0,0,.20);
   --shadow-xs:0 1px 2px rgba(0,0,0,.24);
-  --glow-accent:0 0 22px rgba(255,255,255,0.025);
+  /* Crisper: tighter radius AND lower alpha — was 22px/.025, which
+     spread a wide grey bloom over whatever it sat on. */
+  --glow-accent:0 0 14px rgba(255,255,255,0.015);
   /* Glass — +1% on both layers so the frosted topbar and modal
      scrims actually read as "frosted" rather than transparent. */
   --glass:rgba(255,255,255,.035);
@@ -1700,14 +1706,14 @@ html[data-theme="dark"]{
   --logo-grad:linear-gradient(135deg,#c8ccd2 0%,#ffffff 100%);
   --logo-shadow:rgba(255,255,255,0.22);
   --ring-stop1:#c8ccd2;--ring-stop2:#ffffff;
-  --sb-glow:rgba(255,255,255,0.04);
+  --sb-glow:rgba(255,255,255,0.03);
   --btn-text:#08090a;
   /* Extended glow ladder — proportional lift on each step so
      hover/active/focus rings escalate smoothly. */
   --accent-glow4:rgba(255,255,255,0.13);
-  --accent-glow5:rgba(255,255,255,0.20);
-  --accent-glow6:rgba(255,255,255,0.24);
-  --accent-glow7:rgba(255,255,255,0.32);
+  --accent-glow5:rgba(255,255,255,0.15);
+  --accent-glow6:rgba(255,255,255,0.17);
+  --accent-glow7:rgba(255,255,255,0.23);
   /* V18.4 — premium inner-stroke pulled DOWN to match the new 0.02
      baseline. --inner-shadow .04 → .02 (matches --border luminance),
      --border-premium .05 → .03 (slight step above for premium cards).
@@ -2236,11 +2242,12 @@ body > *{position:relative;z-index:1}@keyframes bodyReveal{from{opacity:0}to{opa
   border-left:none;border-radius:0 8px 8px 0;
   color:var(--text3);cursor:pointer;z-index:7;
   display:none;align-items:center;justify-content:center;
-  opacity:.25;transition:opacity .22s;
+  opacity:.25;transition:opacity .22s,width .65s var(--prem-slow),height .65s var(--prem-slow),top .65s var(--prem-slow);
 }
 .sidebar-reopen:hover{ opacity:1; }
-.sidebar-reopen svg{ width:12px;height:12px; }
-body.sidebar-hidden .sidebar-reopen{ display:flex; }
+.sidebar-reopen svg{ width:12px;height:12px; transition:width .65s var(--prem-slow),height .65s var(--prem-slow); }
+body.sidebar-hidden .sidebar-reopen{ display:flex; width:14px;height:36px;top:50%; min-width:14px;min-height:36px; }
+body.sidebar-hidden .sidebar-reopen svg{ width:9px;height:9px; }
 .sidebar{
   overflow-x:hidden;
   will-change:width,opacity,transform;
@@ -9820,10 +9827,17 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
   pointer-events:none;opacity:.7;
 }
 /* ── Message Action Buttons ── */
-/* AI messages: always visible */
+/* AI messages: revealed on hover/focus (and always shown on touch devices),
+   so the copy/regenerate/PDF/read row isn't permanent noise under every reply. */
 .asst-msg.ai .asst-msg-actions{
   display:flex;align-items:center;gap:2px;margin-top:6px;
-  opacity:1;transition:opacity .2s ease;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease;
+}
+.asst-msg.ai:hover .asst-msg-actions,
+.asst-msg.ai:focus-within .asst-msg-actions{opacity:1;pointer-events:auto}
+@media (hover:none){
+  .asst-msg.ai .asst-msg-actions{opacity:1;pointer-events:auto}
 }
 /* User messages: only on hover */
 .asst-msg.user .asst-msg-actions{
@@ -10087,17 +10101,20 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
    so numbered points read as distinct blocks rather than a solid wall. */
 .asst-msg-content .asst-list li p{margin:4px 0 0}
 .asst-msg-content .asst-list li p:first-child{margin-top:0}
-.asst-msg-content .asst-quote,
-.asst-msg-content .asst-callout,
-.asst-msg-content .asst-details{
-  border:none!important;
-  background:none!important;
-  box-shadow:none!important;
-  padding:0!important;
-  margin:6px 0!important;
-  border-radius:0!important;
-  line-height:1.7!important;
-}
+/* The same rhythm for checkbox/task lists (they are not .asst-list). */
+.asst-msg-content .asst-task-list li p{margin:5px 0 0;line-height:1.7;font-size:14px;color:var(--text3)}
+/* Paragraphs nested inside quote/callout/title wrappers must not inherit the
+   default 14px bottom margin — it would pad the card out of shape. */
+.asst-msg-content .asst-quote p,
+.asst-msg-content .asst-callout-title p,
+.asst-msg-content .asst-callout-body p,
+.asst-msg-content .asst-details-body p{margin:0}
+.asst-msg-content .asst-details-body p:last-child{margin:0}
+/* NOTE: this reset previously also flattened .asst-callout, .asst-details and
+   .asst-quote with !important — it stripped the callout's card (background,
+   border, padding) and the blockquote's accent rule, so both rendered as
+   undifferentiated body text. Only list items keep the flatten; each of the
+   other blocks keeps its own designed treatment. */
 .asst-msg-content ol.asst-list li,
 .asst-msg-content .asst-list li{
   border:none!important;
@@ -17986,14 +18003,21 @@ html #view-blocks-cal .bcal-cols.week-mode .bcal-day-col:hover{
   border-color:color-mix(in srgb,#f05252 30%,transparent) !important;
 }
 
-/* ── Blockquote: keep plain (undo restoration — was making "Stopped by user." look like a box) ── */
+/* ── Blockquote: quote treatment, not a box ──
+   This used to be flattened to plain body text (border/padding/margin all 0),
+   so a quoted line was visually identical to the paragraph above it. It is a
+   thin accent rule + indent instead: still calm, but clearly a quote. The
+   theme rules further down try to do the same thing at lower specificity and
+   never won — this ID rule is the single source of truth now. */
 #view-assistant .asst-msg-content .asst-quote{
-  border:none !important;
+  border:0 !important;
+  border-left:3px solid color-mix(in srgb,var(--accent) 55%,transparent) !important;
   background:none !important;
-  padding:0 !important;
-  margin:2px 0 !important;
+  padding:2px 0 2px 16px !important;
+  margin:12px 0 !important;
   border-radius:0 !important;
-  line-height:1.65 !important;
+  line-height:1.7 !important;
+  color:var(--text2) !important;
 }
 
 /* ── Restore collapsible details visual ── */
@@ -26296,12 +26320,19 @@ function dbToggleBlock(idx){
 
 function dbToggleTask(id){
   try{
-    const tasks = lsGet('ft_global_tasks_v1', []);
-    if(!Array.isArray(tasks)) return;
-    const t = tasks.find(x => String(x.id) === String(id));
+    /* The Top Tasks card edits the Today's List first; fall back to the
+       Anytime list so a stale row or another caller still resolves. */
+    const stores = ['ft_daily_tasks_permanent_v1', 'ft_global_tasks_v1'];
+    let tasks = null, store = null, t = null;
+    for(const k of stores){
+      const arr = lsGet(k, []);
+      if(!Array.isArray(arr)) continue;
+      const hit = arr.find(x => String(x.id) === String(id));
+      if(hit){ tasks = arr; store = k; t = hit; break; }
+    }
     if(!t) return;
     t.done = !t.done;
-    lsSet('ft_global_tasks_v1', tasks);
+    lsSet(store, tasks);
 
     /* Surgical DOM update — find the task item by data-id and toggle its classes */
     const items = document.querySelectorAll('#dbWrap .db-task-item');
@@ -26371,24 +26402,21 @@ function dbQuickAddTask(){
     if(!inp) return;
     const text = inp.value.trim();
     if(!text){ inp.focus(); return; }
-    const tasks = lsGet('ft_global_tasks_v1', []);
+    /* Quick-add lands on the Today's List, matching what the card shows. */
+    const tasks = lsGet('ft_daily_tasks_permanent_v1', []);
     const newTask = { text: text, priority:'med', done:false, id:Date.now() };
-    tasks.unshift(newTask);
-    lsSet('ft_global_tasks_v1', tasks);
+    if(!Array.isArray(tasks)){ lsSet('ft_daily_tasks_permanent_v1', [newTask]); }
+    else { tasks.unshift(newTask); lsSet('ft_daily_tasks_permanent_v1', tasks); }
 
-    /* Surgical DOM update — prepend a new task row to the list, keep input focused */
+    /* Surgical DOM update — rebuild just the card's list from the same
+       source renderDashboard() uses, so ordering stays identical; the
+       input is untouched and keeps focus for rapid entry. */
     const list = document.querySelector('#dbWrap .db-task-list');
     if(list){
-      /* If the list currently shows the "no pending tasks" empty state, remove it */
-      const empty = list.querySelector('.db-empty');
-      if(empty) empty.remove();
-
-      const holder = document.createElement('div');
-      holder.innerHTML = dbTaskRowHtml(newTask);
-      /* Insert as first child (before existing items / the empty state).
-         Markup comes from dbTaskRowHtml() so quick-add can't drift from
-         what renderDashboard() produces. */
-      list.insertBefore(holder.firstElementChild, list.firstChild);
+      const rows = dbTopTasksList();
+      list.innerHTML = rows.length
+        ? rows.map(dbTaskRowHtml).join('')
+        : '<div class="db-empty">No tasks for today.</div>';
     }
 
     inp.value = '';
@@ -26465,18 +26493,86 @@ function dbUpdateHeroStats(){
       ringEl.style.strokeDashoffset = C * (1 - Math.min(100, Math.max(0, prodScore))/100);
     }
   }catch(e){ console.warn('[Motion] dbUpdateHeroStats error:', e); }
+
+  /* The progress graph's today-bar follows the same surgical path. */
+  dbUpdateGraphToday();
+}
+
+/* Progress graph — surgical refresh of today's bar plus the average line
+   and footer stats, called after every habit / block / task toggle so the
+   graph never lags behind the checkmarks. Mirrors the blend that
+   renderDashboard() bakes into each bar. */
+function dbUpdateGraphToday(){
+  try{
+    const wrap = document.getElementById('dbWrap');
+    if(!wrap) return;
+    const col = wrap.querySelector('.db-graph-col.today');
+    if(!col) return;
+    const day = (typeof dbViewKey === 'string' && dbViewKey) ? dbViewKey : dateKey(0);
+    const blocks = (typeof getBlocksForDate === 'function') ? getBlocksForDate(day) : [];
+    const habits = typeof loadHabits === 'function' ? loadHabits() : [];
+    const habitLog = typeof loadHabitLog === 'function' ? loadHabitLog() : {};
+    const entry = habitLog[day] || {};
+    const focusLog = lsGet('ft_focus_log_v1', {});
+    let focusM = 0;
+    const fe = focusLog[day];
+    if(typeof fe === 'number') focusM = fe;
+    else if(fe && typeof fe.mins === 'number') focusM = fe.mins;
+    else if(fe && typeof fe.minutes === 'number') focusM = fe.minutes;
+    if(typeof homeGetFocusMinutesToday === 'function') focusM = Math.max(focusM, homeGetFocusMinutesToday() || 0);
+
+    const bTotal = blocks.length, bDone = blocks.filter(b => b.done).length;
+    const hTotal = habits.length, hDone = habits.filter(h => entry[h.id]).length;
+    let w = 0, acc = 0;
+    if(bTotal){ w += .4; acc += (bDone/bTotal) * .4; }
+    if(hTotal){ w += .4; acc += (hDone/hTotal) * .4; }
+    if(focusM > 0){ w += .2; acc += Math.min(1, focusM/240) * .2; }
+    const pct = w ? Math.round(acc/w*100) : 0;
+
+    const fmtDur = function(m){
+      if(!m) return '0m';
+      if(m < 60) return m+'m';
+      const hh = Math.floor(m/60), r = m%60;
+      return hh+'h'+(r ? ' '+r+'m' : '');
+    };
+
+    col.setAttribute('data-pct', pct);
+    const fill = col.querySelector('.db-graph-fill');
+    if(fill) fill.style.height = pct + '%';
+    const base = (col.title || '').split(' — ')[0] || day;
+    col.title = base + ' — ' + pct + '% · ' + bDone + '/' + bTotal + ' blocks · ' + hDone + '/' + hTotal + ' habits · ' + fmtDur(focusM) + ' focus';
+
+    const cols = Array.prototype.slice.call(wrap.querySelectorAll('.db-graph-col:not(.future)'));
+    const pcts = cols.map(c => parseInt(c.getAttribute('data-pct'), 10) || 0);
+    const avg = pcts.length ? Math.round(pcts.reduce((s,v) => s+v, 0) / pcts.length) : 0;
+    const best = pcts.length ? Math.max.apply(null, pcts) : 0;
+    const footSpans = wrap.querySelectorAll('.db-graph-foot span');
+    if(footSpans.length >= 2) footSpans[1].textContent = 'Best ' + best + '%';
+    const sub = document.getElementById('dbGraphSub');
+    if(sub) sub.textContent = 'Avg ' + avg + '% · last ' + (wrap.querySelectorAll('.db-graph-col').length) + ' days';
+  }catch(e){ console.warn('[Motion] dbUpdateGraphToday error:', e); }
 }
 
 /* Daily hydration target (cups) shown in the dashboard Hydration card. */
 const DB_WATER_GOAL = 12;
 
 /* ════════════════════════════════════════════════════════════════
-   dbTaskRowHtml(task) — single source of truth for a "Top Tasks" row.
-   renderDashboard() builds its list from this, and dbQuickAddTask()
-   prepends the identical markup, so the two paths can never drift apart
-   (the quick-add copy used to ship its own template that was missing the
-   button semantics and the attribute escaping the main renderer had).
+   dbTopTasksList() + dbTaskRowHtml() — the Top Tasks card's data and its
+   rendering, kept together so renderDashboard() and dbQuickAddTask()'s
+   list refresh can never drift apart:
+     • dbTopTasksList() — TODAY's list (the same store the Tasks page's
+       Today view edits), open items only, ordered by due time then
+       priority (same order as the Tasks page), capped at 6.
+     • dbTaskRowHtml(task) — single source of truth for a row (quick-add
+       used to ship its own template missing the button semantics and the
+       attribute escaping the main renderer had).
    ════════════════════════════════════════════════════════════════ */
+function dbTopTasksList(){
+  const dayTasks = lsGet('ft_daily_tasks_permanent_v1', []);
+  const open = (Array.isArray(dayTasks) ? dayTasks : []).filter(t => !t.done);
+  return sortTasksByDueTime(open).slice(0, 6);
+}
+
 function dbTaskRowHtml(t){
   const colors = { high:'var(--red)', med:'var(--orange)', medium:'var(--orange)', low:'var(--green)' };
   const labels = { high:'High', med:'Med', medium:'Med', low:'Low' };
@@ -26525,6 +26621,10 @@ function renderDashboard(){
   /* ── Data ── */
   const blocks = lsGet('ft_blocks_v1_'+today, []);
   const tasks = lsGet('ft_global_tasks_v1', []);
+  /* Today's List (daily tasks) feeds the Top Tasks card below — pull in
+     urgent Anytime tasks first, exactly like the Tasks view does, so
+     anything due today shows up here too. */
+  if(typeof autoMoveUrgentTasks === 'function'){ try{ autoMoveUrgentTasks(); }catch(e){} }
   const focusMins = typeof homeGetFocusMinutesToday === 'function' ? homeGetFocusMinutesToday() : 0;
   const streak = typeof homeGetFocusStreak === 'function' ? homeGetFocusStreak() : 0;
   const habits = typeof loadHabits === 'function' ? loadHabits() : [];
@@ -26696,13 +26796,8 @@ function renderDashboard(){
   const totalCatMins = Object.values(catMap).reduce((s,g) => s+g.mins, 0) || 1;
   const sortedCats = Object.entries(catMap).sort((a,b) => b[1].mins - a[1].mins);
 
-  /* Top 5 incomplete tasks */
-  const priOrder = { high:0, med:1, medium:1, low:2 };
-  const topTasks = tasks.filter(t => !t.done).sort((a,b) => {
-    const pa = priOrder[a.priority] ?? 3;
-    const pb = priOrder[b.priority] ?? 3;
-    return pa - pb;
-  }).slice(0, 6);
+  /* Top 6 open tasks FOR TODAY — see dbTopTasksList() */
+  const topTasks = dbTopTasksList();
 
   /* Sorted blocks (for schedule list) */
   const sortedBlocks = sortedBlocksAll;
@@ -26775,7 +26870,7 @@ function renderDashboard(){
      hidden with display:none, so every render still paid for 5 cards and
      5 sparklines that nobody could see. */
 
-  /* TIME ALLOCATION + HABITS — one row */
+  /* TIME ALLOCATION + PROGRESS GRAPH — one row */
   h += `<div class="db-row-2">`;
 
   /* Time Allocation — theme-adaptive segmented bar */
@@ -26824,52 +26919,79 @@ function renderDashboard(){
     h += `<div class="db-empty" style="flex:1">No time blocks in this period — <button class="db-link" onclick="setView('blocks',null)">add a block</button> to see allocation.</div>`;
   }
 
-  /* Focus mini-bar — today's focus minutes vs daily goal, a slim line
-     inside the Time Allocation card (same bar language as the allocation
-     segments above). */
-  let fbGoal = 720;
-  try{
-    const fbG = JSON.parse(localStorage.getItem('motion_focus_goal') || 'null');
-    if(fbG && fbG.minutes >= 5) fbGoal = Math.min(1440, Number(fbG.minutes));
-  }catch(e){}
-  const fbPct = focusMins > 0 ? Math.min(100, Math.round(focusMins / fbGoal * 100)) : 0;
-  h += `<div class="db-focus-mini">
-    <div class="db-focus-mini-head">
-      <span>Focus today</span>
-      <span class="db-focus-mini-val">${fmtDur(focusMins)} of ${fmtDur(fbGoal)}</span>
-    </div>
-    <div class="db-focus-mini-track">
-      <div class="db-focus-mini-fill" style="width:${fbPct}%"></div>
-    </div>
-  </div>`;
-
   h += `</div></div>`;
 
-  /* Habits (with inline toggle + streaks) — sits beside Time Allocation */
-  if(habits.length){
-    h += `<div class="db-section db-reveal" style="animation-delay:480ms">
-      <div class="db-section-head">
-        <div class="db-section-title" role="heading" aria-level="2">
-          <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
-          Habits Today
-        </div>
-        <button class="db-link" onclick="setView('tracker',null)">Open ›</button>
-      </div>
-      <div class="db-habit-list">`;
-    habitStreaks.slice(0,6).forEach(hb => {
-      const entry = habitLog[today];
-      const done = entry && entry[hb.id];
-      const streakNum = hb.streak || 0;
-      const hCheck = viewingToday ? `onclick="event.stopPropagation();dbToggleHabit('${hb.id}')"` : '';
-      const hTitle = viewingToday ? (done?'Uncheck':'Mark done') : 'Read-only — switch to Today to edit';
-      h += `<div class="db-habit-item${done?' done':''}${viewingToday?'':' ro'}">
-        <button type="button" class="db-habit-check${done?' checked':''}" ${hCheck} title="${hTitle}" aria-pressed="${done?'true':'false'}" aria-label="${esc(hb.name||'Habit')}"${viewingToday?'':' disabled'}>${done?'✓':''}</button>
-        <span class="db-habit-name">${esc(hb.name||'Habit')}</span>
-        <span class="db-habit-streak${streakNum===0?' zero':''}">${streakNum>0?'🔥 '+streakNum:'—'}</span>
-      </div>`;
+  /* ── PROGRESS GRAPH — one bar per day across the viewed range.
+     This spot used to hold the Habits Today card; the habit list itself
+     now sits directly above the Quick Actions buttons in the right
+     column. Each bar blends that day's block completion, habit
+     completion and focus time (weights renormalised over whichever of
+     those the day actually has, so missing data is never penalised). ── */
+  const graphDays = Math.max(rangeDays, 7);
+  const graphSeries = [];
+  for(let i = graphDays - 1; i >= 0; i--){
+    const gd = new Date();
+    gd.setDate(gd.getDate() + endOff - i);
+    const gds = gd.getFullYear()+'-'+String(gd.getMonth()+1).padStart(2,'0')+'-'+String(gd.getDate()).padStart(2,'0');
+    const gBlocks = getBlocksForDate(gds);
+    const gBTotal = gBlocks.length;
+    const gBDone = gBlocks.filter(b => b.done).length;
+    const gLog = habitLog[gds] || {};
+    const gHTotal = habits.length;
+    const gHDone = habits.filter(hb => gLog[hb.id]).length;
+    let gFocus = 0;
+    const gF = focusLog[gds];
+    if(typeof gF === 'number') gFocus = gF;
+    else if(gF && typeof gF.mins === 'number') gFocus = gF.mins;
+    else if(gF && typeof gF.minutes === 'number') gFocus = gF.minutes;
+    if(gds === realTodayStr) gFocus = Math.max(gFocus, focusMins);
+    let gW = 0, gAcc = 0;
+    if(gBTotal){ gW += .4; gAcc += (gBDone/gBTotal) * .4; }
+    if(gHTotal){ gW += .4; gAcc += (gHDone/gHTotal) * .4; }
+    if(gFocus > 0){ gW += .2; gAcc += Math.min(1, gFocus/240) * .2; }
+    const gFuture = gds > realTodayStr;
+    const gPct = (!gFuture && gW) ? Math.round(gAcc/gW*100) : 0;
+    const gShowX = graphDays <= 10 || i % 5 === 0 || i === graphDays - 1 || gds === realTodayStr;
+    graphSeries.push({
+      ds: gds, pct: gPct, future: gFuture, isToday: gds === realTodayStr,
+      bDone: gBDone, bTotal: gBTotal, hDone: gHDone, hTotal: gHTotal, focusM: gFocus,
+      xLabel: gShowX ? (graphDays > 10 ? String(gd.getDate()) : DS7[(gd.getDay()+6)%7]) : '',
+      fullLabel: DAYS[gd.getDay()] + ', ' + MONTHS[gd.getMonth()] + ' ' + gd.getDate()
     });
-    h += `</div></div>`;
   }
+  const graphPast = graphSeries.filter(s => !s.future);
+  const graphAvg = graphPast.length ? Math.round(graphPast.reduce((s,x)=>s+x.pct,0) / graphPast.length) : 0;
+  const graphBest = graphPast.length ? Math.max.apply(null, graphPast.map(s => s.pct)) : 0;
+  const graphHasData = graphSeries.some(s => s.bTotal || s.hTotal || s.focusM > 0);
+  const graphBars = graphSeries.map((s, i) => {
+    const tip = s.fullLabel + ' — ' + (s.future
+      ? 'upcoming'
+      : s.pct + '% · ' + s.bDone + '/' + s.bTotal + ' blocks · ' + s.hDone + '/' + s.hTotal + ' habits · ' + fmtDur(s.focusM) + ' focus');
+    return `<div class="db-graph-col${s.isToday?' today':''}${s.future?' future':''}" data-pct="${s.pct}" title="${esc(tip)}">
+      <div class="db-graph-track"><div class="db-graph-fill" style="height:${s.pct}%;animation-delay:${i*45}ms"></div></div>
+      <div class="db-graph-x">${s.xLabel}</div>
+    </div>`;
+  }).join('');
+
+  h += `<div class="db-section db-reveal" style="animation-delay:480ms">
+    <div class="db-section-head">
+      <div class="db-section-title" role="heading" aria-level="2">
+        <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg></span>
+        Progress
+      </div>
+      <span class="db-section-sub" id="dbGraphSub">${graphHasData ? 'Avg '+graphAvg+'% · last '+graphDays+' days' : 'Last '+graphDays+' days'}</span>
+    </div>
+    ${graphHasData ? `
+    <div class="db-graph">
+      <div class="db-graph-cols">
+        ${graphBars}
+      </div>
+      <div class="db-graph-foot">
+        <span><i></i>Daily completion — blocks, habits &amp; focus</span>
+        <span>Best ${graphBest}%</span>
+      </div>
+    </div>` : `<div class="db-empty">Not enough data yet — <button class="db-link" onclick="setView('blocks',null)">add a time block</button> or check off a habit to start your progress graph.</div>`}
+  </div>`;
 
   h += `</div>`; /* end row-2 */
 
@@ -26923,7 +27045,7 @@ function renderDashboard(){
   if(topTasks.length){
     topTasks.forEach(t => { h += dbTaskRowHtml(t); });
   } else {
-    h += `<div class="db-empty">No open tasks.</div>`;
+    h += `<div class="db-empty">No tasks for today.</div>`;
   }
   h += `</div>
     <div class="db-inline-add">
@@ -26935,8 +27057,35 @@ function renderDashboard(){
 
   h += `</div>`; /* end left col */
 
-  /* RIGHT COLUMN: Quick actions */
+  /* RIGHT COLUMN: Habits Today (moved here) sits directly above the
+     Quick Actions buttons, then Quick actions */
   h += `<div class="db-col-right">`;
+
+  /* Habits (with inline toggle + streaks) — above Quick Actions */
+  if(habits.length){
+    h += `<div class="db-section db-reveal" style="animation-delay:700ms">
+      <div class="db-section-head">
+        <div class="db-section-title" role="heading" aria-level="2">
+          <span class="db-section-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+          Habits Today
+        </div>
+        <button class="db-link" onclick="setView('tracker',null)">Open ›</button>
+      </div>
+      <div class="db-habit-list">`;
+    habitStreaks.slice(0,6).forEach(hb => {
+      const entry = habitLog[today];
+      const done = entry && entry[hb.id];
+      const streakNum = hb.streak || 0;
+      const hCheck = viewingToday ? `onclick="event.stopPropagation();dbToggleHabit('${hb.id}')"` : '';
+      const hTitle = viewingToday ? (done?'Uncheck':'Mark done') : 'Read-only — switch to Today to edit';
+      h += `<div class="db-habit-item${done?' done':''}${viewingToday?'':' ro'}">
+        <button type="button" class="db-habit-check${done?' checked':''}" ${hCheck} title="${hTitle}" aria-pressed="${done?'true':'false'}" aria-label="${esc(hb.name||'Habit')}"${viewingToday?'':' disabled'}>${done?'✓':''}</button>
+        <span class="db-habit-name">${esc(hb.name||'Habit')}</span>
+        <span class="db-habit-streak${streakNum===0?' zero':''}">${streakNum>0?'🔥 '+streakNum:'—'}</span>
+      </div>`;
+    });
+    h += `</div></div>`;
+  }
 
   /* Quick actions */
   h += `<div class="db-section db-reveal" style="animation-delay:740ms">
@@ -28274,6 +28423,25 @@ function safeUrl(u){
   var scheme = s.slice(0, colon).toLowerCase();
   if(scheme === 'http' || scheme === 'https' || scheme === 'mailto' || scheme === 'tel') return s;
   return '#';
+}
+/* Google Search grounding (Gemini / Vertex) ships only short-lived redirect
+   tokens in its metadata:
+     https://vertexaisearch.cloud.google.com/grounding-api-redirect/<token>
+   Replaying one of those from a stored conversation answers 404 with a Google
+   error page — which is exactly what clicking a source chip did. The API does
+   not expose the real destination URL (known limitation, see googleapis/
+   python-genai#1512), so a dead grounding link falls back to a Google search
+   for the source title, which lands on the same page. */
+function isGroundingRedirect(u){
+  return /vertexaisearch\.cloud\.google\.com|\/grounding-api-redirect\//i.test(u || '');
+}
+function sourceHref(url, label){
+  var u = safeUrl(url);
+  if(isGroundingRedirect(u)){
+    var q = String(label || '').trim() || u;
+    return 'https://www.google.com/search?q=' + encodeURIComponent(q);
+  }
+  return u;
 }
 function escAndLink(s){const e=esc(s);return e.replace(/(https?:\/\/[^\s]+)/g,function(m,url){var u=url.replace(/[.,;:!?)\]}>]+$/,'');return '<a href="'+safeUrl(u)+'" target="_blank" rel="noopener noreferrer">'+u+'</a>';});}
 
@@ -42607,6 +42775,16 @@ function asstRenderMessage(m){
   var actionHtml = '';
   if(m.action) actionHtml = asstRenderActionCard(m.action);
 
+  // Index of this message in the conversation — computed FIRST because both
+  // the hallucination retry button and the action row embed it in onclick.
+  var msgIdx = -1;
+  var _conv = asstGetCurrentConv();
+  if(_conv && _conv.messages){
+    for(var mi=0;mi<_conv.messages.length;mi++){
+      if(_conv.messages[mi] === m){ msgIdx = mi; break; }
+    }
+  }
+
   // Hallucination warning — shown when AI claimed an action but emitted no [ACTION] tag
   var hallucinationHtml = '';
   if(m.hallucination){
@@ -42624,13 +42802,6 @@ function asstRenderMessage(m){
 
   // Build action buttons for AI messages (copy, retry, emoji)
   var actionsHtml = '';
-  var msgIdx = -1;
-  var _conv = asstGetCurrentConv();
-  if(_conv && _conv.messages){
-    for(var mi=0;mi<_conv.messages.length;mi++){
-      if(_conv.messages[mi] === m){ msgIdx = mi; break; }
-    }
-  }
   if(!isUser && m.content){
     actionsHtml = '<div class="asst-msg-actions">'
       +'<button class="asst-act-btn" onclick="asstCopyMessage(this,'+msgIdx+')" title="Copy">'
@@ -42853,8 +43024,266 @@ function asstCheckCodeIntegrity(code, lang){
   }
 }
 
-function asstRenderContent(text){
+// ─────────────────────────────────────────────────────────────────────────────
+// BLOCK STAGE — line-based markdown → HTML
+// ─────────────────────────────────────────────────────────────────────────────
+// Runs on the response AFTER inline processing (bold/italic/links/inline code
+// already converted, headings already <h*>, tables/code/math/images/details
+// already %%…BLOCK_n%% placeholders, everything HTML-escaped).
+//
+// The previous implementation wrapped the ENTIRE response in one <p>…</p> and
+// then tried to carve structure back out of it with regex. That produced a
+// steady stream of malformed markup which is exactly the "junk" users see:
+//   • unbalanced </p> / orphan text sitting outside any paragraph (after a
+//     heading),
+//   • stray <br> glued to <hr>, <pre> and block divs,
+//   • task lists nested INSIDE their own <span> (a lazy regex swallowed the
+//     already-converted next item),
+//   • the paragraph after a list swallowed into the LAST <li>,
+//   • empty <p></p> islands,
+//   • each blockquote line emitted as its own disconnected div.
+// Classifying one source line at a time and emitting balanced HTML directly
+// removes that whole class of bugs.
+var _ASST_BLOCK_TEST = /%%(?:CODEBLOCK|TABLEBLOCK|MATHBLOCK|IMGBLOCK|DETAILBLOCK)_\d+%%/;
+var _ASST_BLOCK_SPLIT = /(%%(?:CODEBLOCK|TABLEBLOCK|MATHBLOCK|IMGBLOCK|DETAILBLOCK)_\d+%%)/;
+var _ASST_HEADING_LINE = /^<(?:h[2-5]|hr)[\s>]/;
+var _ASST_TASK_CB_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function _asstBuildBlocks(html, calloutSVGs, calloutLabels){
+  try {
+    // Split any line that mixes prose with a block placeholder so a block
+    // element can never end up stranded inside a <p>.
+    var lines = [];
+    html.split('\n').forEach(function(line){
+      if(_ASST_BLOCK_TEST.test(line)){
+        line.split(_ASST_BLOCK_SPLIT).forEach(function(part){
+          if(part !== '') lines.push(part);
+        });
+      } else {
+        lines.push(line);
+      }
+    });
+
+    var out = [];
+    var para = [];
+    var list = null;   // { kind:'ul'|'ol'|'task', items:[{checked,text,desc:[]}] }
+    var quote = null;  // { type:'note'|null, title:'', lines:[] }
+
+    function flushPara(){
+      if(para.length){ out.push('<p>'+para.join('<br>')+'</p>'); para = []; }
+    }
+    function flushQuote(){
+      if(!quote) return;
+      var body = quote.lines.join('<br>');
+      if(quote.type){
+        var t = quote.type;
+        out.push('<div class="asst-callout asst-callout-'+t+'">'
+          +'<div class="asst-callout-icon">'+(calloutSVGs[t]||calloutSVGs.note)+'</div>'
+          +'<div class="asst-callout-title">'+quote.title+'</div>'
+          +(body ? '<div class="asst-callout-body"><p>'+body+'</p></div>' : '')
+          +'</div>');
+      } else if(body){
+        out.push('<div class="asst-quote"><p>'+body+'</p></div>');
+      }
+      quote = null;
+    }
+    function flushList(){
+      if(!list) return;
+      var kind = list.kind;
+      var tag = kind === 'ol' ? 'ol' : 'ul';
+      var cls = kind === 'task' ? 'asst-task-list' : 'asst-list';
+      var items = list.items.map(function(it){
+        var desc = it.desc.length ? '<p>'+it.desc.join('<br>')+'</p>' : '';
+        if(kind === 'task'){
+          return '<li><span class="asst-task-cb'+(it.checked?' checked':'')+'">'+_ASST_TASK_CB_SVG+'</span>'
+            +'<span'+(it.checked?' class="asst-task-done"':'')+'>'+it.text+'</span>'+desc+'</li>';
+        }
+        return '<li>'+it.text+desc+'</li>';
+      }).join('');
+      out.push('<'+tag+' class="'+cls+'">'+items+'</'+tag+'>');
+      list = null;
+    }
+    function flushAll(){ flushPara(); flushQuote(); flushList(); }
+
+    for(var i=0;i<lines.length;i++){
+      var line = lines[i];
+      // Markdown allows indentation before a marker — trim only for matching.
+      var t = line.replace(/^[ \t]+/, '');
+
+      if(t === ''){ flushAll(); continue; }
+
+      // Block element produced upstream (heading, hr, block placeholder).
+      if(_ASST_HEADING_LINE.test(t) || _ASST_BLOCK_TEST.test(t)){
+        flushAll();
+        out.push(t);
+        continue;
+      }
+
+      // Blockquote / callout lines.
+      if(t.indexOf('&gt;') === 0){
+        var body = t.slice(4);
+        if(body.charAt(0) === ' ') body = body.slice(1);
+        var cal = /^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\][ \t]*([\s\S]*)$/i.exec(body);
+        if(cal){
+          flushPara(); flushList(); flushQuote();
+          var ctype = cal[1].toLowerCase();
+          quote = { type:ctype,
+            title:(cal[2]||'').trim() || (calloutLabels[ctype]||ctype.toUpperCase()),
+            lines:[] };
+          continue;
+        }
+        flushPara(); flushList();
+        if(!quote) quote = { type:null, title:'', lines:[] };
+        quote.lines.push(body);
+        continue;
+      }
+      // Any other line terminates an open quote/callout.
+      flushQuote();
+
+      var m;
+      if((m = /^[-*][ \t]+\[([ xX])\][ \t]+([\s\S]*)$/.exec(t))){
+        flushPara();
+        if(!list || list.kind !== 'task'){ flushList(); list = { kind:'task', items:[] }; }
+        list.items.push({ checked:/x/i.test(m[1]), text:m[2], desc:[] });
+        continue;
+      }
+      if((m = /^[-*][ \t]+([\s\S]*)$/.exec(t))){
+        flushPara();
+        if(!list || list.kind !== 'ul'){ flushList(); list = { kind:'ul', items:[] }; }
+        list.items.push({ text:m[1], desc:[] });
+        continue;
+      }
+      if((m = /^(\d{1,2})[.)][ \t]+([\s\S]*)$/.exec(t))){
+        flushPara();
+        if(!list || list.kind !== 'ol'){ flushList(); list = { kind:'ol', items:[] }; }
+        list.items.push({ text:m[2], desc:[] });
+        continue;
+      }
+
+      // A loose line directly under a list item belongs to that item
+      // (keeps title + description together, as the old renderer intended).
+      if(list){
+        list.items[list.items.length-1].desc.push(t);
+        continue;
+      }
+
+      para.push(t);
+    }
+    flushAll();
+    return out.join('\n');
+  } catch(e){
+    // Never let the block stage break message rendering — fall back to a
+    // single paragraph, which is always valid HTML.
+    try { return '<p>'+String(html).replace(/\n{2,}/g,'</p><p>')+'</p>'; } catch(e2){ return String(html); }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FINAL NORMALIZER — DOM safety net for rendered message HTML
+// ─────────────────────────────────────────────────────────────────────────────
+// Parses the produced markup once and repairs anything structurally invalid so
+// the browser never has to guess: orphan text outside a paragraph, stray <br>
+// glued to block elements, empty paragraphs, <pre> stranded inside a <p>, etc.
+// All transforms are local (they mutate a node where it sits), so processing
+// order does not affect the result.
+function _asstNormalizeAIHtml(html){
+  var host = document.createElement('div');
+  host.innerHTML = html;
+
+  var BLOCK = {H2:1,H3:1,H4:1,H5:1,H6:1,PRE:1,UL:1,OL:1,TABLE:1,HR:1,DIV:1,DETAILS:1,BLOCKQUOTE:1,FIGURE:1};
+  // Containers where bare text is legitimate — do NOT wrap it in a <p> and do
+  // NOT drop its edge whitespace (headings keep their number-badge spacing).
+  var KEEP_TEXT = {H2:1,H3:1,H4:1,H5:1,H6:1,LI:1,TD:1,TH:1,SUMMARY:1,CAPTION:1,FIGCAPTION:1,SPAN:1,B:1,I:1,STRONG:1,EM:1,A:1,CODE:1,S:1,DEL:1,MARK:1,KBD:1};
+  var NEVER_TOUCH = {PRE:1,SCRIPT:1,STYLE:1,TEXTAREA:1};
+
+  function isEmptyP(p){
+    if(p.textContent && p.textContent.trim()) return false;
+    return !p.querySelector('img,hr,br');
+  }
+  function hasBlockChild(p){
+    for(var n=p.firstChild; n; n=n.nextSibling){
+      if(n.nodeType === 1 && BLOCK[n.tagName]) return true;
+    }
+    return false;
+  }
+  function stripEdgeBRs(el){
+    while(el.firstChild && el.firstChild.nodeType === 1 && el.firstChild.tagName === 'BR') el.removeChild(el.firstChild);
+    while(el.lastChild && el.lastChild.nodeType === 1 && el.lastChild.tagName === 'BR') el.removeChild(el.lastChild);
+    // whitespace-only text around the edges of a paragraph
+    if(el.firstChild && el.firstChild.nodeType === 3 && !el.firstChild.nodeValue.trim()) el.removeChild(el.firstChild);
+    if(el.lastChild && el.lastChild.nodeType === 3 && !el.lastChild.nodeValue.trim()) el.removeChild(el.lastChild);
+  }
+  function clean(container){
+    var kids = Array.prototype.slice.call(container.childNodes);
+    var queue = kids.slice();
+    while(queue.length){
+      var node = queue.shift();
+      if(!node.parentNode) continue;
+      if(node.nodeType === 3){
+        var txt = node.nodeValue;
+        if(!txt || !txt.trim()){
+          if(!KEEP_TEXT[container.tagName]) node.parentNode.removeChild(node);
+          continue;
+        }
+        if(!KEEP_TEXT[container.tagName]){
+          var p = document.createElement('p');
+          node.parentNode.insertBefore(p, node);
+          p.appendChild(node);
+        }
+        continue;
+      }
+      if(node.nodeType !== 1) continue;
+      var tag = node.tagName;
+      if(NEVER_TOUCH[tag]) continue;
+      if(tag === 'BR'){
+        if(!KEEP_TEXT[container.tagName]) node.parentNode.removeChild(node);
+        continue;
+      }
+      if(tag === 'P'){
+        if(isEmptyP(node)){ node.parentNode.removeChild(node); continue; }
+        if(hasBlockChild(node)){
+          // Unwrap: hoist children into the parent, then re-queue them.
+          var parent = node.parentNode;
+          var moved = [];
+          while(node.firstChild){ moved.push(node.firstChild); parent.insertBefore(node.firstChild, node); }
+          parent.removeChild(node);
+          queue = moved.concat(queue);
+          continue;
+        }
+        stripEdgeBRs(node);
+        if(isEmptyP(node)) node.parentNode.removeChild(node);
+        continue;
+      }
+      if(BLOCK[tag] || tag === 'LI'){
+        // Text stays bare inside list cells/summary; everywhere else an
+        // open text run must become a real paragraph.
+        clean(node);
+        if(!KEEP_TEXT[tag]) continue;
+        // LI/TD/…: only strip stray edge breaks + empty paragraphs.
+        stripEdgeBRs(node);
+        continue;
+      }
+      // Inline elements (span, a, strong, svg, …) — leave untouched.
+    }
+  }
+  clean(host);
+  return host.innerHTML;
+}
+
+function asstRenderContent(text, quick){
   // Premium markdown rendering with professional clean styling
+  // `quick` = streaming frame: skip the final DOM normalization pass (a full
+  // parse + serialize of the whole message). The block stage already emits
+  // balanced HTML, the normalizer is a safety net, and it runs on the real
+  // render when the stream finishes — so per-frame cost stays at the level it
+  // was before this rework instead of doubling.
+
+  // ── Machine payload is never rendered ──
+  // [ACTION]{…}[/ACTION] is consumed by asstParseActions/asstProcessResponse.
+  // Until the stream finishes (or if it errors mid-way) it sits verbatim in the
+  // message, i.e. a raw JSON blob rendered straight into the reply.
+  text = String(text == null ? '' : text)
+    .replace(/\[ACTION\]\{[\s\S]*?\}\[\/ACTION\]/g, '');
 
   // ── STEP 1 (MUST BE FIRST): Extract code blocks from the RAW, unescaped
   // text — BEFORE the rest of the response gets HTML-escaped, and BEFORE any
@@ -42967,6 +43396,10 @@ function asstRenderContent(text){
   // ── Inline formatting (order matters: process most specific first) ──
   // Bold
   html = html.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  // Bold that spans exactly one line break (a model bolding a two-line phrase)
+  // — the single-line pass above can't see across the newline, and the stray
+  // ** would otherwise render as literal asterisks.
+  html = html.replace(/\*\*([^\n*]{1,400})\n([^\n*]{1,400})\*\*/g, '<strong>$1<br>$2</strong>');
   // Italic — NOTE: original regex used ES2018 lookbehind (?<!\*) which breaks
   // Safari < 16.4 (iOS 15.x). Rewritten to use only lookahead + negated char class.
   // Safe because bold (\*\*text\*\*) runs above and consumes all double-asterisks,
@@ -42980,20 +43413,36 @@ function asstRenderContent(text){
   html = html.replace(/\[\[([^\]]+)\]\]/g,'<kbd>$1</kbd>');
 
   // Step 0: Extract Sources section and convert to premium card BEFORE other processing
-  // Pattern: ---\n**Sources:** [title1](url1) | [title2](url2) ...
+  // Pattern: optional --- divider, then a Sources line whose entries are
+  // [title](url) links separated by " | " or newlines.
+  // Two reasons this never fired before: (1) the inline-bold pass above runs
+  // FIRST, so by this point the model's `**Sources:**` is already
+  // `<strong>Sources:</strong>` and the old literal `\*\*Sources?:\*\*` pattern
+  // could never match; (2) the old pattern demanded exactly "---\n" with a
+  // single newline, so the usual "---\n\n**Sources:**" (blank line) missed too.
+  // Result: the raw markdown plus pipe-separated links were rendered straight
+  // into the reply as visible junk. Both spellings are accepted now.
   var sourcesCard = '';
-  html = html.replace(/\n*---\n\*\*Sources?:\*\*\s*([\s\S]*?)$/i, function(match, sourcesStr){
+  html = html.replace(/(\n[ \t]*-{3,}[ \t]*)?[\s]*(?:\*\*|<strong>|<b>)[ \t]*Sources?:[ \t]*(?:\*\*|<\/strong>|<\/b>)[ \t]*([\s\S]*?)$/i, function(match, divider, sourcesStr){
     var sourceLinks = sourcesStr.split(/\s*\|\s*/);
     var items = '';
+    var count = 0;
     sourceLinks.forEach(function(link){
       var m = link.match(/\[([^\]]*)\]\(([^)]*)\)/);
       if(m){
+        count++;
         var title = m[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
         var url = m[2].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+        var redirect = isGroundingRedirect(url);
         var domain = '';
         try{ domain = new URL(url).hostname.replace('www.',''); } catch(e){ domain = url.substring(0,30); }
-        var favicon = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(domain)+'&sz=16';
-        items += '<a class="source-chip" href="'+esc(safeUrl(url))+'" target="_blank" rel="noopener noreferrer" title="'+esc(url)+'">'
+        if(redirect) domain = 'google search';
+        var favicon = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(redirect ? 'google.com' : domain)+'&sz=16';
+        var href = sourceHref(url, title);
+        var hover = redirect
+          ? 'Google\'s grounding link expired — opens a search for “'+title+'”'
+          : url;
+        items += '<a class="source-chip'+(redirect?' source-chip-search':'')+'" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer" title="'+esc(hover)+'">'
           +'<img class="source-favicon" src="'+favicon+'" alt="" width="14" height="14" loading="lazy" onerror="this.style.display=\'none\'">'
           +'<span class="source-title">'+esc(title)+'</span>'
           +'<span class="source-domain">'+esc(domain)+'</span>'
@@ -43001,17 +43450,24 @@ function asstRenderContent(text){
           +'</a>';
       }
     });
-    if(items){
-      sourcesCard = '<div class="ai-sources-card">'
-        +'<div class="ai-sources-header">'
-          +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>'
-          +'<span>Sources</span>'
-          +'<span class="ai-sources-count">'+sourceLinks.length+'</span>'
-        +'</div>'
-        +'<div class="ai-sources-list">'+items+'</div>'
-      +'</div>';
+    if(!items){
+      // No parseable links — leave the text exactly as the model wrote it so
+      // the generic link pass below can still render it. Never delete content.
+      return match;
     }
-    return ''; // Remove the raw markdown from the text
+    sourcesCard = '<div class="ai-sources-card">'
+      +'<div class="ai-sources-header">'
+        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>'
+        +'<span>Sources</span>'
+        +'<span class="ai-sources-count">'+count+'</span>'
+      +'</div>'
+      +'<div class="ai-sources-list">'+items+'</div>'
+    +'</div>';
+    // Remove the raw Sources markdown from the body — the parsed links are
+    // rendered in the card below. A preceding --- is only consumed when it is
+    // directly adjacent to the line; otherwise it survives and renders as a
+    // tasteful <hr> above the card.
+    return '';
   });
 
   // Code blocks and inline code already extracted at the top of this function
@@ -43062,7 +43518,9 @@ function asstRenderContent(text){
   // Markdown links [text](url) — before paragraph conversion
   // Validate the URL scheme to block javascript: and other dangerous schemes.
   html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, function(match, text, url){
-    return '<a href="'+esc(safeUrl(url))+'" target="_blank" rel="noopener noreferrer" class="asst-md-link">'+text+'</a>';
+    var isRedirect = isGroundingRedirect(safeUrl(url));
+    var tip = isRedirect ? 'Google\'s grounding link expired — opens a search for “'+text+'”' : '';
+    return '<a href="'+esc(sourceHref(url, text))+'" target="_blank" rel="noopener noreferrer" class="asst-md-link"'+(tip?' title="'+esc(tip)+'"':'')+'>'+text+'</a>';
   });
 
   // ── Callout / Alert boxes: > [!NOTE], > [!TIP], > [!WARNING], > [!IMPORTANT], > [!CAUTION] ──
@@ -43074,34 +43532,28 @@ function asstRenderContent(text){
     caution: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
   };
   var calloutLabels = {note:'Note',tip:'Tip',warning:'Warning',important:'Important',caution:'Caution'};
-  html = html.replace(/^&gt;\s*\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]\s*(.*)$/gmi, function(m, type, title){
-    var t = type.toLowerCase();
-    return '<div class="asst-callout asst-callout-'+t+'">'
-      +'<div class="asst-callout-icon">'+(calloutSVGs[t]||calloutSVGs.note)+'</div>'
-      +'<div class="asst-callout-title">'+(title||calloutLabels[t]||t.toUpperCase())+'</div>';
-  });
-  // Close any open callout divs: consecutive > lines after a callout header
-  // We'll handle callout body lines by converting > lines inside callouts
-  html = html.replace(/^&gt;\s*(.+)$/gm, function(m, t){
-    // If already inside a callout (previous sibling is callout), just add content
-    // Otherwise treat as regular blockquote
-    return '<div class="asst-quote">'+t+'</div>';
-  });
-  // Close callout divs: add closing tag after callout + content
-  html = html.replace(/(<div class="asst-callout[^"]*">[\s\S]*?<div class="asst-callout-title">[\s\S]*?<\/div>)(?!\s*<div class="asst-quote">)/g, '$1</div>');
+  // NOTE: the actual > [!TYPE] / > quote → HTML conversion used to run here with
+  // three regexes. They leaked the next line into the callout TITLE (the \s*
+  // after ] swallowed the newline) and emitted every quoted line as its own
+  // disconnected <div class="asst-quote">. Both are now handled line-by-line
+  // in _asstBuildBlocks, where the block structure is decided once.
 
   // ── Collapsible <details><summary> blocks ──
   // Pattern: <<< Summary or <details><summary>Summary</summary>
   var detailBlocks = [];
   html = html.replace(/&lt;details&gt;\s*&lt;summary&gt;([\s\S]*?)&lt;\/summary&gt;\s*([\s\S]*?)&lt;\/details&gt;/gi, function(m, summary, body){
     var placeholder = '%%DETAILBLOCK_'+detailBlocks.length+'%%';
-    detailBlocks.push('<details class="asst-details"><summary class="asst-summary">'+summary.trim()+'</summary><div class="asst-details-body">'+body.trim()+'</div></details>');
+    // Body newlines must be real line breaks AND wrapped in a paragraph:
+    // without the wrapper the DOM normalizer treats the raw <br> runs as stray
+    // breaks at block level and deletes them, collapsing the whole body to one
+    // line.
+    detailBlocks.push('<details class="asst-details"><summary class="asst-summary">'+summary.trim()+'</summary><div class="asst-details-body"><p>'+body.trim().replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>')+'</p></div></details>');
     return placeholder;
   });
   // Alternative syntax: <<< Summary\ncontent\n>>>
   html = html.replace(/^&lt;&lt;&lt;\s*(.+)$([\s\S]*?)^&gt;&gt;&gt;/gm, function(m, summary, body){
     var placeholder = '%%DETAILBLOCK_'+detailBlocks.length+'%%';
-    detailBlocks.push('<details class="asst-details"><summary class="asst-summary">'+summary.trim()+'</summary><div class="asst-details-body">'+body.trim()+'</div></details>');
+    detailBlocks.push('<details class="asst-details"><summary class="asst-summary">'+summary.trim()+'</summary><div class="asst-details-body"><p>'+body.trim().replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>')+'</p></div></details>');
     return placeholder;
   });
 
@@ -43168,106 +43620,10 @@ function asstRenderContent(text){
   html = html.replace(/^## (.+)$/gm, function(m, t){ return renderHeading('h3','asst-h3',t); });
   html = html.replace(/^# (.+)$/gm, function(m, t){ return renderHeading('h2','asst-h2',t); });
 
-  // Blockquotes — lines starting with > (only simple blockquotes not caught by callout)
-  // Already handled above — this is a fallback for any remaining > lines
-  // (Callout processing already consumed >[!TYPE] lines, regular > lines were converted)
+  // Blockquotes / callouts are handled line-by-line inside _asstBuildBlocks.
 
-  // Line breaks → paragraphs (only on non-code text)
-  html = html.replace(/\n\n/g,'</p><p>');
-  html = html.replace(/\n/g,'<br>');
-  html = '<p>'+html+'</p>';
-
-  // ── Task / Checkbox Lists: - [ ] and - [x] ──
-  html = html.replace(/(?:<p>|<br>)- \[x\]\s*(.*?)(?=<\/p>|<br>)/gi, function(m, t){
-    return '<li class="asst-task-item"><span class="asst-task-cb checked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="asst-task-done">'+t+'</span></li>';
-  });
-  html = html.replace(/(?:<p>|<br>)- \[ \]\s*(.*?)(?=<\/p>|<br>)/g, function(m, t){
-    return '<li class="asst-task-item"><span class="asst-task-cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span>'+t+'</span></li>';
-  });
-  // Wrap consecutive task items in task list
-  html = html.replace(/(<li class="asst-task-item">.*?<\/li>)+/g, function(m){ return '<ul class="asst-task-list">'+m+'</ul>'; });
-  html = html.replace(/ class="asst-task-item"/g,'');
-
-  // Unordered Lists — convert "- item" AND "* item" patterns
-  // Match both hyphen and asterisk bullet markers (AI often uses *)
-  html = html.replace(/(?:<p>|<br>|^)[-*]\s+(.*?)(?=<\/p>|<br>)/g,'<li class="ul-item">$1</li>');
-  // Wrap consecutive <li class="ul-item"> — allow ANY content between items
-  html = html.replace(/((?:<li class="ul-item">[\s\S]*?<\/li>(?:(?!<li class="ul-item">|<h[2-5]\b|<hr\b|<\/?(?:ul|ol)\b)[\s\S])*)+)/g, function(m){
-    return '<ul class="asst-list">'+m+'</ul>';
-  });
-  // Ordered Lists — convert "1. item" patterns
-  // STRICT: only match numbers 1-12 at the START of a line followed by ". "
-  // and then a CAPITAL letter AND at least 10 chars of text (prevents matching
-  // sentence fragments like "15. To 50" or "5. Or something" which are too
-  // short to be real list items). Real list items always have descriptive titles.
-  html = html.replace(/(?:<p>|<br>|^)([1-9]|1[0-2])\.\s+(?=[A-Z*#$][\s\S]{9,})(.*?)(?=<\/p>|<br>)/g,'<li class="ol-item">$2</li>');
-  // Wrap consecutive <li class="ol-item"> — allow ANY content between items
-  html = html.replace(/((?:<li class="ol-item">[\s\S]*?<\/li>(?:(?!<li class="ol-item">|<h[2-5]\b|<hr\b|<\/?(?:ul|ol)\b)[\s\S])*)+)/g, function(m){
-    return '<ol class="asst-list">'+m+'</ol>';
-  });
-  // ── Move loose body text BETWEEN list items INTO the previous <li> ──
-  // After the list-item regex runs, body text (the description paragraph)
-  // sits as loose text between </li> and the next <li>. This moves it
-  // INSIDE the previous <li>, wrapped in a <p>, so CSS can target it
-  // with .asst-list li p and control the gap between title + description
-  // vs. the gap between one point's description and the next point.
-  html = html.replace(/<\/li>((?:(?!<li class="(?:ol|ul)-item">|<h[2-5]\b|<hr\b|<\/?(?:ul|ol)\b)[\s\S])*?)(<li class="(?:ol|ul)-item">)/g, function(m, body, nextLi){
-    // Clean up: strip stray <p>, </p>, leading/trailing <br>, trim whitespace.
-    // NOTE: preserve <br> tags INSIDE the body — multiple description lines
-    // separated by single newlines become <br>-separated text inside one <p>.
-    body = body.replace(/<\/?p>/g,'').replace(/^<br>/,'').replace(/<br>$/,'').trim();
-    if(!body) return '</li>'+nextLi; // no body text — leave as-is
-    return '<p>'+body+'</p></li>'+nextLi;
-  });
-  // ── Move loose body text AFTER the LAST <li> INTO that <li> ──
-  // The regex above only fires when body text is followed by another <li>.
-  // For the LAST list item (e.g. "3. Self-Care" followed by its descriptions
-  // but no "4." item), the descriptions sat as loose content INSIDE <ol>/<ul>
-  // but OUTSIDE any <li> — invalid HTML that browsers render inconsistently
-  // (some auto-wrap in anonymous <li>, some move it outside the list, some
-  // render it as a continuation of the previous <li> with wrong styling).
-  // This was the root cause of the user-reported bug where the last item's
-  // title appeared at a different horizontal position than earlier items.
-  html = html.replace(/<\/li>((?:(?!<\/(?:ol|ul)>|<li class="(?:ol|ul)-item">|<h[2-5]\b|<hr\b|<ul\b|<ol\b)[\s\S])*?)<\/(ol|ul)>/g, function(m, body, tag){
-    body = body.replace(/<\/?p>/g,'').replace(/^<br>/,'').replace(/<br>$/,'').trim();
-    if(!body) return '</li></'+tag+'>';
-    return '<p>'+body+'</p></li></'+tag+'>';
-  });
-  // Clean up list item class markers
-  html = html.replace(/ class="ul-item"/g,'');
-  html = html.replace(/ class="ol-item"/g,'');
-
-  // Clean up empty <p> tags left by heading/blockquote/list/table extraction
-  html = html.replace(/<p>\s*<\/p>/g,'');
-  html = html.replace(/<p>(<h[23456])/g,'$1');
-  html = html.replace(/(<\/h[23456]>)<\/p>/g,'$1');
-  // Strip stray <br> immediately after a heading — when a `#### Foo\nBody` block
-  // gets paragraph-wrapped, the \n becomes <br>, producing `<h5>...</h5><br>Body`.
-  // The <br> creates an unwanted blank line between heading and body text.
-  html = html.replace(/(<\/h[23456]>)<br>/g,'$1');
-  html = html.replace(/<p>(<div class="asst-quote">)/g,'$1');
-  html = html.replace(/<p>(<div class="asst-callout)/g,'$1');
-  html = html.replace(/(<\/div>)<\/p>/g,'$1');
-  html = html.replace(/<p>(<hr)/g,'$1');
-  html = html.replace(/<p>(<ul class="asst-list")/g,'$1');
-  html = html.replace(/(<\/ul>)<\/p>/g,'$1');
-  html = html.replace(/<p>(<ol class="asst-list")/g,'$1');
-  html = html.replace(/(<\/ol>)<\/p>/g,'$1');
-  html = html.replace(/<p>(<ul class="asst-task-list")/g,'$1');
-  html = html.replace(/(<\/ul>)<\/p>/g,'$1');
-  html = html.replace(/<p>(<div class="asst-table-wrap">)/g,'$1');
-  html = html.replace(/<p>(<div class="asst-math-block">)/g,'$1');
-  html = html.replace(/<p>(<div class="asst-img-embed">)/g,'$1');
-  html = html.replace(/<p>(<details class="asst-details">)/g,'$1');
-  html = html.replace(/(<\/details>)<\/p>/g,'$1');
-  html = html.replace(/<p>(%%CODEBLOCK)/g,'$1');
-  html = html.replace(/(%%CODEBLOCK\d+%%)<\/p>/g,'$1');
-  html = html.replace(/<p>(%%INLINECODE)/g,'$1');
-  html = html.replace(/(%%INLINECODE\d+%%)<\/p>/g,'$1');
-  html = html.replace(/<p>(%%IMGBLOCK)/g,'$1');
-  html = html.replace(/<p>(%%TABLEBLOCK)/g,'$1');
-  html = html.replace(/<p>(%%MATHBLOCK)/g,'$1');
-  html = html.replace(/<p>(%%DETAILBLOCK)/g,'$1');
+  // ── BLOCK STAGE — line-based parse (see _asstBuildBlocks) ──
+  html = _asstBuildBlocks(html, calloutSVGs, calloutLabels);
 
   // Final cleanup: strip remaining emojis from rendered HTML for professional look
   // This catches any emojis the AI included in body text, not just headings
@@ -43275,37 +43631,70 @@ function asstRenderContent(text){
   html = html.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}\u{203C}-\u{3299}\u{2122}\u{00A9}\u{00AE}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu,'');
   // Clean up double spaces left by emoji removal (only in placeholder text, not in code blocks)
   html = html.replace(/\s{2,}/g,' ');
+  // Half-finished emphasis markers: every PAIRED **…** was already converted to
+  // <strong> above, so any ** still standing is unmatched and would render as
+  // literal asterisks in the reply. Code/math/inline-code are still protected
+  // placeholders at this point, so this only touches prose.
+  html = html.replace(/\*\*/g,'');
 
   // Step 2: Restore code blocks (newlines preserved inside <pre><code> via white-space:pre)
+  // NOTE: every restore below uses a FUNCTION replacer on purpose. A plain
+  // string replacement treats `$&`, `` $` ``, `$'`, `$1`… in the inserted
+  // markup as special patterns, so any generated block containing a literal
+  // `$` sequence got silently rewritten — which is how `$&`-style garbage
+  // could appear inside a restored code block.
   codeBlocks.forEach(function(block, i){
-    html = html.replace('%%CODEBLOCK_'+i+'%%', block);
+    html = html.replace('%%CODEBLOCK_'+i+'%%', function(){ return block; });
   });
   inlineCodes.forEach(function(code, i){
-    html = html.replace('%%INLINECODE_'+i+'%%', code);
+    html = html.replace('%%INLINECODE_'+i+'%%', function(){ return code; });
   });
   // Step 3: Restore table blocks
   tableBlocks.forEach(function(tbl, i){
-    html = html.replace('%%TABLEBLOCK_'+i+'%%', tbl);
+    html = html.replace('%%TABLEBLOCK_'+i+'%%', function(){ return tbl; });
   });
   // Step 4: Restore math blocks
   mathBlocks.forEach(function(mb, i){
-    html = html.replace('%%MATHBLOCK_'+i+'%%', mb);
+    html = html.replace('%%MATHBLOCK_'+i+'%%', function(){ return mb; });
   });
   mathInlines.forEach(function(mi, i){
-    html = html.replace('%%MATHINLINE_'+i+'%%', mi);
+    html = html.replace('%%MATHINLINE_'+i+'%%', function(){ return mi; });
   });
   // Step 5: Restore image embeds
   imgBlocks.forEach(function(img, i){
-    html = html.replace('%%IMGBLOCK_'+i+'%%', img);
+    html = html.replace('%%IMGBLOCK_'+i+'%%', function(){ return img; });
   });
   // Step 6: Restore detail/collapsible blocks
   detailBlocks.forEach(function(det, i){
-    html = html.replace('%%DETAILBLOCK_'+i+'%%', det);
+    html = html.replace('%%DETAILBLOCK_'+i+'%%', function(){ return det; });
   });
 
   // Append premium sources card at the end
   if(sourcesCard){
     html += sourcesCard;
+  }
+
+  // Safety sweep: a placeholder nested inside another restored block (an
+  // inline-code span or code fence inside a <details> body, for example) is
+  // never in `html` when its own restore runs, so it would surface in the
+  // reply as literal "%%INLINECODE_0%%" text. Resolve anything left over now.
+  html = html.replace(/%%(CODEBLOCK|INLINECODE|TABLEBLOCK|MATHBLOCK|MATHINLINE|IMGBLOCK|DETAILBLOCK)_(\d+)%%/g, function(m, kind, idx){
+    var i = parseInt(idx, 10);
+    var arr = kind === 'CODEBLOCK' ? codeBlocks
+      : kind === 'INLINECODE' ? inlineCodes
+      : kind === 'TABLEBLOCK' ? tableBlocks
+      : kind === 'MATHBLOCK' ? mathBlocks
+      : kind === 'MATHINLINE' ? mathInlines
+      : kind === 'IMGBLOCK' ? imgBlocks
+      : detailBlocks;
+    return (arr && arr[i]) ? arr[i] : '';
+  });
+
+  // Step 7: DOM normalization — guarantee balanced, valid markup (orphan text
+  // wrapped in <p>, stray <br> dropped, empty paragraphs removed) so the
+  // browser never has to guess and the reply always lays out correctly.
+  if(!quick){
+    try { html = _asstNormalizeAIHtml(html); } catch(e){}
   }
 
   return html;
@@ -46243,7 +46632,7 @@ function asstCallProviderAPI(conv, onChunk, onDone, onError, abortCtrl){
           var sources = [];
           chunks.forEach(function(c){
             if(c.web && c.web.uri && c.web.title){
-              sources.push('['+c.web.title+']('+c.web.uri+')');
+              sources.push('['+c.web.title+']('+sourceHref(c.web.uri, c.web.title)+')');
             }
           });
           if(sources.length){
@@ -46417,7 +46806,7 @@ function asstCallProviderAPI(conv, onChunk, onDone, onError, abortCtrl){
                     var gSources = [];
                     lastGroundingMeta.groundingChunks.forEach(function(c){
                       if(c.web && c.web.uri && c.web.title){
-                        gSources.push('['+c.web.title+']('+c.web.uri+')');
+                        gSources.push('['+c.web.title+']('+sourceHref(c.web.uri, c.web.title)+')');
                       }
                     });
                     if(gSources.length){
@@ -46779,7 +47168,7 @@ function asstGenerateResponse(userText, conv){
           }
         }
         if(_streamContentEl){
-          _streamContentEl.innerHTML = asstRenderContent(conv.messages[msgIdx].content) + '<span class="streaming-cursor"></span>';
+          _streamContentEl.innerHTML = asstRenderContent(conv.messages[msgIdx].content, true) + '<span class="streaming-cursor"></span>';
         } else {
           asstRenderMessages();
         }
@@ -46861,6 +47250,23 @@ function asstGenerateResponse(userText, conv){
         // Successful response — reset Kimi auto-retry counter
         if(isKimi && stripped.length >= 20){ _kimiAutoRetryCount = 0; }
 
+        // ── Drop transient retry/rate-limit status lines from the FINAL text ──
+        // These are streamed through onChunk as live feedback ("⏳ Rate-limited,
+        // retrying in 5s… (attempt 1/4)", "⏳ Request too large…", "⏳ Gemini rate
+        // limited…"). They are useful for the second they happen, but left in
+        // the stored message they stayed forever as junk paragraphs inside the
+        // finished reply.
+        try {
+          var _finalMsg = conv.messages[msgIdx];
+          if(_finalMsg && _finalMsg.content){
+            _finalMsg.content = _finalMsg.content
+              .replace(/(?:\n[ \t]*)?⏳[ \t]*(?:Rate-?limited|Request too large|Gemini rate limited)[^\n]*/g, '')
+              .replace(/\n{3,}/g, '\n\n')
+              .replace(/^[ \t\n]+/, '')
+              .replace(/[ \t\n]+$/, '');
+          }
+        } catch(e){}
+
         // Parse [ACTION] tags from the AI response and create action cards
         try { asstProcessResponse(conv, msgIdx); } catch(e){}
         try { asstRenderMessages(); } catch(e){}
@@ -46916,7 +47322,15 @@ function asstGenerateResponse(userText, conv){
       response = { text:'I\'m here to help! Ask me anything — I can chat about any topic, or help with your Motion tasks if you need.', action:null };
     }
 
-    var fullText = '💡 **Tip:** Add your free API key in **Settings → AI Assistant → API Keys** to unlock full AI power with unlimited, detailed responses! Groq and Google Gemini offer free keys.\n\n---\n\n' + (response.text || '');
+    // The "add an API key" nudge is genuinely useful the FIRST time a chat falls
+    // back to the built-in responder — but prepending it to every fallback reply
+    // made it repetitive junk in the conversation. Show it once per chat.
+    var tipPrefix = '';
+    if(!conv._tipShown){
+      conv._tipShown = true;
+      tipPrefix = '💡 **Tip:** Add your free API key in **Settings → AI Assistant → API Keys** to unlock full AI power with unlimited, detailed responses! Groq and Google Gemini offer free keys.\n\n---\n\n';
+    }
+    var fullText = tipPrefix + (response.text || '');
     var charIdx = 0;
     var streamSpeed = 18;
 
@@ -46948,7 +47362,7 @@ function asstGenerateResponse(userText, conv){
         if(msgEls.length){
           var lastMsg = msgEls[msgEls.length-1];
           var contentEl = lastMsg.querySelector('.asst-msg-content');
-          if(contentEl) contentEl.innerHTML = asstRenderContent(conv.messages[msgIdx].content) + '<span class="streaming-cursor"></span>';
+          if(contentEl) contentEl.innerHTML = asstRenderContent(conv.messages[msgIdx].content, true) + '<span class="streaming-cursor"></span>';
         } else {
           asstRenderMessages();
         }
@@ -54010,33 +54424,6 @@ html[data-theme="bleach"] .db-hero::before{
   width:36px;text-align:right;flex-shrink:0;
 }
 
-/* ── Focus mini-bar — slim today-focus progress inside Time Allocation ──
-   A quiet companion to the allocation rows: reads the shared focus goal,
-   no card chrome of its own. */
-.db-focus-mini{
-  display:flex;flex-direction:column;gap:7px;
-  border-top:1px solid var(--border);
-  padding-top:12px;
-}
-.db-focus-mini-head{
-  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
-  font:600 11px var(--font-mono);color:var(--text3);
-  letter-spacing:.02em;
-}
-.db-focus-mini-val{
-  font:700 11px var(--font-mono);color:var(--text2);
-  letter-spacing:.02em;font-variant-numeric:tabular-nums;
-}
-.db-focus-mini-track{
-  height:5px;border-radius:99px;overflow:hidden;
-  background:color-mix(in srgb,var(--text) 7%,transparent);
-}
-.db-focus-mini-fill{
-  height:100%;border-radius:99px;
-  background:linear-gradient(90deg,var(--accent2),var(--accent));
-  transition:width 1.2s cubic-bezier(.16,1,.3,1);
-}
-
 /* ── Time flow chart ── */
 .db-flow-svg{
   width:100%;height:200px;display:block;
@@ -54044,6 +54431,60 @@ html[data-theme="bleach"] .db-hero::before{
 .db-flow-empty{
   padding:30px 0;text-align:center;
   font:500 12px var(--font-body);color:var(--text3);
+}
+
+/* ── Progress graph — one bar per day (blocks + habits + focus) ── */
+.db-graph{
+  display:flex;flex-direction:column;gap:9px;flex:1;min-width:0;
+}
+.db-graph-cols{
+  position:relative;display:flex;gap:6px;align-items:stretch;
+}
+/* Plot area: no overlay lines are drawn any more — the dashed gridlines
+   and the average line were both removed at user request. */
+.db-graph-col{
+  flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:5px;
+}
+.db-graph-track{
+  height:150px;display:flex;align-items:flex-end;border-radius:7px;overflow:hidden;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg3) 55%,transparent),var(--bg3));
+  box-shadow:inset 0 0 0 1px var(--border);
+  transition:box-shadow .2s;
+}
+.db-graph-fill{
+  width:100%;border-radius:7px 7px 4px 4px;
+  background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 32%,transparent));
+  box-shadow:0 0 12px color-mix(in srgb,var(--accent) 30%,transparent);
+  transform-origin:bottom;
+  transition:height .45s ease, filter .2s;
+  animation:dbGraphGrow .75s cubic-bezier(.22,1,.36,1) both;
+}
+.db-graph-col.today .db-graph-fill{
+  background:linear-gradient(180deg,var(--accent2),color-mix(in srgb,var(--accent2) 32%,transparent));
+  box-shadow:0 0 12px color-mix(in srgb,var(--accent2) 40%,transparent);
+}
+.db-graph-col.today .db-graph-track{
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 70%,transparent);
+}
+.db-graph-col.future .db-graph-track{opacity:.45;}
+.db-graph-col:hover .db-graph-track{box-shadow:inset 0 0 0 1px var(--accent);}
+.db-graph-col:hover .db-graph-fill{filter:brightness(1.15);}
+.db-graph-x{
+  font:600 10px var(--font-mono);color:var(--text3);text-align:center;
+  line-height:12px;white-space:nowrap;overflow:hidden;
+}
+.db-graph-col.today .db-graph-x{color:var(--accent);font-weight:800;}
+.db-graph-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font:500 10.5px var(--font-mono);color:var(--text3);
+}
+.db-graph-foot i{
+  display:inline-block;width:8px;height:8px;border-radius:3px;
+  background:var(--accent);margin-right:6px;vertical-align:-1px;
+}
+@keyframes dbGraphGrow{from{transform:scaleY(0);opacity:.35}to{transform:scaleY(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .db-graph-fill{animation:none !important;transition:none !important;}
 }
 
 /* ── Two-column main grid ── */
@@ -60275,7 +60716,10 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]) .asst-messages{
 /* AI message rows — centered, very slight left offset */
 html:not([data-theme="light"]):not([data-theme="pure-light"]) .asst-msg.ai{
   max-width:760px !important;
-  margin-left:calc(50% - 395px) !important;
+  /* max() clamps the centering offset to 0 on narrow containers: a bare
+     calc(50% - 395px) goes NEGATIVE below ~790px and pushed the whole AI
+     reply off-screen to the left (margin-left:-119px at a 551px panel). */
+  margin-left:max(0px, calc(50% - 395px)) !important;
   margin-right:auto !important;
   width:100% !important;
 }
@@ -61062,7 +61506,10 @@ html[data-theme="light"] .asst-messages,
 html[data-theme="pure-light"] .asst-messages{padding:24px 24px 28px !important;}
 html[data-theme="light"] .asst-msg.ai,
 html[data-theme="pure-light"] .asst-msg.ai{max-width:760px !important;
-  margin-left:calc(50% - 395px) !important;
+  /* max() clamps the centering offset to 0 on narrow containers: a bare
+     calc(50% - 395px) goes NEGATIVE below ~790px and pushed the whole AI
+     reply off-screen to the left (margin-left:-119px at a 551px panel). */
+  margin-left:max(0px, calc(50% - 395px)) !important;
   margin-right:auto !important;
   width:100% !important;}
 html[data-theme="light"] .asst-msg.user,
@@ -88900,10 +89347,268 @@ html.immersive-zoom .content.blocks-cal-active{zoom:1.05}
 html.sidebar-zoom .content.blocks-cal-active{zoom:1.03}
 html.sidebar-zoom .content:has(#view-blocks-month.visible){zoom:1}
 html.sidebar-zoom .content:has(#view-blocks-progress.visible){zoom:1}
-html.sidebar-zoom .content.habits-active{zoom:1}
-
-/* View-switch zoom change must stay instant (same guard as .main) */
+html.sidebar-zoom .content.habits-active{zoom:1}/* View-switch zoom change must stay instant (same guard as .main) */
 html.view-switching .content{transition:none !important}
+</style>
+
+<style id="light-mode-crisp">
+/* ════════════════════════════════════════════════════════════════
+   LIGHT MODE — CRISPER PASS (mirrors the dark-mode pass the user
+   approved: "crisper, less glowy").
+   Coloured halos read *stronger* on white than white halos do on
+   black, so the indigo / terracotta blooms were the main thing
+   keeping light mode feeling soft. This layer only retunes GLOW
+   tokens — wide blooms dimmed ~25%, and the generic --glow-accent
+   radius cut roughly in half so the halo hugs its element instead
+   of spreading a coloured smear over the white canvas.
+   Deliberately untouched: --accent-glow3 / --accent-glow4 (the 1px
+   ring & border tokens), plus every surface, border, text, shadow,
+   scrollbar and selection rule the existing light layers define.
+   Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+html[data-theme="light"]{
+  --accent-glow:rgba(79,70,229,.09);        /* was .12 */
+  --accent-glow2:rgba(79,70,229,.06);       /* was .08 */
+  --glow-accent:0 0 14px rgba(79,70,229,.08); /* was 0 0 24px .12 */
+  --sb-glow:rgba(79,70,229,.03);            /* was .04 */
+  --accent-glow5:rgba(79,70,229,.23);       /* was .30 */
+  --accent-glow6:rgba(99,102,241,.14);      /* was .18 */
+  --accent-glow7:rgba(99,102,241,.20);      /* was .26 */
+}
+
+html[data-theme="pure-light"]{
+  --accent-glow:rgba(189,95,41,.11);          /* was .15 */
+  --accent-glow2:rgba(189,95,41,.07);         /* was .09 */
+  --glow-accent:0 0 16px rgba(189,95,41,.11); /* was 0 0 30px .16 */
+}
+</style>
+
+<style id="dashboard-microtype">
+/* ════════════════════════════════════════════════════════════════
+   DASHBOARD — MICRO-TYPOGRAPHY PASS
+   Measured on the live dashboard before this pass:
+     • the hero stat labels (FOCUSED / TASKS / BLOCKS / HABITS) rendered
+       at 9px with 0.85 opacity — the smallest text on the page,
+     • the day-navigator date rendered at 10px / 0.7 opacity,
+     • chart axis, Eisenhower meta, goal tabs and the journal mood label
+       all sat at 10px,
+     • the Eisenhower empty hint was 11px at 0.6 opacity (a measured
+       4.3:1 — under the 4.5:1 needed for body text).
+   Spacing and contrast were audited at the same time and were already
+   sound (uniform 10px rhythm between every section, no overflow, no
+   real contrast failures), so this layer ONLY lifts caption sizes and
+   the faded opacities — no layout, colour or spacing changes.
+   Scoped to #view-dashboard and declared !important because later
+   global "polish" blocks redefine some of these same classes.
+   Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Hero stat labels — 9px → 10.5px, full opacity */
+#view-dashboard .db-hero-stat-label{
+  font-size:10.5px !important;
+  letter-spacing:.07em !important;
+  opacity:1 !important;
+  margin-top:3px !important;
+}
+/* Day navigator date — 10px/0.7 → 11px/0.9 */
+#view-dashboard .db-day-nav-date{
+  font-size:11px !important;
+  opacity:.9 !important;
+}
+/* Chart axis labels — 10px → 10.5px; line-height follows because the
+   element clips (overflow:hidden) and 12px would crowd 10.5px glyphs. */
+#view-dashboard .db-graph-x{
+  font-size:10.5px !important;
+  line-height:13px !important;
+}
+/* Goal horizon tabs */
+#view-dashboard .db-goal-tab{ font-size:10.5px !important; }
+/* Journal mood caption */
+#view-dashboard .db-journal-mood-label{ font-size:10.5px !important; }
+/* Eisenhower quadrant meta + empty hint (contrast fix: 0.6 → 0.85) */
+#view-dashboard .db-eisen-meta{ font-size:10.5px !important; }
+#view-dashboard .db-eisen-empty{
+  font-size:11.5px !important;
+  opacity:.85 !important;
+}
+#view-dashboard .db-eisen-pool-head{ font-size:11px !important; }
+#view-dashboard .db-eisen-pool-head span:last-child{ font-size:10.5px !important; }
+/* Year progress captions — "76% complete / 87 days remaining" (9.5px) */
+#view-dashboard .db-year-sub{ font-size:10.5px !important; }
+/* Timer / hydration unit captions */
+#view-dashboard .db-pomo-btn-label,
+#view-dashboard .db-pomo-btn-unit,
+#view-dashboard .db-water-unit{ font-size:11px !important; }
+</style>
+
+<style id="timeblocks-microtype">
+/* ════════════════════════════════════════════════════════════════
+   TIME BLOCKS SUB-PAGES — MICRO-TYPOGRAPHY PASS
+   Measured on the live sub-pages before this pass (dark theme,
+   elements that actually lay out):
+     • Week: the now-chip ("02:34") rendered at 9px; the hour-gutter
+       labels were double-dipped — .bcal-time-slot opacity .85 ×
+       .slot-hour opacity .85 = 0.72 effective on 11px text,
+     • Month: weekday headers (SUN…SAT) sat at 0.7 opacity; the
+       adjacent-month day numbers at 0.30,
+     • Today: the timeline hour marks (12a/3a/6a…) landed around
+       8–9px at 0.5 opacity — the smallest text on the page.
+   Layout and spacing were already sound, so this layer only lifts
+   caption sizes and faded opacities — no colour or layout changes.
+   Scoped to #view-blocks and declared !important because several
+   later "polish" blocks redefine these same classes with !important.
+   Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Week: now-chip — 9px → 10.5px. The second selector mirrors the
+   per-theme !important rule that pins 9px, tying its specificity so
+   document order (this block is last) decides the winner. */
+#view-blocks-cal .bcal-now-time,
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-blocks-cal .bcal-now-time{ font-size:10.5px !important; }
+/* Week: hour gutter — undo the double .85 (effective 0.72 → 0.95) */
+html[data-theme] #view-blocks-cal .bcal-time-slot,
+html:not([data-theme]) #view-blocks-cal .bcal-time-slot{ opacity:1 !important; }
+html[data-theme] #view-blocks-cal .bcal-time-slot .slot-hour,
+html:not([data-theme]) #view-blocks-cal .bcal-time-slot .slot-hour{ opacity:.95 !important; }
+
+/* Month: weekday headers — 0.7 → 0.9 */
+#view-blocks-month .cal-wd{ opacity:.9 !important; }
+/* Month: adjacent-month day numbers — 0.30 → 0.40 (still recessive).
+   The html[data-theme] prefix ties the per-theme dark rule (0.3
+   !important); later document order wins. */
+html[data-theme] #view-blocks-month .cal-day.other-month,
+html:not([data-theme]) #view-blocks-month .cal-day.other-month{ opacity:.4 !important; }
+
+/* Today: timeline hour marks — ~8px/0.5 → 10.5px/0.7. The html[data-theme]
+   prefix matches the specificity of the per-theme !important rules that
+   pin these to 9px/0.5; being later in the document, this wins. */
+html[data-theme] #view-blocks .timeline-hour-mark span,
+html:not([data-theme]) #view-blocks .timeline-hour-mark span{
+  font-size:10.5px !important;
+  opacity:.7 !important;
+}
+</style>
+
+<style id="tasks-microtype">
+/* ════════════════════════════════════════════════════════════════
+   TASKS PAGE — MICRO-TYPOGRAPHY PASS
+   Measured on the live page before this pass (both panels:
+   Today's List and Unscheduled):
+     • the composer labels (TODAY'S TASK / ADD NEW TASK) rendered
+       at 9.5px uppercase,
+     • the meta-field labels (Priority / Duration / Due by /
+       Deadline / Category) were 9.5px at 0.85 opacity,
+     • the hint pills ("free text", "AM/PM") were 8.5px at 0.68
+       effective opacity — the smallest, faintest text on the page,
+     • the priority pill on task cards was 9.5px, the completed-
+       section header 9.5px,
+     • the empty-state body was 13px at 0.7 opacity on top of the
+       dark-theme rgba(255,255,255,.35) colour — a measured ~2:1,
+       far under the 4.5:1 needed for body text.
+   Layout and spacing were already sound, so this layer only lifts
+   caption sizes, faded opacities and the empty-state colour — no
+   layout changes. Scoped to #view-tasks and declared !important
+   because later "polish" blocks redefine these same classes.
+   Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Composer + section labels — 9.5px → 10.5px */
+#view-tasks .task-composer-label,
+#view-tasks .task-section-title{ font-size:10.5px !important; }
+
+/* Meta-field labels — 9.5px/0.85 → 10.5px/full. Selector mirrors
+   the rule that sets opacity:.85 so specificity ties and document
+   order (this block is last) decides. */
+#view-tasks .task-meta-field .task-meta-label{
+  font-size:10.5px !important;
+  opacity:1 !important;
+}
+
+/* Hint pills — 8.5px/0.68 → 10px/0.9 */
+#view-tasks .task-meta-hint{
+  font-size:10px !important;
+  opacity:.9 !important;
+}
+
+/* Priority pill on task cards — 9.5px → 10.5px */
+#view-tasks .task-priority{ font-size:10.5px !important; }
+
+/* Empty-state body — contrast fix: opacity 0.7 × the inherited
+   rgba(255,255,255,.35) worked out near 2:1. Pin the colour to
+   var(--text2) at full opacity (text2 keeps ≥4.5:1 in every theme). */
+html[data-theme] #view-tasks .task-empty p,
+html:not([data-theme]) #view-tasks .task-empty p{
+  color:var(--text2) !important;
+  opacity:1 !important;
+}
+/* Empty-state icon — 0.5 → 0.8 so the accent glyph actually reads */
+#view-tasks .task-empty-icon{ opacity:.8 !important; }
+</style>
+
+<style id="pages-microtype">
+/* ════════════════════════════════════════════════════════════════
+   REMAINING PAGES — MICRO-TYPOGRAPHY PASS
+   (Focus, Tracker, Notes, Assistant, Guidelines, Tools, AI Hub,
+    Settings, Sound Studio)
+   Audited every view on the live page for laid-out text under 10px
+   or effective opacity under 0.8. Results before this pass:
+     • Focus: eleven stat labels (Sessions/Focused/Streak, Cycle/
+       Today/Phase, Best streak/7-day total, Peak hour/Avg today/
+       Logs today) rendered at 9px; the breathe-meta separator at
+       0.5 opacity,
+     • Guidelines: closed accordion chevrons at 0.5 opacity,
+     • Assistant: the "Try asking" category label at 0.7 opacity,
+     • Settings: every row description (12px × 32 rows) at 0.75
+       opacity — and dark themes additionally pin the colour to
+       rgba(255,255,255,.40), compounding to ~3:1; the brightness
+       scale (Dimmer/0/Brighter) at 9.5px,
+     • Sound Studio: the hero eyebrow and all seven section labels
+       at 9px; the hero subtitle at 0.75 opacity,
+     • Tracker, Tools, AI Hub: already clean.
+     • Notes: clean — its empty state reads 0.12 only while the
+       entrance animation runs; it settles at 1.
+   Layout and spacing were already sound everywhere, so this layer
+   only lifts caption sizes and faded opacities. Scoped per view and
+   declared !important because later "polish" blocks redefine these
+   same classes. Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── FOCUS: stat labels — 9px → 10.5px ── */
+#view-focus .fs-label,
+#view-focus .pomo-stat-label,
+#view-focus .fds-label,
+#view-focus .fes-label{ font-size:10.5px !important; }
+/* Breathe-meta separator — 0.5 → 0.8 */
+#view-focus .focus-breathe-meta .dot-sep{ opacity:.8 !important; }
+
+/* ── GUIDELINES: closed-state chevron — 0.5 → 0.8. The :not(.open)
+   guard keeps the open state's full-opacity accent intact. ── */
+#view-rules .rule-accordion:not(.open) .rule-acc-chevron{ opacity:.8 !important; }
+
+/* ── ASSISTANT: "Try asking" label — 0.7 → 0.85 ── */
+#view-assistant .asst-empty-cat-label{ opacity:.85 !important; }
+
+/* ── SETTINGS: row descriptions — restore var(--text2) (the intent of
+   the base rule; per-theme rules were pinning rgba(255,255,255,.40))
+   and lift opacity 0.75 → 0.9. The html[data-theme] prefix ties the
+   per-theme rules' specificity; being last in the document, this wins. ── */
+html[data-theme] #view-settings .settings-row-desc,
+html:not([data-theme]) #view-settings .settings-row-desc{
+  color:var(--text2) !important;
+  opacity:.9 !important;
+}
+/* Brightness scale — 9.5px → 10.5px */
+#view-settings .bg-control-scale{ font-size:10.5px !important; }
+
+/* ── SOUND STUDIO: hero eyebrow + section labels — 9px → 10.5px;
+   eyebrow opacity 0.7 → 0.95, hero subtitle 0.75 → 0.9 ── */
+#view-sound .sound-hero-eyebrow{
+  font-size:10.5px !important;
+  opacity:.95 !important;
+}
+#view-sound .sound-section-label{ font-size:10.5px !important; }
+#view-sound .sound-hero-sub{ opacity:.9 !important; }
 </style>
 
 </body>
