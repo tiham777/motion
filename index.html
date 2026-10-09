@@ -26626,7 +26626,6 @@ function renderDashboard(){
      anything due today shows up here too. */
   if(typeof autoMoveUrgentTasks === 'function'){ try{ autoMoveUrgentTasks(); }catch(e){} }
   const focusMins = typeof homeGetFocusMinutesToday === 'function' ? homeGetFocusMinutesToday() : 0;
-  const streak = typeof homeGetFocusStreak === 'function' ? homeGetFocusStreak() : 0;
   const habits = typeof loadHabits === 'function' ? loadHabits() : [];
   const habitLog = typeof loadHabitLog === 'function' ? loadHabitLog() : {};
   const focusLog = lsGet('ft_focus_log_v1', {});
@@ -26814,11 +26813,9 @@ function renderDashboard(){
   let h = '';
 
   /* HERO STRIP (with range pills + day navigator moved into the right corner) */
-  const streakBadge = streak > 0
-    ? `<span class="db-streak-badge" title="Consecutive focus days">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="opacity:.85"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3 1.7-5.6 4.1-7-.3 1.2-.1 2.5.7 3.5C10 9.9 11.4 7.6 11 5c2.4 1.8 4 4.7 4 7.8 0 .5 0 1-.1 1.5.5-.5.9-1.2 1.1-1.9C18 13.6 18 14.8 18 16c0 3.9-2.7 7-6 7z"/></svg>
-        ${streak} day${streak===1?'':'s'}
-      </span>` : '';
+  /* Focus streak badge ("N days" pill) removed at user request — it no
+     longer appears in the good night bar. The streak is still tracked
+     (homeGetFocusStreak) and shown on the Home / Insights views. */
   const ringC = 2 * Math.PI * 52;
   const ringPct = Math.min(100, Math.max(0, heroScore || 0));
   const ringOff = ringC * (1 - ringPct/100);
@@ -26847,7 +26844,6 @@ function renderDashboard(){
           <button class="db-range-pill${dbRange==='today'?' active':''}" onclick="dbSetRange('today')">Today</button>
           <button class="db-range-pill${dbRange==='7d'?' active':''}" onclick="dbSetRange('7d')">7 Days</button>
           <button class="db-range-pill${dbRange==='30d'?' active':''}" onclick="dbSetRange('30d')">30 Days</button>
-          ${streakBadge}
         </div>
         <div class="db-day-nav" title="Switch the period you're viewing">
           <button class="db-day-nav-btn" onclick="dbShiftDay(-1)" title="Previous ${dbPeriodUnit()}" ${dbDayOffset<=-52?'disabled':''}>
@@ -54760,16 +54756,8 @@ html[data-theme="bleach"] .db-hero::before{
 
 
 
-/* ── Focus streak badge (in range pills row) ── */
-.db-streak-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  margin-left:8px;padding:5px 11px;border-radius:99px;
-  background:rgba(251,146,60,.12);
-  border:1px solid rgba(251,146,60,.28);
-  color:var(--orange);
-  font:700 11px var(--font-mono);letter-spacing:.02em;
-  white-space:nowrap;
-}
+/* Focus streak badge (.db-streak-badge) removed at user request —
+   the "N days" pill no longer renders in the good night bar. */
 
 /* ── Tracker Pulse grid (dashboard variant of the Progress page's da-pulse) ──
    Reuses the .da-pulse-card markup from buildTrackerPulse() but wraps it
@@ -66086,13 +66074,7 @@ html[data-theme="pure-light"] .db-empty{
   color:#5a6172 !important;
 }
 
-/* Streak badge — accent-tinted pill */
-html[data-theme="light"] .db-streak-badge,
-html[data-theme="pure-light"] .db-streak-badge{
-  background:color-mix(in srgb, var(--accent) 10%, transparent) !important;
-  color:var(--accent) !important;
-  border:1px solid color-mix(in srgb, var(--accent) 18%, transparent) !important;
-}
+/* Streak badge removed at user request (was: accent-tinted pill) */
 
 /* Hero theme button — cleaner surface */
 html[data-theme="light"] .db-hero-theme-btn,
