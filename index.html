@@ -20261,6 +20261,430 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   from{opacity:0;transform:translateX(8px)}
   to{opacity:1;transform:translateX(0)}
 }
+/* ════════════════════════════════════════════════════════════
+   OFFICE — Spreadsheet & Documents (Motion Office)
+   Production-grade mini office suite. Uses only design-system
+   tokens so it follows every theme automatically.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Page shell ── */
+#view-office{height:100%;display:flex;flex-direction:column}
+.content.office-active{padding:12px 16px}
+.office-page{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}
+
+.ofc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ofc-title{display:flex;align-items:center;gap:12px;min-width:0}
+.ofc-title-icon{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent-glow4),var(--accent-glow2));
+  border:1px solid var(--border);color:var(--accent);
+  box-shadow:var(--glow-accent);
+}
+.ofc-title h2{
+  font-family:var(--font-head);font-size:1.28rem;font-weight:800;
+  letter-spacing:-.01em;color:var(--text);line-height:1.15;
+}
+.ofc-sub{font-size:.78rem;color:var(--text3);margin-top:2px}
+
+/* ── Mode tabs (Spreadsheet / Documents) ── */
+.ofc-tabs{
+  display:flex;gap:2px;padding:3px;border-radius:12px;
+  background:var(--bg2);border:1px solid var(--border);
+}
+.ofc-tab{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 15px;border-radius:9px;border:none;cursor:pointer;
+  background:transparent;color:var(--text2);
+  font-family:var(--font-body);font-size:.84rem;font-weight:600;
+  transition:background .35s var(--prem-silk),color .35s var(--prem-silk),box-shadow .35s var(--prem-silk);
+}
+.ofc-tab:hover{color:var(--text);background:var(--glass2)}
+.ofc-tab.active{
+  background:var(--surface2);color:var(--text);
+  box-shadow:var(--shadow-sm),inset 0 0 0 1px var(--border);
+}
+.ofc-head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── Panels ── */
+.ofc-panel{display:none;flex:1;min-height:0;flex-direction:column;gap:10px}
+.ofc-panel.active{display:flex;animation:ofcPanelIn .5s var(--prem-silk) both}
+@keyframes ofcPanelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Buttons ── */
+.ofc-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:10px;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--border);color:var(--text2);
+  font-family:var(--font-body);font-size:.8rem;font-weight:600;white-space:nowrap;
+  transition:transform .28s var(--prem-silk),background .28s var(--prem-silk),
+             color .28s var(--prem-silk),border-color .28s var(--prem-silk),box-shadow .28s var(--prem-silk);
+}
+.ofc-btn:hover{color:var(--text);background:var(--surface2);border-color:var(--border2);transform:translateY(-1px)}
+.ofc-btn:active{transform:scale(.97)}
+.ofc-btn-primary{background:var(--accent);border-color:transparent;color:var(--btn-text,#08080a)}
+.ofc-btn-primary:hover{background:var(--accent2);color:var(--btn-text,#08080a);box-shadow:0 4px 14px var(--accent-glow4)}
+.ofc-btn-danger:hover{color:var(--red);border-color:var(--red)}
+.ofc-btn.armed{color:var(--red);border-color:var(--red);background:rgba(248,113,113,.08)}
+.ofc-btn svg{flex-shrink:0}
+
+/* ── Toolbar ── */
+.ofc-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ofc-tb-group{display:flex;gap:4px;align-items:center;padding:3px;border-radius:11px;background:var(--bg2);border:1px solid var(--border)}
+.ofc-tb-group .ofc-btn{background:transparent;border-color:transparent;padding:6px 10px}
+.ofc-tb-group .ofc-btn:hover{background:var(--surface2)}
+
+/* ── Formula bar ── */
+.ofc-formula{
+  flex:1;min-width:220px;display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:11px;
+  padding:0 12px;height:38px;
+  transition:border-color .3s var(--prem-silk),box-shadow .3s var(--prem-silk);
+}
+.ofc-formula:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.ofc-formula-name{
+  font-family:var(--font-mono);font-size:.76rem;color:var(--accent);
+  min-width:52px;text-align:right;flex-shrink:0;user-select:none;
+}
+.ofc-formula input{
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  color:var(--text);font-family:var(--font-mono);font-size:.84rem;height:100%;
+}
+.ofc-formula input::placeholder{color:var(--text3)}
+
+/* ── Sheet bar (workbook tabs) ── */
+.ofc-sheetbar{display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:thin;padding:2px;min-height:34px}
+.ofc-sheet-tab{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 12px;border-radius:9px 9px 0 0;cursor:pointer;
+  background:transparent;border:1px solid transparent;border-bottom:none;
+  color:var(--text3);font-family:var(--font-body);font-size:.8rem;font-weight:600;
+  white-space:nowrap;position:relative;
+  transition:background .3s var(--prem-silk),color .3s var(--prem-silk),border-color .3s var(--prem-silk);
+}
+.ofc-sheet-tab:hover{color:var(--text);background:var(--glass)}
+.ofc-sheet-tab.active{
+  color:var(--accent);background:var(--bg2);
+  border-color:var(--border);
+}
+.ofc-sheet-tab.active::after{
+  content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;
+  background:var(--accent);border-radius:2px;box-shadow:0 0 8px var(--accent-glow5);
+}
+.ofc-sheet-tab input{
+  background:var(--surface);border:1px solid var(--accent);border-radius:6px;
+  color:var(--text);font:inherit;outline:none;padding:1px 4px;width:90px;
+}
+.ofc-sheet-x{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:5px;border:none;cursor:pointer;
+  background:transparent;color:var(--text3);font-size:.8rem;line-height:1;padding:0;
+  transition:background .2s,color .2s;
+}
+.ofc-sheet-x:hover{background:rgba(248,113,113,.14);color:var(--red)}
+.ofc-sheet-add{
+  width:28px;height:28px;border-radius:8px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:1px dashed var(--border2);color:var(--text3);
+  transition:all .28s var(--prem-silk);
+}
+.ofc-sheet-add:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+
+/* ── Spreadsheet grid ── */
+.ofc-grid-scroll{
+  flex:1;min-height:0;overflow:auto;position:relative;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--bg2);outline:none;
+}
+.ofc-grid-scroll:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ofc-grid{display:grid;grid-template-columns:46px repeat(26,96px);grid-auto-rows:30px;width:max-content;min-width:100%;position:relative}
+.ofc-cell{
+  display:flex;align-items:center;padding:0 8px;min-width:0;
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  font-size:.84rem;color:var(--text);white-space:nowrap;overflow:hidden;
+  user-select:none;background:var(--bg2);
+  transition:background .15s ease;
+}
+.ofc-cell:hover{background:var(--glass)}
+.ofc-col-h,.ofc-row-h{
+  background:var(--bg3);color:var(--text3);
+  font-family:var(--font-mono);font-size:.7rem;font-weight:500;
+  justify-content:center;position:sticky;z-index:2;letter-spacing:.03em;
+  transition:background .2s,color .2s;
+}
+.ofc-col-h{top:0}
+.ofc-row-h{left:0}
+.ofc-corner{top:0;left:0;z-index:3;background:var(--bg3);cursor:default}
+.ofc-col-h.sel-h,.ofc-row-h.sel-h{background:var(--accent);color:var(--btn-text,#08080a)}
+.ofc-cell.sel{background:var(--accent-glow2)}
+.ofc-cell.sel:hover{background:var(--accent-glow2)}
+.ofc-cell.sel-focus{box-shadow:inset 0 0 0 2px var(--accent);z-index:1;position:relative}
+.ofc-cell.num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.ofc-cell.err{color:var(--red);font-family:var(--font-mono);font-size:.78rem}
+.ofc-cell.filled{color:var(--text)}
+.ofc-editor{
+  position:absolute;z-index:20;display:none;
+  background:var(--surface);border:2px solid var(--accent);border-radius:4px;
+  color:var(--text);font-family:var(--font-body);font-size:.84rem;
+  padding:0 7px;outline:none;box-shadow:0 6px 20px rgba(0,0,0,.45);
+}
+
+/* ── Status bar ── */
+.ofc-statusbar{
+  display:flex;align-items:center;gap:16px;min-height:24px;
+  font-family:var(--font-mono);font-size:.72rem;color:var(--text3);
+  padding:0 2px;overflow:hidden;white-space:nowrap;
+}
+.ofc-statusbar .ofc-saved-ok{color:var(--green)}
+.ofc-statusbar .ofc-saving{color:var(--accent)}
+
+/* ── Documents layout ── */
+.ofc-docs{display:flex;gap:12px;flex:1;min-height:0}
+.ofc-doc-list{
+  width:232px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;min-height:0;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px;contain:layout style;
+}
+.ofc-doc-list-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ofc-doc-list-head span{
+  font-family:var(--font-head);font-weight:700;font-size:.78rem;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text3);
+}
+.ofc-doc-items{display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin}
+.ofc-doc-item{
+  display:flex;align-items:stretch;gap:2px;border-radius:10px;
+  border:1px solid transparent;cursor:pointer;padding:0;
+  transition:background .25s var(--prem-silk),border-color .25s var(--prem-silk);
+}
+.ofc-doc-item:hover{background:var(--glass)}
+.ofc-doc-item.active{background:var(--accent-glow);border-color:var(--accent-glow5)}
+.ofc-doc-item-main{flex:1;min-width:0;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.ofc-doc-item-name{
+  font-size:.84rem;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ofc-doc-time{font-size:.7rem;color:var(--text3);font-family:var(--font-mono)}
+.ofc-doc-item input{
+  width:100%;background:var(--surface);border:1px solid var(--accent);
+  border-radius:6px;color:var(--text);font:inherit;outline:none;padding:2px 5px;
+}
+.ofc-doc-del{
+  align-self:center;flex-shrink:0;width:22px;height:22px;border-radius:7px;
+  border:none;background:transparent;color:var(--text3);cursor:pointer;
+  font-size:.85rem;line-height:1;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s,background .2s,color .2s;margin-right:6px;
+}
+.ofc-doc-item:hover .ofc-doc-del{opacity:1}
+.ofc-doc-del:hover{background:rgba(248,113,113,.14);color:var(--red)}
+.ofc-doc-del.armed{opacity:1;background:rgba(248,113,113,.14);color:var(--red);width:auto;padding:0 6px;font-size:.68rem;font-weight:700}
+
+.ofc-doc-main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;gap:10px}
+.ofc-doc-head{display:flex;align-items:baseline;gap:10px;padding:0 2px;min-height:26px}
+.ofc-doc-head-label{font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text3)}
+.ofc-doc-title{
+  font-family:var(--font-head);font-size:1.02rem;font-weight:700;color:var(--text);
+  cursor:text;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ofc-doc-title:hover{color:var(--accent)}
+.ofc-doc-toolbar{
+  display:flex;align-items:center;gap:2px;flex-wrap:wrap;
+  background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:5px;
+  contain:layout style;
+}
+.ofc-tb{
+  min-width:30px;height:30px;padding:0 7px;border-radius:8px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:none;color:var(--text2);
+  font-family:var(--font-body);font-size:.82rem;font-weight:600;
+  transition:background .2s,color .2s,transform .2s var(--prem-silk);
+}
+.ofc-tb:hover{background:var(--glass2);color:var(--text)}
+.ofc-tb:active{transform:scale(.94)}
+.ofc-tb.on{background:var(--accent-glow);color:var(--accent)}
+.ofc-tb-sep{width:1px;height:20px;background:var(--border);margin:0 5px;flex-shrink:0}
+.ofc-select{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text2);font-family:var(--font-body);font-size:.8rem;font-weight:600;
+  padding:6px 8px;outline:none;cursor:pointer;margin-right:6px;
+  transition:border-color .2s;
+}
+.ofc-select:hover,.ofc-select:focus{border-color:var(--border2)}
+
+.ofc-doc-scroll{flex:1;min-height:0;overflow-y:auto;padding:6px 2px 40px;scrollbar-width:thin}
+.ofc-paper{
+  max-width:840px;margin:0 auto;min-height:100%;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--card-depth),inset 0 1px 0 rgba(255,255,255,.04);
+  padding:56px 64px;outline:none;cursor:text;
+  font-family:var(--font-body);font-size:.98rem;line-height:1.75;color:var(--text);
+  transition:box-shadow .35s var(--prem-silk),border-color .35s var(--prem-silk);
+}
+.ofc-paper:focus{border-color:var(--border2);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.05)}
+.ofc-paper:empty::before{content:attr(data-placeholder);color:var(--text3);pointer-events:none}
+.ofc-paper h1{font-family:var(--font-head);font-size:1.9rem;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;color:var(--text)}
+.ofc-paper h2{font-family:var(--font-head);font-size:1.4rem;font-weight:700;letter-spacing:-.01em;margin:30px 0 10px;color:var(--text)}
+.ofc-paper h3{font-family:var(--font-head);font-size:1.12rem;font-weight:700;margin:24px 0 8px;color:var(--text)}
+.ofc-paper p{margin:0 0 13px}
+.ofc-paper ul,.ofc-paper ol{margin:0 0 13px;padding-left:24px}
+.ofc-paper li{margin-bottom:5px}
+.ofc-paper blockquote{
+  margin:0 0 13px;padding:10px 16px;border-left:3px solid var(--accent);
+  background:var(--accent-glow2);border-radius:0 10px 10px 0;color:var(--text2);
+}
+.ofc-paper b,.ofc-paper strong{font-weight:700;color:var(--text)}
+.ofc-paper a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.ofc-paper code{font-family:var(--font-mono);font-size:.85em;background:var(--glass2);padding:1px 6px;border-radius:6px}
+.ofc-sheet-name{max-width:112px;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Format bar ── */
+.ofc-fmt.on{color:var(--accent);background:var(--accent-glow);border-color:var(--accent-glow5)}
+.ofc-color-inp{
+  width:26px;height:26px;padding:0;border:1px solid var(--border);
+  border-radius:7px;background:transparent;cursor:pointer;
+  transition:transform .2s var(--prem-silk),border-color .2s var(--prem-silk);
+}
+.ofc-color-inp:hover{transform:scale(1.12);border-color:var(--border2)}
+.ofc-color-inp::-webkit-color-swatch-wrapper{padding:2px}
+.ofc-color-inp::-webkit-color-swatch{border:none;border-radius:5px}
+.ofc-color-inp::-moz-color-swatch{border:none;border-radius:5px}
+.ofc-select.mini{padding:5px 6px;font-size:.76rem;margin:0}
+
+/* ── Column & row resize handles ──
+   Anchored to the sticky header cells (position:sticky elements are
+   positioned, so absolute children anchor to them). Headers get
+   overflow:visible so the handles can hang off the cell edge. */
+.ofc-grid .ofc-col-h,
+.ofc-grid .ofc-row-h{overflow:visible}
+.ofc-col-resize{
+  position:absolute;top:0;right:-4px;width:8px;height:100%;
+  cursor:col-resize;z-index:6;touch-action:none;
+}
+.ofc-col-resize::after{
+  content:'';position:absolute;left:3px;top:0;bottom:0;width:2px;
+  background:transparent;border-radius:2px;transition:background .2s;
+}
+.ofc-col-resize:hover::after,.ofc-col-resize:active::after{background:var(--accent)}
+.ofc-col-h.resizing{background:var(--accent-glow);color:var(--accent)}
+.ofc-row-resize{
+  position:absolute;left:0;bottom:-4px;width:100%;height:8px;
+  cursor:row-resize;z-index:6;touch-action:none;
+}
+.ofc-row-resize::after{
+  content:'';position:absolute;top:3px;left:0;right:0;height:2px;
+  background:transparent;border-radius:2px;transition:background .2s;
+}
+.ofc-row-resize:hover::after,.ofc-row-resize:active::after{background:var(--accent)}
+.ofc-row-h.resizing{background:var(--accent-glow);color:var(--accent)}
+
+/* ── Empty state ── */
+.ofc-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:var(--text3);text-align:center;padding:40px;
+}
+.ofc-empty-icon{
+  width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  background:var(--accent-glow);border:1px solid var(--accent-glow5);color:var(--accent);
+  box-shadow:var(--glow-accent);margin-bottom:6px;
+}
+.ofc-empty h3{font-family:var(--font-head);font-size:1.05rem;font-weight:700;color:var(--text2)}
+.ofc-empty p{font-size:.84rem;max-width:300px;line-height:1.6}
+
+/* ── Mobile ── */
+@media (max-width:900px){
+  .ofc-docs{flex-direction:column}
+  .ofc-doc-list{width:100%;flex-shrink:1;min-height:0;max-height:168px}
+  .ofc-doc-items{flex-direction:row;overflow-x:auto;overflow-y:hidden}
+  .ofc-doc-item{min-width:158px}
+  .ofc-paper{padding:30px 24px;min-height:60vh}
+  .ofc-head-actions{margin-left:0;width:100%}
+  .ofc-formula{min-width:100%;order:10}
+}
+@media (max-width:560px){
+  .ofc-title h2{font-size:1.1rem}
+  .ofc-sub{display:none}
+  .ofc-paper{padding:24px 18px}
+}
+
+/* ── Mind maps ── */
+.ofc-map-main{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0}
+.ofc-map-scroll{
+  position:relative;flex:1;min-height:0;overflow:hidden;outline:none;
+  cursor:grab;touch-action:none;user-select:none;
+  background:radial-gradient(circle at 1px 1px, var(--glass2) 1px, transparent 0) 0 0/26px 26px, var(--glass);
+}
+.ofc-map-scroll:active{cursor:grabbing}
+.ofc-map-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.omc-edge{fill:none;stroke:var(--border2);stroke-width:2;opacity:.7}
+.omc-link{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-dasharray:5 4;opacity:.65}
+.omc-node{cursor:pointer}
+.omc-node-rect{fill:var(--glass2);stroke:var(--border);stroke-width:1;transition:stroke .15s var(--prem-silk)}
+.omc-node:hover .omc-node-rect{stroke:var(--border2)}
+.omc-node.sel .omc-node-rect{stroke:var(--accent);stroke-width:2}
+.omc-node.connect .omc-node-rect{stroke:var(--accent);stroke-width:2;stroke-dasharray:4 3;animation:omcPulse 1.1s ease-in-out infinite}
+.omc-node.match .omc-node-rect{stroke:#fbbf24;stroke-width:2}
+.omc-node.sel.match .omc-node-rect{stroke:var(--accent)}
+.omc-node-text{fill:var(--text);font-size:13px;pointer-events:none}
+.omc-node-bar{pointer-events:none}
+@keyframes omcPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.ofc-map-editor{
+  position:absolute;z-index:6;display:none;
+  background:var(--glass);border:1px solid var(--accent);border-radius:10px;
+  color:var(--text);padding:0 10px;font-family:var(--font);outline:none;
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.ofc-map-zoom{
+  position:absolute;right:12px;bottom:12px;z-index:5;
+  display:flex;align-items:center;gap:2px;
+  background:var(--glass);border:1px solid var(--border);border-radius:10px;
+  padding:3px;box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+.ofc-map-zoom button{
+  width:26px;height:26px;border:none;border-radius:7px;background:transparent;
+  color:var(--text2);cursor:pointer;font-size:.95rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;
+}
+.ofc-map-zoom button:hover{background:var(--glass2);color:var(--text)}
+.ofc-map-zoom-val{min-width:46px;text-align:center;font-size:.74rem;color:var(--text2);font-variant-numeric:tabular-nums}
+.ofc-map-search{display:flex;align-items:center;gap:2px}
+.ofc-map-search input{
+  width:132px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+  background:var(--glass);color:var(--text);font-size:.78rem;outline:none;
+  font-family:var(--font);
+}
+.ofc-map-search input:focus{border-color:var(--accent)}
+.ofc-map-match-count{font-size:.72rem;color:var(--text3);min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+.ofc-map-swatch{width:16px;height:16px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s var(--prem-silk)}
+.ofc-map-swatch:hover{transform:scale(1.25)}
+.ofc-map-swatch.on{border-color:var(--text);box-shadow:0 0 0 2px var(--accent-glow)}
+.omc-badge{cursor:pointer}
+.omc-badge circle{fill:var(--glass);stroke:var(--border2);stroke-width:1;transition:fill .15s,stroke .15s}
+.omc-badge:hover circle{fill:var(--accent-glow);stroke:var(--accent)}
+.omc-badge text{fill:var(--text2);font-size:10px;font-weight:700;text-anchor:middle;pointer-events:none}
+.omc-badge.collapsed circle{fill:var(--accent);stroke:var(--accent)}
+.omc-badge.collapsed text{fill:#171426}
+
+/* ── Print: only the document paper ── */
+@media print{
+  @page{margin:1.8cm}
+  #view-office *{visibility:hidden}
+  .ofc-paper,.ofc-paper *{visibility:visible}
+  .ofc-paper{
+    position:absolute;left:0;top:0;width:100%;max-width:none;margin:0;
+    border:none;box-shadow:none;border-radius:0;min-height:0;
+    color:#1a1a1a;background:#fff;
+  }
+  .ofc-paper h1,.ofc-paper h2,.ofc-paper h3,.ofc-paper b,.ofc-paper strong{color:#000}
+  .ofc-paper blockquote{background:#f4f4f4;color:#333}
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion:reduce){
+  .ofc-tab,.ofc-btn,.ofc-sheet-tab,.ofc-doc-item,.ofc-tb,.ofc-cell,.ofc-paper{
+    transition:none!important;
+  }
+  .ofc-panel.active{animation:none}
+}
 
 </style>
 </head>
@@ -20689,6 +21113,7 @@ requestAnimationFrame(draw);
   <div class="nav-item" id="snav-focus" onclick="setView('focus',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Focus Timer</div>
   <div class="nav-item" id="snav-tracker" onclick="setView('tracker',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></span> Tracker</div>
   <div class="nav-item" id="snav-notes" onclick="setView('notes',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Notes</div>
+  <div class="nav-item" id="snav-office" onclick="setView('office',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></span> Office</div>
   <div class="nav-item" id="snav-assistant" onclick="setView('assistant',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg></span> Assistant</div>
   <div class="nav-item" id="snav-rules" onclick="setView('rules',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Guidelines</div>
   <div class="nav-item" id="snav-tools" onclick="setView('tools',this)"><span class="nav-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Tools</div>
@@ -20721,6 +21146,7 @@ requestAnimationFrame(draw);
     <button class="tab-btn" id="tab-focus"  onclick="setView('focus',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Focus</button>
     <button class="tab-btn" id="tab-tracker" onclick="setView('tracker',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg> Tracker</button>
     <button class="tab-btn" id="tab-notes"  onclick="setView('notes',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Notes</button>
+    <button class="tab-btn" id="tab-office" onclick="setView('office',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Office</button>
     <button class="tab-btn" id="tab-assistant" onclick="setView('assistant',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg> Assistant</button>
     <button class="tab-btn" id="tab-rules"  onclick="setView('rules',null)">Guidelines</button>
     <button class="tab-btn" id="tab-tools" onclick="setView('tools',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Tools</button>
@@ -21685,6 +22111,311 @@ requestAnimationFrame(draw);
     <!-- TOOLS -->
     <div id="view-tools">
       <div class="tools-page" id="toolsPage"></div>
+    </div>
+
+    <!-- OFFICE — spreadsheets & documents -->
+    <div id="view-office" style="display:none">
+      <div class="office-page" id="officePage">
+
+        <!-- Header -->
+        <div class="ofc-head">
+          <div class="ofc-title">
+            <span class="ofc-title-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            </span>
+            <div>
+              <h2>Office</h2>
+              <div class="ofc-sub">Spreadsheets, documents &amp; mind maps — autosaved as you work</div>
+            </div>
+          </div>
+          <div class="ofc-tabs" role="tablist" aria-label="Office mode">
+            <button class="ofc-tab active" id="ofcTabSheets" role="tab" aria-selected="true" onclick="ofcSetTab('sheets')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              Spreadsheet
+            </button>
+            <button class="ofc-tab" id="ofcTabDocs" role="tab" aria-selected="false" onclick="ofcSetTab('docs')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Documents
+            </button>
+            <button class="ofc-tab" id="ofcTabMaps" role="tab" aria-selected="false" onclick="ofcSetTab('maps')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="9.5" y1="9.5" x2="6.5" y2="6.5"/><line x1="14.5" y1="9.5" x2="17.5" y2="6.5"/><line x1="9.5" y1="14.5" x2="6.5" y2="17.5"/><line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/></svg>
+              Mind Maps
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ SPREADSHEET PANEL ═══ -->
+        <div class="ofc-panel active" id="ofcPanelSheets" role="tabpanel" aria-label="Spreadsheet">
+          <div class="ofc-sheetbar" id="ofcSheetBar" role="tablist" aria-label="Sheets"></div>
+
+          <div class="ofc-toolbar">
+            <div class="ofc-formula">
+              <span class="ofc-formula-name" id="ofcAddr">A1</span>
+              <input id="ofcFormulaIn" type="text" placeholder="Type a value, or a formula like =SUM(B2:B8)" spellcheck="false" autocomplete="off" aria-label="Cell contents or formula"/>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Rows and columns">
+              <button class="ofc-btn" onclick="ofcInsertRow()" title="Insert row above the cursor row">+ Row</button>
+              <button class="ofc-btn" onclick="ofcDeleteRow()" title="Delete the cursor row">− Row</button>
+              <button class="ofc-btn" onclick="ofcInsertCol()" title="Insert column left of the cursor column">+ Col</button>
+              <button class="ofc-btn" onclick="ofcDeleteCol()" title="Delete the cursor column">− Col</button>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Data">
+              <button class="ofc-btn" onclick="document.getElementById('ofcCsvFile').click()" title="Import data from a CSV file">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import
+              </button>
+              <button class="ofc-btn" onclick="ofcExportCSV()" title="Download the current sheet as a CSV file">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export
+              </button>
+              <button class="ofc-btn ofc-btn-danger" onclick="ofcClearRange()" title="Clear the selected cells (Delete)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Clear
+              </button>
+            </div>
+            <input type="file" id="ofcCsvFile" accept=".csv,text/csv,text/plain" style="display:none" aria-hidden="true"/>
+          </div>
+
+          <div class="ofc-toolbar ofc-format-bar" role="toolbar" aria-label="Cell formatting">
+            <div class="ofc-tb-group">
+              <button class="ofc-btn ofc-fmt" data-fmt="b" onmousedown="event.preventDefault()" onclick="ofcToggleFmt('b')" title="Bold (toggle)" aria-label="Bold"><b>B</b></button>
+              <button class="ofc-btn ofc-fmt" data-fmt="i" onmousedown="event.preventDefault()" onclick="ofcToggleFmt('i')" title="Italic (toggle)" aria-label="Italic"><i>I</i></button>
+              <button class="ofc-btn ofc-fmt" data-fmt="u" onmousedown="event.preventDefault()" onclick="ofcToggleFmt('u')" title="Underline (toggle)" aria-label="Underline"><u>U</u></button>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Alignment">
+              <button class="ofc-btn" onmousedown="event.preventDefault()" onclick="ofcSetFmt('align','left');ofcFocusGrid()" title="Align left" aria-label="Align left"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
+              <button class="ofc-btn" onmousedown="event.preventDefault()" onclick="ofcSetFmt('align','center');ofcFocusGrid()" title="Align center" aria-label="Align center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></svg></button>
+              <button class="ofc-btn" onmousedown="event.preventDefault()" onclick="ofcSetFmt('align','right');ofcFocusGrid()" title="Align right" aria-label="Align right"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg></button>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Colors">
+              <input type="color" class="ofc-color-inp" id="ofcTextColor" value="#f6f3fc" title="Text color" onchange="ofcSetFmt('color',this.value);ofcFocusGrid()" aria-label="Text color"/>
+              <input type="color" class="ofc-color-inp" id="ofcFillColor" value="#f5c548" title="Fill color" onchange="ofcSetFmt('bg',this.value);ofcFocusGrid()" aria-label="Fill color"/>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Number format">
+              <select class="ofc-select mini" id="ofcNumFmt" title="Number format" onchange="ofcSetNumFmt(this.value);this.selectedIndex=0;ofcFocusGrid()" aria-label="Number format">
+                <option value="" selected>Format</option>
+                <option value="auto">Auto</option>
+                <option value="comma">1,000</option>
+                <option value="currency">$ 1,000.00</option>
+                <option value="percent">0.0%</option>
+              </select>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="Data tools">
+              <button class="ofc-btn" onclick="ofcAutoSum();ofcFocusGrid()" title="Insert =SUM() for the selection">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 4V10M18 10c0 3-2 5-5 5s-5-2-5-5V4"/><path d="M12 4v11"/><path d="M8 19h8"/></svg>
+                Σ Sum
+              </button>
+              <button class="ofc-btn" onclick="ofcSort(1);ofcFocusGrid()" title="Sort by first column (A → Z)">A↓Z</button>
+              <button class="ofc-btn" onclick="ofcSort(-1);ofcFocusGrid()" title="Sort by first column (Z → A)">Z↓A</button>
+            </div>
+            <div class="ofc-tb-group" role="group" aria-label="History">
+              <button class="ofc-btn" onclick="ofcUndo();ofcFocusGrid()" title="Undo (Ctrl+Z)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Undo
+              </button>
+              <button class="ofc-btn" onclick="ofcRedo();ofcFocusGrid()" title="Redo (Ctrl+Y)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Redo
+              </button>
+            </div>
+            <button class="ofc-btn ofc-btn-danger" onmousedown="event.preventDefault()" onclick="ofcClearFmt();ofcFocusGrid()" title="Clear all formatting from the selection">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              Clear format
+            </button>
+          </div>
+
+          <div class="ofc-grid-scroll" id="ofcGridScroll" tabindex="0" role="application" aria-label="Spreadsheet grid. Use arrow keys to move, type to edit, Enter to commit."></div>
+
+          <div class="ofc-statusbar">
+            <span id="ofcStatusSel">A1</span>
+            <span id="ofcStatusVal"></span>
+            <span id="ofcStatusQuick" style="color:var(--accent)"></span>
+            <span id="ofcStatusHints" style="opacity:.7">Enter commit · Tab right · F2 edit · = formula · Ctrl+Z undo · drag header edges to resize</span>
+            <span style="margin-left:auto" id="ofcStatusSaved">Saved</span>
+          </div>
+        </div>
+
+        <!-- ═══ DOCUMENTS PANEL ═══ -->
+        <div class="ofc-panel" id="ofcPanelDocs" role="tabpanel" aria-label="Documents">
+          <div class="ofc-docs">
+            <aside class="ofc-doc-list" aria-label="Documents">
+              <div class="ofc-doc-list-head">
+                <span>Documents</span>
+                <button class="ofc-btn ofc-btn-primary" onclick="ofcNewDoc()" title="New document">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  New
+                </button>
+              </div>
+              <div class="ofc-doc-items" id="ofcDocItems"></div>
+            </aside>
+
+            <div class="ofc-doc-main">
+              <div class="ofc-doc-head">
+                <span class="ofc-doc-head-label">Document</span>
+                <h3 class="ofc-doc-title" id="ofcDocName" title="Double-click to rename">—</h3>
+              </div>
+              <div class="ofc-doc-toolbar" id="ofcDocToolbar" role="toolbar" aria-label="Text formatting">
+                <select class="ofc-select" id="ofcBlockSel" title="Paragraph style" onchange="ofcBlockFmt(this.value);this.selectedIndex=0" aria-label="Paragraph style">
+                  <option value="" selected>Style</option>
+                  <option value="h1">Heading 1</option>
+                  <option value="h2">Heading 2</option>
+                  <option value="h3">Heading 3</option>
+                  <option value="p">Body text</option>
+                  <option value="blockquote">Quote</option>
+                </select>
+                <button class="ofc-tb" data-cmd="bold" onmousedown="event.preventDefault()" onclick="ofcCmd('bold')" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+                <button class="ofc-tb" data-cmd="italic" onmousedown="event.preventDefault()" onclick="ofcCmd('italic')" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
+                <button class="ofc-tb" data-cmd="underline" onmousedown="event.preventDefault()" onclick="ofcCmd('underline')" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+                <button class="ofc-tb" data-cmd="strikeThrough" onmousedown="event.preventDefault()" onclick="ofcCmd('strikeThrough')" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
+                <span class="ofc-tb-sep" aria-hidden="true"></span>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('insertUnorderedList')" title="Bullet list" aria-label="Bullet list">• List</button>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('insertOrderedList')" title="Numbered list" aria-label="Numbered list">1. List</button>
+                <span class="ofc-tb-sep" aria-hidden="true"></span>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('justifyLeft')" title="Align left" aria-label="Align left"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('justifyCenter')" title="Align center" aria-label="Align center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></svg></button>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('justifyRight')" title="Align right" aria-label="Align right"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg></button>
+                <span class="ofc-tb-sep" aria-hidden="true"></span>
+                <button class="ofc-tb" onmousedown="event.preventDefault()" onclick="ofcCmd('removeFormat')" title="Clear formatting" aria-label="Clear formatting">Tx</button>
+              </div>
+
+              <div class="ofc-doc-scroll">
+                <div class="ofc-paper" id="ofcPaper" contenteditable="true" spellcheck="true" data-placeholder="Start writing…" aria-label="Document editor"></div>
+              </div>
+
+              <div class="ofc-statusbar">
+                <span id="ofcDocStats">0 words</span>
+                <span id="ofcDocSaved" class="ofc-saved-ok">Saved</span>
+                <span style="margin-left:auto;display:flex;gap:6px">
+                  <button class="ofc-btn" onclick="ofcExportDoc()" title="Download this document as a standalone HTML file">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download .html
+                  </button>
+                  <button class="ofc-btn" onclick="ofcPrintDoc()" title="Print the document">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Print
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ MIND MAPS PANEL ═══ -->
+        <div class="ofc-panel" id="ofcPanelMaps" role="tabpanel" aria-label="Mind maps">
+          <div class="ofc-docs">
+            <aside class="ofc-doc-list" aria-label="Mind maps">
+              <div class="ofc-doc-list-head">
+                <span>Mind maps</span>
+                <button class="ofc-btn ofc-btn-primary" onclick="ofcNewMap()" title="New mind map">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  New
+                </button>
+              </div>
+              <div class="ofc-doc-items" id="ofcMapItems"></div>
+            </aside>
+
+            <div class="ofc-map-main">
+              <div class="ofc-doc-head">
+                <span class="ofc-doc-head-label">Mind map</span>
+                <h3 class="ofc-doc-title" id="ofcMapName" title="Double-click to rename">—</h3>
+              </div>
+
+              <div class="ofc-doc-toolbar" id="ofcMapToolbar" role="toolbar" aria-label="Map tools">
+                <div class="ofc-tb-group" role="group" aria-label="Tools">
+                  <button class="ofc-tb ofc-map-tool on" data-tool="select" onclick="ofcMapSetTool('select')" title="Select / move (V)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+                    Select
+                  </button>
+                  <button class="ofc-tb ofc-map-tool" data-tool="add" onclick="ofcMapSetTool('add')" title="Add node (A) — click canvas or a node">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                    Add
+                  </button>
+                  <button class="ofc-tb ofc-map-tool" data-tool="connect" onclick="ofcMapSetTool('connect')" title="Connect two nodes (C)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12c4 0 8-4 12-4M7 12c4 0 8 4 12 4"/></svg>
+                    Connect
+                  </button>
+                </div>
+                <div class="ofc-tb-group" role="group" aria-label="Node color" title="Color of the selected node">
+                  <button class="ofc-map-swatch" data-color="#818cf8" style="background:#818cf8" onclick="ofcMapSetColor('#818cf8')" title="Indigo" aria-label="Indigo"></button>
+                  <button class="ofc-map-swatch" data-color="#38bdf8" style="background:#38bdf8" onclick="ofcMapSetColor('#38bdf8')" title="Sky" aria-label="Sky"></button>
+                  <button class="ofc-map-swatch" data-color="#34d399" style="background:#34d399" onclick="ofcMapSetColor('#34d399')" title="Emerald" aria-label="Emerald"></button>
+                  <button class="ofc-map-swatch" data-color="#fbbf24" style="background:#fbbf24" onclick="ofcMapSetColor('#fbbf24')" title="Amber" aria-label="Amber"></button>
+                  <button class="ofc-map-swatch" data-color="#fb7185" style="background:#fb7185" onclick="ofcMapSetColor('#fb7185')" title="Rose" aria-label="Rose"></button>
+                  <button class="ofc-map-swatch" data-color="#c084fc" style="background:#c084fc" onclick="ofcMapSetColor('#c084fc')" title="Purple" aria-label="Purple"></button>
+                  <button class="ofc-map-swatch" data-color="#f472b6" style="background:#f472b6" onclick="ofcMapSetColor('#f472b6')" title="Pink" aria-label="Pink"></button>
+                  <button class="ofc-map-swatch" data-color="#2dd4bf" style="background:#2dd4bf" onclick="ofcMapSetColor('#2dd4bf')" title="Teal" aria-label="Teal"></button>
+                </div>
+                <div class="ofc-tb-group" role="group" aria-label="Arrange">
+                  <button class="ofc-tb" onclick="ofcMapAutoLayout()" title="Arrange as a tidy tree">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="6" y2="17"/><line x1="12" y1="7" x2="18" y2="17"/></svg>
+                    Auto-arrange
+                  </button>
+                  <button class="ofc-tb" onclick="ofcMapFitView()" title="Fit the whole map in view (F)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+                    Fit
+                  </button>
+                </div>
+                <div class="ofc-tb-group" role="group" aria-label="History">
+                  <button class="ofc-tb" onclick="ofcMapUndo()" title="Undo (Ctrl+Z)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    Undo
+                  </button>
+                  <button class="ofc-tb" onclick="ofcMapRedo()" title="Redo (Ctrl+Y)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Redo
+                  </button>
+                </div>
+                <div class="ofc-tb-group ofc-map-search" role="group" aria-label="Search nodes">
+                  <input type="text" id="ofcMapSearch" placeholder="Find nodes…" oninput="ofcMapSearch(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();ofcMapSearchNext(1)}" aria-label="Find nodes"/>
+                  <button class="ofc-tb" onclick="ofcMapSearchNext(-1)" title="Previous match">▴</button>
+                  <button class="ofc-tb" onclick="ofcMapSearchNext(1)" title="Next match">▾</button>
+                  <span class="ofc-map-match-count" id="ofcMapMatchCount"></span>
+                </div>
+              </div>
+
+              <div class="ofc-map-scroll" id="ofcMapScroll" tabindex="0" role="application" aria-label="Mind map canvas. Enter adds a sibling, Tab adds a child, minus and plus collapse or expand branches, Delete removes, double-click or F2 renames a node, arrow keys move between nodes.">
+                <svg class="ofc-map-svg" id="ofcMapSvg" aria-hidden="true">
+                  <g id="ofcMapViewport"><g id="ofcMapEdges"></g><g id="ofcMapNodes"></g></g>
+                </svg>
+                <input class="ofc-map-editor" id="ofcMapEditor" type="text" spellcheck="false" autocomplete="off" aria-label="Node text"/>
+                <div class="ofc-map-zoom" role="group" aria-label="Zoom">
+                  <button onclick="ofcMapZoomDelta(-0.15)" title="Zoom out">−</button>
+                  <span class="ofc-map-zoom-val" id="ofcMapZoomVal">100%</span>
+                  <button onclick="ofcMapZoomDelta(0.15)" title="Zoom in">+</button>
+                  <button onclick="ofcMapFitView()" title="Fit to view">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="ofc-statusbar">
+                <span id="ofcMapStats">0 nodes</span>
+                <span id="ofcMapHints" style="opacity:.7">Enter · sibling · Tab · child · −/+ · collapse · Del · remove · Ctrl+D · duplicate · Ctrl+C/V · copy · click again / F2 · rename</span>
+                <span style="margin-left:auto;display:flex;gap:6px">
+                  <button class="ofc-btn" onclick="document.getElementById('ofcMapFile').click()" title="Import a map from a JSON file">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Import
+                  </button>
+                  <button class="ofc-btn" onclick="ofcMapExportJSON()" title="Download this map as JSON">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    JSON
+                  </button>
+                  <button class="ofc-btn" onclick="ofcMapExportPNG()" title="Download this map as a PNG image">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    PNG
+                  </button>
+                  <button class="ofc-btn" onclick="ofcMapExportSVG()" title="Download this map as a scalable SVG file">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+                    SVG
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="ofcMapFile" accept=".json,application/json" style="display:none" aria-hidden="true"/>
+
+      </div>
     </div>
 
     <!-- THOUGHTS -->
@@ -25912,11 +26643,17 @@ function setView(v,sideEl){
     });
   }catch(e){}
   currentView=v;
-  ['dashboard','home','blocks','tasks','focus','rules','tracker','notes','calendar','sound','settings','aihub','assistant','tools'].forEach(n=>{
+  // Leaving Office: commit any in-progress cell edit and flush any
+  // pending document autosave so no keystrokes are lost on view switch.
+  if(v!=='office'){
+    try{ if(typeof ofcCommitEdit==='function')ofcCommitEdit(); }catch(e){}
+    try{ if(typeof ofcFlushDocSave==='function')ofcFlushDocSave(); }catch(e){}
+  }
+  ['dashboard','home','blocks','tasks','focus','rules','tracker','notes','calendar','sound','settings','aihub','assistant','tools','office'].forEach(n=>{
     const el=document.getElementById('view-'+n);
     if(!el)return;
     if(n===v){
-      el.style.display=n==='focus'||n==='notes'||n==='calendar'||n==='assistant'?'flex':'block';
+      el.style.display=n==='focus'||n==='notes'||n==='calendar'||n==='assistant'||n==='office'?'flex':'block';
       el.classList.remove('anim-paused');
       // Premium re-trigger: use viewEnter animation on every switch.
       // NOTE: We deliberately do NOT remove the .view-enter class after the
@@ -25952,7 +26689,7 @@ function setView(v,sideEl){
   });
   document.querySelectorAll('.sidebar .nav-item').forEach(el=>{el.classList.remove('active');el.removeAttribute('aria-current');});
   if(sideEl){sideEl.classList.add('active');sideEl.setAttribute('aria-current','page');}
-  else{const m={dashboard:'snav-dashboard',home:'snav-blocks',blocks:'snav-blocks',tasks:'snav-tasks',focus:'snav-focus',rules:'snav-rules',tracker:'snav-tracker',notes:'snav-notes',calendar:'snav-calendar',sound:'snav-sound',settings:'snav-settings',aihub:'snav-aihub',assistant:'snav-assistant',tools:'snav-tools'};const el=document.getElementById(m[v]);if(el){el.classList.add('active');el.setAttribute('aria-current','page');}}
+  else{const m={dashboard:'snav-dashboard',home:'snav-blocks',blocks:'snav-blocks',tasks:'snav-tasks',focus:'snav-focus',rules:'snav-rules',tracker:'snav-tracker',notes:'snav-notes',calendar:'snav-calendar',sound:'snav-sound',settings:'snav-settings',aihub:'snav-aihub',assistant:'snav-assistant',tools:'snav-tools',office:'snav-office'};const el=document.getElementById(m[v]);if(el){el.classList.add('active');el.setAttribute('aria-current','page');}}
   // Toggle layout classes
   const contentEl=document.querySelector('.content');
   if(contentEl){
@@ -25964,6 +26701,7 @@ function setView(v,sideEl){
     contentEl.classList.toggle('assistant-active',v==='assistant');
     contentEl.classList.toggle('tracker-active',v==='tracker');
     contentEl.classList.toggle('tools-active',v==='tools');
+    contentEl.classList.toggle('office-active',v==='office');
     contentEl.classList.toggle('aihub-active',v==='aihub');
     contentEl.classList.toggle('dashboard-active',v==='dashboard');
     contentEl.classList.remove('habits-active');
@@ -26008,6 +26746,7 @@ function setView(v,sideEl){
   if(v==='settings')setTimeout(initSettingsPage,30);
   if(v==='aihub')renderAIHub();
   if(v==='tools'){toolsAnimateIn=true;renderTools();}
+  if(v==='office')renderOffice();
   if(v==='assistant')initAssistant();
   // Exit focus landscape mode when navigating away from the focus view
   if(v!=='focus'){
@@ -28462,6 +29201,18 @@ document.addEventListener('keydown',e=>{
   // opens invisible because inline transform/opacity:0 from the second
   // closeModal call hasn't been cleared yet).
   if((_cachedOverlay||document.getElementById('overlay')).classList.contains('open'))return;
+  // Office page guard — the spreadsheet grid (#ofcGridScroll, tabindex div)
+  // and the document editor (#ofcPaper, contenteditable div) are DIVs, not
+  // INPUT/TEXTAREA/SELECT, so the guard below never fires for them. Without
+  // this, typing i/o/x/s/n/t, digits 1–9, arrows, PageUp/Down or Space in
+  // the Office page would trigger app shortcuts (view switches, calendar day
+  // shifting, focus-timer toggle…). Shortcuts still work when focus is
+  // outside #view-office (e.g. on the page background).
+  try{
+    var _offT=e.target, _offA=document.activeElement;
+    if((_offT&&_offT.closest&&_offT.closest('#view-office'))||
+       (_offA&&_offA.closest&&_offA.closest('#view-office')))return;
+  }catch(_offErr){}
   if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
   // Ignore shortcuts that are combined with Ctrl/Meta (browser shortcuts like Ctrl+1, Ctrl+←)
   if(e.ctrlKey||e.metaKey)return;
@@ -89829,6 +90580,2678 @@ html:not([data-theme]) #view-settings .settings-row-desc{
   font-family:var(--font-body) !important;
 }
 </style>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   MOTION OFFICE — spreadsheet engine + document editor
+   A production-grade mini office suite living inside the Motion app.
+   · Spreadsheet: 26×200 grid, real formula engine (cell refs, ranges,
+     arithmetic, 20+ functions), full keyboard navigation, drag-select,
+     copy/cut/paste (TSV), insert/delete rows & columns, multi-sheet
+     workbooks, CSV import/export, cycle + error detection.
+   · Documents: rich-text editor (headings, lists, alignment, styles),
+     multiple named documents, autosave with debounce, word count,
+     standalone .html export, print.
+   All state persists to localStorage (syncs to cloud via lsSet).
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── State ── */
+var OFC_KEY = 'motion_office_v1';
+var OFC_ROWS = 200, OFC_COLS = 26;
+var OFC = null;                 // persisted state
+var ofcCache = {};              // cellKey -> {v, err}  (evaluation memo)
+var ofcCellEls = {};            // cellKey -> grid element
+var ofcColHeadEls = [];         // col index -> header element
+var ofcRowHeadEls = [];         // row index -> header element
+var ofcSelEls = [];             // currently .sel cell elements
+var ofcHeadSelEls = [];         // currently .sel-h header elements
+var ofcSel = {ar:0, ac:0, fr:0, fc:0};   // selection anchor + focus
+var ofcEditing = null;          // {r,c} while the cell editor is open
+var ofcDragging = false;        // mouse drag-select in progress
+var ofcLastSheetId = null;      // sheet the grid DOM was built for
+var ofcDocSaveTimer = null;
+var ofcPaperLoaded = false;   // true once a document has been loaded into the editor
+var ofcRenamingSheet = false;
+var ofcRenamingDoc = false;
+var ofcWired = false;
+
+/* ═══ Persistence ═══ */
+function ofcLoad(){
+  var d = null;
+  try{ d = lsGet(OFC_KEY, null); }catch(e){ d = null; }
+  if(d && d.sheets && d.sheets.length){ OFC = d; }
+  else { OFC = ofcDefaults(); ofcSave(); }
+  if(!Array.isArray(OFC.docs) || !OFC.docs.length) OFC.docs = [ofcDefaultDoc()];
+  if(!OFC.activeDocId || !OFC.docs.some(function(x){return x.id===OFC.activeDocId;})) OFC.activeDocId = OFC.docs[0].id;
+  if(!Array.isArray(OFC.maps) || !OFC.maps.length) OFC.maps = [ofcStarterMap()];
+  if(!OFC.activeMapId || !OFC.maps.some(function(x){return x.id===OFC.activeMapId;})) OFC.activeMapId = OFC.maps[0].id;
+  if(!OFC.activeSheetId || !OFC.sheets.some(function(x){return x.id===OFC.activeSheetId;})) OFC.activeSheetId = OFC.sheets[0].id;
+  if(OFC.tab!=='sheets' && OFC.tab!=='docs' && OFC.tab!=='maps') OFC.tab='sheets';
+}
+function ofcSave(){
+  if(!OFC) return;
+  try{ lsSet(OFC_KEY, OFC); }catch(e){}
+  var el = document.getElementById('ofcStatusSaved');
+  if(el){ el.textContent = 'Saved · ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); el.className = 'ofc-saved-ok'; }
+}
+function ofcDefaults(){
+  var sheet = {
+    id: 's' + Date.now().toString(36),
+    name: 'Budget',
+    cells: {
+      'A1': 'Motion Budget',
+      'A3': 'Item', 'B3': 'Cost', 'C3': 'Notes',
+      'A4': 'App subscription', 'B4': '59', 'C4': 'Annual',
+      'A5': 'Design assets', 'B5': '24', 'C5': 'One-time',
+      'A6': 'Books & courses', 'B6': '38',
+      'A7': 'Total', 'B7': '=SUM(B4:B6)',
+      'A8': 'Average', 'B8': '=AVG(B4:B6)',
+      'A9': 'Highest', 'B9': '=MAX(B4:B6)',
+      'A10': 'Lowest', 'B10': '=MIN(B4:B6)'
+    }
+  };
+  return {
+    tab: 'sheets',
+    sheets: [sheet],
+    activeSheetId: sheet.id,
+    docs: [ofcDefaultDoc()],
+    activeDocId: null,
+    maps: [ofcStarterMap()],
+    activeMapId: null
+  };
+}
+function ofcDefaultDoc(){
+  return {
+    id: 'd' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36),
+    name: 'Welcome to Office',
+    updated: Date.now(),
+    html: '<h1>Welcome to Motion Office</h1><p>This is your personal document workspace. Everything here <b>autosaves</b> as you type — no save button, no lost work.</p><h2>What you can do</h2><ul><li><b>Write</b> — full rich text: headings, lists, bold, italic, quotes and more</li><li><b>Export</b> — download any document as a standalone HTML file, or print it</li><li><b>Organize</b> — create unlimited documents from the list on the left</li></ul><h2>Spreadsheet</h2><p>Switch to the <b>Spreadsheet</b> tab for a full grid: type <code>=SUM(B2:B8)</code> style formulas, navigate with the keyboard, import and export CSV files, and insert rows or columns anywhere.</p><blockquote>Tip — press Enter to commit a cell and move down. Press Tab to commit and move right. Type = to start a formula.</blockquote><p>Happy creating.</p>'
+  };
+}
+
+/* ═══ Cell addressing ═══ */
+function ofcColLetter(c){ var s=''; c++; while(c>0){ var m=(c-1)%26; s=String.fromCharCode(65+m)+s; c=Math.floor((c-1)/26); } return s; }
+function ofcColIndex(str){ var n=0; for(var i=0;i<str.length;i++) n=n*26+(str.charCodeAt(i)-64); return n-1; }
+function ofcKey(r,c){ return ofcColLetter(c) + (r+1); }
+function ofcParseRef(ref){ var m=/^([A-Z]{1,3})(\d+)$/.exec(ref); if(!m) return null; return { c: ofcColIndex(m[1]), r: parseInt(m[2],10)-1 }; }
+function ofcActiveSheet(){ for(var i=0;i<OFC.sheets.length;i++) if(OFC.sheets[i].id===OFC.activeSheetId) return OFC.sheets[i]; return OFC.sheets[0]; }
+function ofcActiveDoc(){ for(var i=0;i<OFC.docs.length;i++) if(OFC.docs[i].id===OFC.activeDocId) return OFC.docs[i]; return OFC.docs[0]; }
+function ofcTimeAgo(ts){ var s=Math.max(0,(Date.now()-(ts||Date.now()))/1000); if(s<45) return 'just now'; if(s<3600) return Math.floor(s/60)+'m ago'; if(s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
+function ofcDownload(filename, content, mime){
+  var blob = new Blob([content], {type: mime || 'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 150);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FORMULA ENGINE — tokenizer → recursive-descent parser → evaluator
+   Supports: numbers, strings, cell refs (A1), ranges (A1:B5),
+   + - * / ^ % & ( ), and functions: SUM AVG AVERAGE MIN MAX COUNT
+   COUNTA PRODUCT MEDIAN ABS ROUND SQRT POWER MOD PI E LEN UPPER
+   LOWER TRIM CONCAT. Detects circular references (#CYCLE!).
+   ════════════════════════════════════════════════════════════ */
+function ofcTokenize(src){
+  var toks=[], i=0;
+  while(i<src.length){
+    var ch=src[i];
+    if(ch===' '||ch==='\t'||ch==='\n'){ i++; continue; }
+    if('() ,:+-*/^%&'.indexOf(ch)>=0){ toks.push({t:'op', v:ch}); i++; continue; }
+    if(ch==='"'){
+      var j=i+1, s='';
+      while(j<src.length && src[j]!=='"'){ s+=src[j]; j++; }
+      if(j>=src.length) throw {code:'#ERROR!'};
+      toks.push({t:'str', v:s}); i=j+1; continue;
+    }
+    if(/[0-9]/.test(ch) || (ch==='.' && /[0-9]/.test(src[i+1]||''))){
+      var m=/^(\d+\.?\d*|\.\d+)/.exec(src.slice(i));
+      if(!m) throw {code:'#ERROR!'};
+      toks.push({t:'num', v:parseFloat(m[0])}); i+=m[0].length; continue;
+    }
+    if(/[A-Za-z_]/.test(ch)){
+      var wm=/^[A-Za-z_][A-Za-z0-9_]*/.exec(src.slice(i));
+      var word=wm[0], after=src[i+word.length];
+      if(after==='('){ toks.push({t:'fn', v:word.toUpperCase()}); i+=word.length; continue; }
+      var rm=/^[A-Za-z]{1,3}\d+/.exec(src.slice(i));
+      if(rm){ toks.push({t:'ref', v:rm[0].toUpperCase()}); i+=rm[0].length; continue; }
+      toks.push({t:'name', v:word.toUpperCase()}); i+=word.length; continue;
+    }
+    throw {code:'#ERROR!'};
+  }
+  return toks;
+}
+function ofcConcatVal(l,r){
+  if(Array.isArray(l)||Array.isArray(r)) throw {code:'#VALUE!'};
+  return ofcDisplayStr(l) + ofcDisplayStr(r);
+}
+function ofcDisplayStr(v){
+  if(v==null || v==='') return '';
+  if(typeof v==='number') return ofcFormat(v);
+  return String(v);
+}
+function ofcArith(op,l,r){
+  if(Array.isArray(l)||Array.isArray(r)) throw {code:'#VALUE!'};
+  var a=ofcNum(l), b=ofcNum(r);
+  if(op==='+') return a+b;
+  if(op==='-') return a-b;
+  if(op==='*') return a*b;
+  if(op==='/'){ if(b===0) throw {code:'#DIV/0!'}; return a/b; }
+  throw {code:'#ERROR!'};
+}
+function ofcNum(v){
+  if(v==null || v==='') return 0;
+  if(typeof v==='number') return v;
+  if(typeof v==='string'){
+    var t=v.trim();
+    if(t==='') return 0;
+    var n=Number(t);
+    if(!isNaN(n)) return n;
+    throw {code:'#VALUE!'};
+  }
+  throw {code:'#VALUE!'};
+}
+function ofcRefVal(ref, stack){
+  var e = ofcEvalKey(ref, stack);
+  if(e.err) throw {code:e.err};
+  return e.v;
+}
+function ofcRangeVals(a,b,stack){
+  var ca=ofcParseRef(a), cb=ofcParseRef(b);
+  if(!ca||!cb) throw {code:'#REF!'};
+  if(ca.r>=OFC_ROWS||ca.c>=OFC_COLS||cb.r>=OFC_ROWS||cb.c>=OFC_COLS) throw {code:'#REF!'};
+  var r0=Math.min(ca.r,cb.r), r1=Math.max(ca.r,cb.r);
+  var c0=Math.min(ca.c,cb.c), c1=Math.max(ca.c,cb.c);
+  var vals=[];
+  for(var r=r0;r<=r1;r++) for(var c=c0;c<=c1;c++){
+    var e=ofcEvalKey(ofcKey(r,c), stack);
+    if(e.err) throw {code:e.err};
+    if(e.v!=='' && e.v!=null) vals.push(e.v);
+  }
+  return vals;
+}
+function ofcConst(name){
+  if(name==='PI') return Math.PI;
+  if(name==='E') return Math.E;
+  throw {code:'#NAME?'};
+}
+function ofcCall(name,args){
+  var flat=[];
+  args.forEach(function(a){ if(Array.isArray(a)) flat.push.apply(flat,a); else flat.push(a); });
+  var nums = flat.map(function(v){
+    if(typeof v==='number') return v;
+    if(typeof v==='string' && v.trim()!=='' && !isNaN(Number(v))) return Number(v);
+    return null;
+  }).filter(function(v){ return v!==null; });
+  var sum = function(){ return nums.reduce(function(a,b){ return a+b; }, 0); };
+  switch(name){
+    case 'SUM': return sum();
+    case 'AVG': case 'AVERAGE': if(!nums.length) throw {code:'#DIV/0!'}; return sum()/nums.length;
+    case 'MIN': return nums.length ? Math.min.apply(null,nums) : 0;
+    case 'MAX': return nums.length ? Math.max.apply(null,nums) : 0;
+    case 'COUNT': return nums.length;
+    case 'COUNTA': return flat.filter(function(v){ return v!=='' && v!=null; }).length;
+    case 'PRODUCT': return nums.reduce(function(a,b){ return a*b; }, 1);
+    case 'MEDIAN':
+      if(!nums.length) throw {code:'#DIV/0!'};
+      var s=nums.slice().sort(function(a,b){ return a-b; });
+      var m=Math.floor(s.length/2);
+      return s.length%2 ? s[m] : (s[m-1]+s[m])/2;
+    case 'ABS': return Math.abs(ofcNum(args[0]));
+    case 'ROUND': { var n=ofcNum(args[0]), d=args.length>1?ofcNum(args[1]):0, p=Math.pow(10,d); return Math.round(n*p)/p; }
+    case 'SQRT': { var x=ofcNum(args[0]); if(x<0) throw {code:'#NUM!'}; return Math.sqrt(x); }
+    case 'POWER': return Math.pow(ofcNum(args[0]), ofcNum(args[1]));
+    case 'MOD': { var b=ofcNum(args[1]); if(b===0) throw {code:'#DIV/0!'}; return ofcNum(args[0])%b; }
+    case 'LEN': return String(args[0]==null?'':args[0]).length;
+    case 'UPPER': return String(args[0]==null?'':args[0]).toUpperCase();
+    case 'LOWER': return String(args[0]==null?'':args[0]).toLowerCase();
+    case 'TRIM': return String(args[0]==null?'':args[0]).trim();
+    case 'CONCAT': return flat.map(function(v){ return String(v==null?'':v); }).join('');
+    default: throw {code:'#NAME?'};
+  }
+}
+function ofcEvalFormula(src, stack){
+  var toks=ofcTokenize(src), pos=0;
+  function peek(){ return toks[pos]; }
+  function next(){ return toks[pos++]; }
+  function parseExpr(){
+    var l=parseAddSub();
+    while(peek() && peek().t==='op' && peek().v==='&'){ next(); l=ofcConcatVal(l, parseAddSub()); }
+    return l;
+  }
+  function parseAddSub(){
+    var l=parseTerm();
+    while(peek() && peek().t==='op' && (peek().v==='+'||peek().v==='-')){ var op=next().v; l=ofcArith(op, l, parseTerm()); }
+    return l;
+  }
+  function parseTerm(){
+    var l=parseFactor();
+    while(peek() && peek().t==='op' && (peek().v==='*'||peek().v==='/')){ var op=next().v; l=ofcArith(op, l, parseFactor()); }
+    return l;
+  }
+  function parseFactor(){
+    var l=parseUnary();
+    if(peek() && peek().t==='op' && peek().v==='^'){ next(); var r=parseFactor(); l=Math.pow(ofcNum(l), ofcNum(r)); }
+    return l;
+  }
+  function parseUnary(){
+    if(peek() && peek().t==='op' && (peek().v==='-'||peek().v==='+')){
+      var op=next().v, v=parseUnary();
+      return op==='-' ? -ofcNum(v) : ofcNum(v);
+    }
+    return parsePostfix();
+  }
+  function parsePostfix(){
+    var v=parsePrimary();
+    while(peek() && peek().t==='op' && peek().v==='%'){ next(); v=ofcNum(v)/100; }
+    return v;
+  }
+  function parsePrimary(){
+    var tk=peek();
+    if(!tk) throw {code:'#ERROR!'};
+    if(tk.t==='num'){ next(); return tk.v; }
+    if(tk.t==='str'){ next(); return tk.v; }
+    if(tk.t==='op' && tk.v==='('){
+      next(); var v=parseExpr();
+      if(!peek() || peek().t!=='op' || peek().v!==')') throw {code:'#ERROR!'};
+      next(); return v;
+    }
+    if(tk.t==='ref'){
+      next();
+      if(peek() && peek().t==='op' && peek().v===':'){
+        next(); var end=next();
+        if(!end || end.t!=='ref') throw {code:'#ERROR!'};
+        return ofcRangeVals(tk.v, end.v, stack);
+      }
+      return ofcRefVal(tk.v, stack);
+    }
+    if(tk.t==='fn'){
+      next();
+      if(!peek() || peek().t!=='op' || peek().v!=='(') throw {code:'#ERROR!'};
+      next();
+      var args=[];
+      if(!(peek() && peek().t==='op' && peek().v===')')){
+        args.push(parseExpr());
+        while(peek() && peek().t==='op' && peek().v===','){ next(); args.push(parseExpr()); }
+      }
+      if(!peek() || peek().t!=='op' || peek().v!==')') throw {code:'#ERROR!'};
+      next();
+      return ofcCall(tk.v, args);
+    }
+    if(tk.t==='name'){ next(); return ofcConst(tk.v); }
+    throw {code:'#ERROR!'};
+  }
+  var v=parseExpr();
+  if(pos<toks.length) throw {code:'#ERROR!'};
+  // A bare range as the final result (e.g. =A1:A3) is not a scalar —
+  // a single-cell range yields that cell's value, anything else is an error.
+  if(Array.isArray(v)){ if(v.length===1) return v[0]; throw {code:'#VALUE!'}; }
+  return v;
+}
+function ofcEvalKey(key, stack){
+  if(Object.prototype.hasOwnProperty.call(ofcCache, key)) return ofcCache[key];
+  var raw = ofcActiveSheet().cells[key];
+  if(raw==null || raw===''){ ofcCache[key]={v:''}; return ofcCache[key]; }
+  if(raw.charAt(0)!=='='){
+    var t=String(raw).trim(), n=Number(t);
+    ofcCache[key] = { v: (t!=='' && !isNaN(n) && String(n)===t) ? n : raw };
+    return ofcCache[key];
+  }
+  stack = stack || new Set();
+  if(stack.has(key)){ ofcCache[key]={v:null, err:'#CYCLE!'}; return ofcCache[key]; }
+  stack.add(key);
+  var out;
+  try{ out = ofcEvalFormula(String(raw).slice(1), stack); }
+  catch(e){ out = {__err:true, code:(e && e.code) || '#ERROR!'}; }
+  stack.delete(key);
+  ofcCache[key] = (out && out.__err) ? {v:null, err:out.code} : {v:out};
+  return ofcCache[key];
+}
+function ofcEvalAll(){
+  ofcCache = {};
+  var cells = ofcActiveSheet().cells;
+  for(var key in cells){ if(Object.prototype.hasOwnProperty.call(cells, key)) ofcEvalKey(key, new Set()); }
+}
+function ofcFormat(v){
+  if(v==null) return '';
+  if(typeof v==='number'){
+    if(!isFinite(v)) return '#DIV/0!';
+    if(Number.isInteger(v) && Math.abs(v)<1e15) return String(v);
+    return String(parseFloat(v.toPrecision(12)));
+  }
+  return String(v);
+}
+
+/* ═══ Grid — build, render, selection ═══ */
+function ofcBuildGrid(){
+  var scroll = document.getElementById('ofcGridScroll');
+  if(!scroll) return;
+  var html = '<div class="ofc-grid" id="ofcGrid">';
+  var c, r;
+  html += '<div class="ofc-cell ofc-corner" aria-hidden="true"></div>';
+  for(c=0;c<OFC_COLS;c++) html += '<div class="ofc-cell ofc-col-h" data-c="'+c+'">'+ofcColLetter(c)+'</div>';
+  for(r=0;r<OFC_ROWS;r++){
+    html += '<div class="ofc-cell ofc-row-h" data-r="'+r+'">'+(r+1)+'</div>';
+    for(c=0;c<OFC_COLS;c++){
+      html += '<div class="ofc-cell ofc-cell" role="gridcell" data-r="'+r+'" data-c="'+c+'" aria-label="Cell '+ofcKey(r,c)+'"></div>';
+    }
+  }
+  html += '<input class="ofc-editor" id="ofcEditor" type="text" style="display:none" spellcheck="false" autocomplete="off" aria-label="Cell editor"/>';
+  html += '</div>';
+  scroll.innerHTML = html;
+  ofcCellEls = {}; ofcRowHeadEls = []; ofcColHeadEls = [];
+  var grid = document.getElementById('ofcGrid');
+  var kids = grid.children;
+  for(var i=0;i<kids.length;i++){
+    var el = kids[i];
+    if(el.classList.contains('ofc-col-h')) ofcColHeadEls[+el.dataset.c] = el;
+    else if(el.classList.contains('ofc-row-h')) ofcRowHeadEls[+el.dataset.r] = el;
+    else if(el.classList.contains('ofc-cell')) ofcCellEls[ofcKey(+el.dataset.r, +el.dataset.c)] = el;
+  }
+  var ed = document.getElementById('ofcEditor');
+  if(ed){
+    ed.addEventListener('keydown', ofcEditorKey);
+    ed.addEventListener('blur', function(){ if(ofcEditing) ofcCommitEdit(); });
+  }
+  // Column resize handles (drag to resize, double-click to auto-fit)
+  ofcColHeadEls.forEach(function(h, c){
+    if(!h) return;
+    var rz = document.createElement('div');
+    rz.className = 'ofc-col-resize';
+    rz.title = 'Drag to resize · double-click to auto-fit';
+    rz.setAttribute('role', 'separator');
+    rz.addEventListener('pointerdown', function(e){ ofcResizeColStart(e, c); });
+    rz.addEventListener('dblclick', function(e){ e.preventDefault(); e.stopPropagation(); ofcAutoFitCol(c); });
+    h.appendChild(rz);
+  });
+  // Row resize handles (drag to resize, double-click to reset)
+  ofcRowHeadEls.forEach(function(h, r){
+    if(!h) return;
+    var rz = document.createElement('div');
+    rz.className = 'ofc-row-resize';
+    rz.title = 'Drag to resize · double-click to reset height';
+    rz.addEventListener('pointerdown', function(e){ ofcResizeRowStart(e, r); });
+    rz.addEventListener('dblclick', function(e){ e.preventDefault(); e.stopPropagation(); ofcResetRowHeight(r); });
+    h.appendChild(rz);
+  });
+  ofcApplyLayout();
+  ofcLastSheetId = OFC.activeSheetId;
+}
+function ofcRenderCells(){
+  ofcEvalAll();
+  var fm = ofcActiveSheet().fmt || {};
+  for(var key in ofcCellEls){
+    var el = ofcCellEls[key];
+    var e = ofcCache[key];
+    var f = fm[key];
+    var d = e ? (e.err ? e.err : ofcFormat(e.v)) : '';
+    if(f && f.nf && e && !e.err && typeof e.v==='number') d = ofcNumFmt(e.v, f.nf);
+    if(el.__d !== d){ el.__d = d; el.textContent = d; }
+    var isNum = !!e && !e.err && typeof e.v==='number';
+    if(el.__num !== isNum){ el.__num = isNum; el.classList.toggle('num', isNum); }
+    var isErr = !!e && !!e.err;
+    if(el.__err !== isErr){ el.__err = isErr; el.classList.toggle('err', isErr); }
+    // Formatting styles — only touch inline styles when the format
+    // signature changed, so re-renders stay cheap.
+    var sig = f ? JSON.stringify(f) : '';
+    if(el.__fsig !== sig){
+      el.__fsig = sig;
+      el.style.fontWeight = (f && f.b) ? '700' : '';
+      el.style.fontStyle = (f && f.i) ? 'italic' : '';
+      el.style.textDecoration = (f && f.u) ? 'underline' : '';
+      el.style.color = (f && f.color) ? f.color : '';
+      el.style.background = (f && f.bg) ? f.bg : '';
+      el.style.justifyContent = (f && f.align==='center') ? 'center' : ((f && f.align==='right') ? 'flex-end' : '');
+    }
+  }
+}
+function ofcClearSelUI(){
+  for(var i=0;i<ofcSelEls.length;i++) ofcSelEls[i].classList.remove('sel','sel-focus');
+  ofcSelEls = [];
+  for(var j=0;j<ofcHeadSelEls.length;j++) ofcHeadSelEls[j].classList.remove('sel-h');
+  ofcHeadSelEls = [];
+}
+function ofcUpdateSelUI(){
+  if(!OFC) return;
+  ofcClearSelUI();
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var r, c, el;
+  for(r=r0;r<=r1;r++) for(c=c0;c<=c1;c++){
+    el = ofcCellEls[ofcKey(r,c)];
+    if(!el) continue;
+    el.classList.add('sel');
+    if(r===ofcSel.fr && c===ofcSel.fc) el.classList.add('sel-focus');
+    ofcSelEls.push(el);
+  }
+  for(c=c0;c<=c1;c++) if(ofcColHeadEls[c]){ ofcColHeadEls[c].classList.add('sel-h'); ofcHeadSelEls.push(ofcColHeadEls[c]); }
+  for(r=r0;r<=r1;r++) if(ofcRowHeadEls[r]){ ofcRowHeadEls[r].classList.add('sel-h'); ofcHeadSelEls.push(ofcRowHeadEls[r]); }
+  var key = ofcKey(ofcSel.fr, ofcSel.fc);
+  var single = (r0===r1 && c0===c1);
+  var rangeStr = single ? key : (ofcKey(r0,c0)+':'+ofcKey(r1,c1));
+  var addrEl = document.getElementById('ofcAddr');
+  if(addrEl) addrEl.textContent = rangeStr;
+  var inp = document.getElementById('ofcFormulaIn');
+  if(inp && document.activeElement!==inp) inp.value = ofcActiveSheet().cells[key] || '';
+  var stSel = document.getElementById('ofcStatusSel');
+  if(stSel) stSel.textContent = rangeStr;
+  var stVal = document.getElementById('ofcStatusVal');
+  if(stVal){
+    var raw = ofcActiveSheet().cells[key] || '';
+    var ce = ofcCache[key];
+    stVal.textContent = raw ? (raw.charAt(0)==='=' ? raw+'  →  '+(ce ? (ce.err?ce.err:ofcFormat(ce.v)) : '…') : raw) : '';
+  }
+  // Quick stats over the selection — Excel-style Σ / average / count
+  var quick = document.getElementById('ofcStatusQuick');
+  if(quick){
+    var nums = [];
+    for(var qr=r0;qr<=r1;qr++) for(var qc=c0;qc<=c1;qc++){
+      var qe = ofcCache[ofcKey(qr,qc)];
+      if(qe && !qe.err && typeof qe.v==='number') nums.push(qe.v);
+    }
+    if(nums.length){
+      var sum = nums.reduce(function(a,b){ return a+b; }, 0);
+      quick.textContent = 'Σ ' + ofcFormat(sum) + '  ·  avg ' + ofcFormat(sum/nums.length) + '  ·  n ' + nums.length;
+    } else quick.textContent = '';
+  }
+  ofcSyncFmtBar();
+}
+function ofcScrollToCell(r,c){
+  var el = ofcCellEls[ofcKey(r,c)];
+  if(el && el.scrollIntoView){ try{ el.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(e){ el.scrollIntoView(false); } }
+}
+function ofcSetFocus(r,c,extend){
+  ofcSel.fr = Math.max(0, Math.min(OFC_ROWS-1, r));
+  ofcSel.fc = Math.max(0, Math.min(OFC_COLS-1, c));
+  if(!extend){ ofcSel.ar = ofcSel.fr; ofcSel.ac = ofcSel.fc; }
+  ofcUpdateSelUI();
+}
+function ofcMove(dr,dc,extend){
+  ofcSetFocus(ofcSel.fr+dr, ofcSel.fc+dc, extend);
+  ofcScrollToCell(ofcSel.fr, ofcSel.fc);
+}
+function ofcFocusGrid(){
+  var scroll = document.getElementById('ofcGridScroll');
+  if(scroll){ try{ scroll.focus({preventScroll:true}); }catch(e){ scroll.focus(); } }
+}
+
+/* ═══ Cell editing ═══ */
+function ofcStartEdit(r,c,initial){
+  ofcCommitEdit();
+  var el = ofcCellEls[ofcKey(r,c)];
+  var ed = document.getElementById('ofcEditor');
+  if(!el || !ed) return;
+  ed.style.display = 'block';
+  ed.style.left = el.offsetLeft + 'px';
+  ed.style.top = el.offsetTop + 'px';
+  ed.style.width = el.offsetWidth + 'px';
+  ed.style.height = el.offsetHeight + 'px';
+  ed.value = (initial!=null) ? initial : (ofcActiveSheet().cells[ofcKey(r,c)] || '');
+  ed.focus();
+  try{ ed.setSelectionRange(ed.value.length, ed.value.length); }catch(e){}
+  ofcEditing = {r:r, c:c};
+  el.classList.add('editing');
+}
+function ofcCommitEdit(move){
+  if(!ofcEditing) return;
+  var r=ofcEditing.r, c=ofcEditing.c;
+  var ed = document.getElementById('ofcEditor');
+  var val = ed ? ed.value : '';
+  if(ed) ed.style.display = 'none';
+  var key = ofcKey(r,c);
+  var cells = ofcActiveSheet().cells;
+  var prev = cells[key] || '';
+  if(val !== prev){
+    ofcPushUndo();
+    if(val===''){ delete cells[key]; }
+    else cells[key] = val;
+  }
+  var el = ofcCellEls[key];
+  if(el) el.classList.remove('editing');
+  ofcEditing = null;
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+  if(move) ofcMove(move[0], move[1], false);
+}
+function ofcCancelEdit(){
+  if(!ofcEditing) return;
+  var ed = document.getElementById('ofcEditor');
+  if(ed) ed.style.display = 'none';
+  var el = ofcCellEls[ofcKey(ofcEditing.r, ofcEditing.c)];
+  if(el) el.classList.remove('editing');
+  ofcEditing = null;
+}
+function ofcEditorKey(e){
+  if(e.key==='Enter'){ e.preventDefault(); ofcCommitEdit(e.shiftKey?[-1,0]:[1,0]); ofcFocusGrid(); }
+  else if(e.key==='Tab'){ e.preventDefault(); ofcCommitEdit(e.shiftKey?[0,-1]:[0,1]); ofcFocusGrid(); }
+  else if(e.key==='Escape'){ e.preventDefault(); ofcCancelEdit(); ofcFocusGrid(); }
+}
+
+/* ═══ Grid keyboard ═══ */
+function ofcGridKey(e){
+  if(ofcEditing) return;
+  var k = e.key;
+  if(e.ctrlKey || e.metaKey){
+    var kk = k.toLowerCase();
+    if(kk==='a'){ e.preventDefault(); ofcSel={ar:0,ac:0,fr:OFC_ROWS-1,fc:OFC_COLS-1}; ofcUpdateSelUI(); }
+    else if(kk==='z'){ e.preventDefault(); if(e.shiftKey) ofcRedo(); else ofcUndo(); }
+    else if(kk==='y'){ e.preventDefault(); ofcRedo(); }
+    return;
+  }
+  if(e.altKey) return;
+  switch(k){
+    case 'ArrowUp':    e.preventDefault(); ofcMove(-1,0,e.shiftKey); return;
+    case 'ArrowDown':  e.preventDefault(); ofcMove(1,0,e.shiftKey); return;
+    case 'ArrowLeft':  e.preventDefault(); ofcMove(0,-1,e.shiftKey); return;
+    case 'ArrowRight': e.preventDefault(); ofcMove(0,1,e.shiftKey); return;
+    case 'Enter':      e.preventDefault(); ofcMove(e.shiftKey?-1:1, 0, false); return;
+    case 'Tab':        e.preventDefault(); ofcMove(0, e.shiftKey?-1:1, false); return;
+    case 'Delete':
+    case 'Backspace':  e.preventDefault(); ofcClearRange(); return;
+    case 'F2':         e.preventDefault(); ofcStartEdit(ofcSel.fr, ofcSel.fc); return;
+    case 'Escape':     ofcSetFocus(ofcSel.fr, ofcSel.fc, false); return;
+    case 'Home':       e.preventDefault(); ofcSetFocus(ofcSel.fr, 0, false); ofcScrollToCell(ofcSel.fr, 0); return;
+    case 'PageDown':   e.preventDefault(); ofcMove(20,0,e.shiftKey); return;
+    case 'PageUp':     e.preventDefault(); ofcMove(-20,0,e.shiftKey); return;
+  }
+  if(k && k.length===1){
+    e.preventDefault();
+    ofcSetFocus(ofcSel.fr, ofcSel.fc, false);
+    ofcStartEdit(ofcSel.fr, ofcSel.fc, k);
+  }
+}
+
+/* ═══ Grid mouse ═══ */
+function ofcGridMouseDown(e){
+  var t = e.target;
+  if(!t || !t.classList || !t.classList.contains('ofc-cell')) return;
+  e.preventDefault();
+  ofcCommitEdit();
+  ofcFocusGrid();
+  if(t.dataset.r!=null && t.dataset.c==null){
+    var r = +t.dataset.r;
+    ofcSel = {ar:r, ac:0, fr:r, fc:OFC_COLS-1};
+    ofcUpdateSelUI();
+  } else if(t.dataset.c!=null && t.dataset.r==null){
+    var c = +t.dataset.c;
+    ofcSel = {ar:0, ac:c, fr:OFC_ROWS-1, fc:c};
+    ofcUpdateSelUI();
+  } else {
+    ofcSetFocus(+t.dataset.r, +t.dataset.c, e.shiftKey);
+    ofcDragging = true;
+  }
+}
+function ofcGridMouseOver(e){
+  if(!ofcDragging) return;
+  var t = e.target;
+  if(!t || !t.classList || !t.classList.contains('ofc-cell')) return;
+  if(t.dataset.r==null || t.dataset.c==null) return;
+  ofcSel.fr = +t.dataset.r; ofcSel.fc = +t.dataset.c;
+  ofcUpdateSelUI();
+}
+function ofcGridDblClick(e){
+  var t = e.target;
+  if(!t || !t.classList || !t.classList.contains('ofc-cell')) return;
+  if(t.dataset.r==null || t.dataset.c==null) return;
+  e.preventDefault();
+  ofcSetFocus(+t.dataset.r, +t.dataset.c, false);
+  ofcStartEdit(+t.dataset.r, +t.dataset.c);
+}
+
+/* ═══ Clipboard (copy / cut / paste as TSV) ═══ */
+function ofcGridCopy(e){
+  if(ofcEditing) return;
+  e.clipboardData.setData('text/plain', ofcSelTSV());
+  e.preventDefault();
+}
+function ofcGridCut(e){
+  if(ofcEditing) return;
+  ofcGridCopy(e);
+  ofcClearRange();
+}
+function ofcGridPaste(e){
+  if(ofcEditing) return;
+  e.preventDefault();
+  var text = e.clipboardData.getData('text/plain');
+  if(text) ofcPasteTSV(text);
+}
+function ofcSelTSV(){
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var cells = ofcActiveSheet().cells, lines = [];
+  for(var r=r0;r<=r1;r++){
+    var cols=[];
+    for(var c=c0;c<=c1;c++){
+      var v = cells[ofcKey(r,c)];
+      cols.push(v==null ? '' : String(v));
+    }
+    lines.push(cols.join('\t'));
+  }
+  return lines.join('\n');
+}
+function ofcPasteTSV(text){
+  text = text.replace(/\r\n?/g, '\n');
+  var lines = text.split('\n');
+  if(lines.length && lines[lines.length-1]==='') lines.pop();
+  ofcPushUndo();
+  var cells = ofcActiveSheet().cells;
+  var r0 = ofcSel.fr, c0 = ofcSel.fc, maxC = c0;
+  for(var i=0;i<lines.length && r0+i<=OFC_ROWS-1;i++){
+    var cols = lines[i].split('\t');
+    for(var j=0;j<cols.length && c0+j<=OFC_COLS-1;j++){
+      var v = cols[j];
+      var key = ofcKey(r0+i, c0+j);
+      if(v===''){ if(cells[key]!=null) delete cells[key]; }
+      else cells[key] = v;
+      if(c0+j>maxC) maxC = c0+j;
+    }
+  }
+  ofcSel = {ar:r0, ac:c0, fr:Math.min(OFC_ROWS-1, r0+lines.length-1), fc:Math.min(OFC_COLS-1, maxC)};
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+}
+function ofcClearRange(){
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var cells = ofcActiveSheet().cells;
+  var any = false;
+  for(var r=r0;r<=r1;r++) for(var c=c0;c<=c1;c++){
+    if(cells[ofcKey(r,c)]!=null){ any=true; break; }
+  }
+  if(!any) return;
+  ofcPushUndo();
+  for(var r2=r0;r2<=r1;r2++) for(var c2=c0;c2<=c1;c2++){
+    var key = ofcKey(r2,c2);
+    if(cells[key]!=null) delete cells[key];
+  }
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+}
+
+/* ═══ Rows & columns ═══ */
+function ofcInsertRow(){
+  var at=ofcSel.fr, cells={}, old=ofcActiveSheet().cells;
+  ofcPushUndo();
+  for(var key in old){
+    var p=ofcParseRef(key); if(!p) continue;
+    var nr = p.r>=at ? p.r+1 : p.r;
+    if(nr<OFC_ROWS) cells[ofcKey(nr,p.c)] = old[key];
+  }
+  ofcActiveSheet().cells = cells;
+  ofcAfterGridChange('Row inserted');
+}
+function ofcDeleteRow(){
+  var at=ofcSel.fr, cells={}, old=ofcActiveSheet().cells;
+  ofcPushUndo();
+  for(var key in old){
+    var p=ofcParseRef(key); if(!p) continue;
+    if(p.r===at) continue;
+    cells[ofcKey(p.r>at?p.r-1:p.r, p.c)] = old[key];
+  }
+  ofcActiveSheet().cells = cells;
+  ofcAfterGridChange('Row deleted');
+}
+function ofcInsertCol(){
+  var at=ofcSel.fc, cells={}, old=ofcActiveSheet().cells;
+  ofcPushUndo();
+  for(var key in old){
+    var p=ofcParseRef(key); if(!p) continue;
+    var nc = p.c>=at ? p.c+1 : p.c;
+    if(nc<OFC_COLS) cells[ofcKey(p.r,nc)] = old[key];
+  }
+  ofcActiveSheet().cells = cells;
+  ofcAfterGridChange('Column inserted');
+}
+function ofcDeleteCol(){
+  var at=ofcSel.fc, cells={}, old=ofcActiveSheet().cells;
+  ofcPushUndo();
+  for(var key in old){
+    var p=ofcParseRef(key); if(!p) continue;
+    if(p.c===at) continue;
+    cells[ofcKey(p.r, p.c>at?p.c-1:p.c)] = old[key];
+  }
+  ofcActiveSheet().cells = cells;
+  ofcAfterGridChange('Column deleted');
+}
+function ofcAfterGridChange(msg){
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+  showToast(msg, '✓', 1500);
+}
+
+/* ═══ Formula bar ═══ */
+function ofcFormulaKey(e){
+  var inp = document.getElementById('ofcFormulaIn');
+  if(!inp) return;
+  if(e.key==='Enter' || e.key==='Tab'){
+    e.preventDefault();
+    var key = ofcKey(ofcSel.fr, ofcSel.fc);
+    var v = inp.value;
+    var cells = ofcActiveSheet().cells;
+    if(v===''){ if(cells[key]!=null) delete cells[key]; }
+    else cells[key] = v;
+    ofcRenderCells();
+    ofcUpdateSelUI();
+    ofcSave();
+    ofcFocusGrid();
+    if(e.key==='Tab') ofcMove(0, e.shiftKey?-1:1, false);
+    else ofcMove(e.shiftKey?-1:1, 0, false);
+  } else if(e.key==='Escape'){
+    e.preventDefault();
+    inp.value = ofcActiveSheet().cells[ofcKey(ofcSel.fr, ofcSel.fc)] || '';
+    inp.blur();
+    ofcFocusGrid();
+  }
+}
+
+/* ═══ Sheets (workbook tabs) ═══ */
+function ofcRenderSheetBar(){
+  var bar = document.getElementById('ofcSheetBar');
+  if(!bar) return;
+  var html = '';
+  OFC.sheets.forEach(function(s){
+    var active = s.id===OFC.activeSheetId;
+    html += '<button class="ofc-sheet-tab'+(active?' active':'')+'" role="tab" aria-selected="'+active+'" data-id="'+s.id+'" onclick="ofcSwitchSheet(\''+s.id+'\')">'+
+      '<span class="ofc-sheet-name" title="Double-click to rename" ondblclick="ofcRenameSheet(event,\''+s.id+'\')">'+esc(s.name)+'</span>'+
+      (OFC.sheets.length>1 ? '<span class="ofc-sheet-x" title="Delete sheet" onclick="ofcDeleteSheet(event,\''+s.id+'\',this)">×</span>' : '')+
+      '</button>';
+  });
+  html += '<button class="ofc-sheet-add" onclick="ofcAddSheet()" title="Add sheet" aria-label="Add sheet">+</button>';
+  bar.innerHTML = html;
+}
+function ofcAddSheet(){
+  var name = 'Sheet ' + (OFC.sheets.length+1);
+  var s = { id:'s'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36), name:name, cells:{} };
+  OFC.sheets.push(s);
+  OFC.activeSheetId = s.id;
+  ofcSave();
+  ofcRenderSheetBar();
+  ofcBuildGrid();
+  ofcRenderCells();
+  ofcSetFocus(0,0,false);
+  showToast('Sheet "'+name+'" created', '✓', 1800);
+}
+function ofcSwitchSheet(id){
+  if(ofcEditing) ofcCommitEdit();
+  if(OFC.activeSheetId===id) return;
+  OFC.activeSheetId = id;
+  ofcSave();
+  ofcRenderSheetBar();
+  ofcBuildGrid();
+  ofcRenderCells();
+  ofcSetFocus(0,0,false);
+}
+function ofcRenameSheet(e, id){
+  e.stopPropagation();
+  if(ofcRenamingSheet) return;
+  var tab = e.target.closest ? e.target.closest('.ofc-sheet-tab') : null;
+  var nameEl = tab ? tab.querySelector('.ofc-sheet-name') : null;
+  var s = OFC.sheets.filter(function(x){ return x.id===id; })[0];
+  if(!s || !nameEl) return;
+  ofcRenamingSheet = true;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = s.name; inp.maxLength = 28;
+  inp.setAttribute('aria-label', 'Sheet name');
+  nameEl.replaceWith(inp);
+  inp.focus();
+  try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(err){}
+  var done = function(commit){
+    if(!ofcRenamingSheet) return;
+    ofcRenamingSheet = false;
+    var v = inp.value.trim();
+    if(commit && v){ s.name = v; ofcSave(); }
+    ofcRenderSheetBar();
+  };
+  inp.addEventListener('keydown', function(ev){
+    ev.stopPropagation();
+    if(ev.key==='Enter'){ ev.preventDefault(); done(true); }
+    else if(ev.key==='Escape'){ ev.preventDefault(); done(false); }
+  });
+  inp.addEventListener('blur', function(){ done(true); });
+  inp.addEventListener('dblclick', function(ev){ ev.stopPropagation(); });
+}
+function ofcDeleteSheet(e, id, btn){
+  e.stopPropagation();
+  if(OFC.sheets.length<=1){ showToast('A workbook needs at least one sheet', '⚠️', 2200); return; }
+  if(btn.dataset.armed){
+    var idx = OFC.sheets.findIndex(function(s){ return s.id===id; });
+    var removed = OFC.sheets.splice(idx,1)[0];
+    if(OFC.activeSheetId===id) OFC.activeSheetId = OFC.sheets[Math.max(0,idx-1)].id;
+    ofcSave();
+    ofcRenderSheetBar();
+    ofcBuildGrid();
+    ofcRenderCells();
+    ofcSetFocus(0,0,false);
+    showToast('Sheet "'+removed.name+'" deleted', '🗑', 1800);
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sure?';
+    btn.classList.add('armed');
+    setTimeout(function(){
+      if(btn.isConnected){ delete btn.dataset.armed; btn.textContent = '×'; btn.classList.remove('armed'); }
+    }, 2200);
+  }
+}
+
+/* ═══ CSV import / export ═══ */
+function ofcCSVEscape(v){
+  if(/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+  return v;
+}
+function ofcExportCSV(){
+  var s = ofcActiveSheet();
+  var maxR=-1, maxC=-1;
+  for(var key in s.cells){
+    var p = ofcParseRef(key); if(!p) continue;
+    if(p.r>maxR) maxR=p.r;
+    if(p.c>maxC) maxC=p.c;
+  }
+  if(maxR<0){ showToast('Sheet is empty — nothing to export', '◇', 2200); return; }
+  var lines = [];
+  for(var r=0;r<=maxR;r++){
+    var cols = [];
+    for(var c=0;c<=maxC;c++) cols.push(ofcCSVEscape(String(s.cells[ofcKey(r,c)]||'')));
+    lines.push(cols.join(','));
+  }
+  var fname = (s.name||'sheet').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'sheet';
+  ofcDownload(fname+'.csv', lines.join('\n'), 'text/csv;charset=utf-8');
+  showToast('Exported "'+s.name+'" as CSV', '✓', 2000);
+}
+function ofcParseCSV(text){
+  text = text.replace(/\r\n?/g, '\n');
+  if(text.charAt(text.length-1)!=='\n') text += '\n';
+  var rows=[], row=[], field='', inQ=false, i=0;
+  while(i<text.length){
+    var ch = text[i];
+    if(inQ){
+      if(ch==='"'){
+        if(text[i+1]==='"'){ field+='"'; i+=2; }
+        else { inQ=false; i++; }
+      } else { field+=ch; i++; }
+    } else {
+      if(ch==='"'){ inQ=true; i++; }
+      else if(ch===','){ row.push(field); field=''; i++; }
+      else if(ch==='\n'){ row.push(field); rows.push(row); row=[]; field=''; i++; }
+      else { field+=ch; i++; }
+    }
+  }
+  if(rows.length && rows[rows.length-1].length===1 && rows[rows.length-1][0]==='') rows.pop();
+  return rows;
+}
+function ofcImportCSV(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var rows = ofcParseCSV(String(reader.result||''));
+      if(!rows.length){ showToast('CSV file is empty', '⚠️', 2200); return; }
+      var cells = {};
+      var maxR = Math.min(rows.length-1, OFC_ROWS-1);
+      for(var r=0;r<=maxR;r++){
+        var maxC = Math.min(rows[r].length-1, OFC_COLS-1);
+        for(var c=0;c<=maxC;c++){
+          if(rows[r][c]!=='') cells[ofcKey(r,c)] = rows[r][c];
+        }
+      }
+      var fname = (file.name||'Import').replace(/\.csv$/i,'').replace(/[^\w\- ]+/g,' ').trim() || 'Import';
+      var s = { id:'s'+Date.now().toString(36), name:fname, cells:cells };
+      OFC.sheets.push(s);
+      OFC.activeSheetId = s.id;
+      ofcSave();
+      ofcRenderSheetBar();
+      ofcBuildGrid();
+      ofcRenderCells();
+      ofcSetFocus(0,0,false);
+      showToast('Imported '+rows.length+' rows from CSV', '✓', 2400);
+    }catch(err){
+      showToast('Could not parse that CSV file', '⚠️', 2600);
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ═══ Documents ═══ */
+function ofcRenderDocList(){
+  var wrap = document.getElementById('ofcDocItems');
+  if(!wrap) return;
+  var html = '';
+  var docs = OFC.docs.slice().sort(function(a,b){ return (b.updated||0)-(a.updated||0); });
+  docs.forEach(function(d){
+    var active = d.id===OFC.activeDocId;
+    html += '<div class="ofc-doc-item'+(active?' active':'')+'" data-id="'+d.id+'">'+
+      '<div class="ofc-doc-item-main" role="button" tabindex="0" title="Double-click to rename" onclick="ofcOpenDoc(\''+d.id+'\')" ondblclick="ofcRenameDoc(event,\''+d.id+'\')" onkeydown="if(event.key===\'Enter\')ofcOpenDoc(\''+d.id+'\')">'+
+        '<div class="ofc-doc-item-name">'+esc(d.name)+'</div>'+
+        '<div class="ofc-doc-time">'+ofcTimeAgo(d.updated||Date.now())+'</div>'+
+      '</div>'+
+      '<button class="ofc-doc-del" title="Delete document" aria-label="Delete document" onclick="ofcDeleteDoc(event,\''+d.id+'\',this)">×</button>'+
+    '</div>';
+  });
+  wrap.innerHTML = html;
+}
+function ofcDocHead(){
+  var d = ofcActiveDoc();
+  var el = document.getElementById('ofcDocName');
+  if(el) el.textContent = d ? d.name : '—';
+}
+function ofcOpenDoc(id){
+  var d = OFC.docs.filter(function(x){ return x.id===id; })[0];
+  if(!d) return;
+  OFC.activeDocId = id;
+  ofcSave();
+  ofcRenderDocList();
+  var paper = document.getElementById('ofcPaper');
+  if(paper) paper.innerHTML = d.html || '';
+  ofcPaperLoaded = true;
+  ofcDocHead();
+  ofcUpdateDocStats();
+}
+function ofcNewDoc(){
+  var d = { id:'d'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36), name:'Untitled Document', html:'', updated:Date.now() };
+  OFC.docs.unshift(d);
+  OFC.activeDocId = d.id;
+  ofcSave();
+  ofcRenderDocList();
+  ofcOpenDoc(d.id);
+  var paper = document.getElementById('ofcPaper');
+  if(paper) paper.focus();
+  showToast('New document created', '✓', 1600);
+}
+function ofcRenameDoc(e, id){
+  e.stopPropagation();
+  if(ofcRenamingDoc) return;
+  var d = OFC.docs.filter(function(x){ return x.id===id; })[0];
+  var item = document.querySelector('.ofc-doc-item[data-id="'+id+'"] .ofc-doc-item-name');
+  if(!d || !item) return;
+  ofcRenamingDoc = true;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = d.name; inp.maxLength = 60;
+  inp.setAttribute('aria-label', 'Document name');
+  item.replaceWith(inp);
+  inp.focus();
+  try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(err){}
+  var done = function(commit){
+    if(!ofcRenamingDoc) return;
+    ofcRenamingDoc = false;
+    var v = inp.value.trim();
+    if(commit && v){ d.name = v; d.updated = Date.now(); ofcSave(); ofcDocHead(); }
+    ofcRenderDocList();
+  };
+  inp.addEventListener('keydown', function(ev){
+    ev.stopPropagation();
+    if(ev.key==='Enter'){ ev.preventDefault(); done(true); }
+    else if(ev.key==='Escape'){ ev.preventDefault(); done(false); }
+  });
+  inp.addEventListener('blur', function(){ done(true); });
+}
+function ofcDeleteDoc(e, id, btn){
+  e.stopPropagation();
+  if(OFC.docs.length<=1){ showToast('You need at least one document', '⚠️', 2200); return; }
+  if(btn.dataset.armed){
+    var idx = OFC.docs.findIndex(function(x){ return x.id===id; });
+    OFC.docs.splice(idx,1);
+    if(OFC.activeDocId===id) OFC.activeDocId = OFC.docs[Math.max(0,idx-1)].id;
+    ofcSave();
+    ofcRenderDocList();
+    ofcOpenDoc(OFC.activeDocId);
+    showToast('Document deleted', '🗑', 1800);
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sure?';
+    btn.classList.add('armed');
+    setTimeout(function(){
+      if(btn.isConnected){ delete btn.dataset.armed; btn.textContent = '×'; btn.classList.remove('armed'); }
+    }, 2200);
+  }
+}
+function ofcCmd(cmd){
+  try{ document.execCommand(cmd, false, null); }catch(e){}
+  ofcDocDirty();
+  ofcSyncToolbar();
+}
+function ofcBlockFmt(tag){
+  if(!tag) return;
+  try{ document.execCommand('formatBlock', false, tag); }catch(e){}
+  ofcDocDirty();
+}
+function ofcDocDirty(){
+  if(!OFC) return;
+  var d = ofcActiveDoc(); if(!d) return;
+  var paper = document.getElementById('ofcPaper');
+  d.html = paper ? paper.innerHTML : '';
+  d.updated = Date.now();
+  var st = document.getElementById('ofcDocSaved');
+  if(st){ st.textContent = 'Saving…'; st.className = 'ofc-saving'; }
+  clearTimeout(ofcDocSaveTimer);
+  ofcDocSaveTimer = setTimeout(function(){
+    ofcSave();
+    var st2 = document.getElementById('ofcDocSaved');
+    if(st2){ st2.textContent = 'Saved'; st2.className = 'ofc-saved-ok'; }
+    var t = document.querySelector('.ofc-doc-item[data-id="'+d.id+'"] .ofc-doc-time');
+    if(t) t.textContent = ofcTimeAgo(d.updated);
+  }, 600);
+  ofcUpdateDocStats();
+}
+function ofcFlushDocSave(){
+  // Guard: never write the (empty) editor content over a saved document
+  // before a document has actually been loaded into the paper — e.g. on
+  // first renderOffice() while the last-used tab was Spreadsheet.
+  if(!OFC || !ofcPaperLoaded) return;
+  var d = ofcActiveDoc(); if(!d) return;
+  var paper = document.getElementById('ofcPaper');
+  if(!paper) return;
+  d.html = paper.innerHTML;
+  d.updated = Date.now();
+  clearTimeout(ofcDocSaveTimer);
+  ofcSave();
+}
+function ofcUpdateDocStats(){
+  var paper = document.getElementById('ofcPaper');
+  var el = document.getElementById('ofcDocStats');
+  if(!paper || !el) return;
+  var text = paper.textContent || '';
+  var words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  el.textContent = words.toLocaleString() + ' words · ' + text.length.toLocaleString() + ' chars';
+}
+function ofcSyncToolbar(){
+  try{
+    ['bold','italic','underline','strikeThrough'].forEach(function(cmd){
+      var btn = document.querySelector('#ofcDocToolbar [data-cmd="'+cmd+'"]');
+      if(!btn) return;
+      var on = false;
+      try{ on = document.queryCommandState(cmd); }catch(e){}
+      btn.classList.toggle('on', !!on);
+    });
+  }catch(e){}
+}
+function ofcExportDoc(){
+  var d = ofcActiveDoc(); if(!d) return;
+  var css = 'body{font-family:Georgia,"Times New Roman",serif;max-width:720px;margin:48px auto;padding:0 24px;line-height:1.75;color:#1a1a1a}h1,h2,h3{font-family:Arial,Helvetica,sans-serif;line-height:1.25}blockquote{border-left:3px solid #d4a017;background:#faf6ea;padding:10px 16px;border-radius:0 10px 10px 0}';
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(d.name)+'</title><style>'+css+'</style></head><body>'+(d.html||'')+'</body></html>';
+  var fname = (d.name||'document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'document';
+  ofcDownload(fname+'.html', html, 'text/html;charset=utf-8');
+  showToast('Document downloaded', '✓', 2000);
+}
+function ofcPrintDoc(){ window.print(); }
+
+/* ═══ Undo / redo (snapshot-based, 120 steps) ═══ */
+var ofcUndoStack = [], ofcRedoStack = [];
+function ofcSnapshot(){
+  var s = ofcActiveSheet();
+  return JSON.stringify({ cells:s.cells, fmt:s.fmt||{}, colWidths:s.colWidths||{}, rowHeights:s.rowHeights||{} });
+}
+function ofcPushUndo(){
+  try{
+    ofcUndoStack.push(ofcSnapshot());
+    if(ofcUndoStack.length > 120) ofcUndoStack.shift();
+  }catch(e){}
+  ofcRedoStack = [];
+}
+function ofcRestore(snap){
+  try{
+    var d = JSON.parse(snap);
+    var s = ofcActiveSheet();
+    s.cells = d.cells || {};
+    s.fmt = d.fmt || {};
+    s.colWidths = d.colWidths || {};
+    s.rowHeights = d.rowHeights || {};
+  }catch(e){ return; }
+  ofcApplyLayout();
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+}
+function ofcUndo(){
+  if(!ofcUndoStack.length){ showToast('Nothing to undo', '◇', 1200); return; }
+  ofcRedoStack.push(ofcSnapshot());
+  ofcRestore(ofcUndoStack.pop());
+}
+function ofcRedo(){
+  if(!ofcRedoStack.length){ showToast('Nothing to redo', '◇', 1200); return; }
+  ofcUndoStack.push(ofcSnapshot());
+  ofcRestore(ofcRedoStack.pop());
+}
+
+/* ═══ Column widths & row heights (per-sheet, persisted) ═══ */
+function ofcApplyLayout(){
+  var s = ofcActiveSheet();
+  var grid = document.getElementById('ofcGrid');
+  if(!grid) return;
+  var cols = ['46px'];
+  for(var c=0;c<OFC_COLS;c++) cols.push(((s.colWidths && s.colWidths[c]) || 96) + 'px');
+  grid.style.gridTemplateColumns = cols.join(' ');
+  var rows = ['30px'];
+  for(var r=0;r<OFC_ROWS;r++) rows.push(((s.rowHeights && s.rowHeights[r]) || 30) + 'px');
+  grid.style.gridTemplateRows = rows.join(' ');
+}
+function ofcResizeColStart(e, c){
+  e.preventDefault(); e.stopPropagation();
+  var s = ofcActiveSheet();
+  var startX = e.clientX;
+  var startW = (s.colWidths && s.colWidths[c]) || 96;
+  var head = ofcColHeadEls[c];
+  if(head) head.classList.add('resizing');
+  function move(ev){
+    var w = Math.max(48, Math.min(420, startW + ev.clientX - startX));
+    s.colWidths = s.colWidths || {};
+    s.colWidths[c] = w;
+    ofcApplyLayout();
+  }
+  function up(){
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+    if(head) head.classList.remove('resizing');
+    ofcSave();
+  }
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up);
+}
+function ofcResizeRowStart(e, r){
+  e.preventDefault(); e.stopPropagation();
+  var s = ofcActiveSheet();
+  var startY = e.clientY;
+  var startH = (s.rowHeights && s.rowHeights[r]) || 30;
+  var head = ofcRowHeadEls[r];
+  if(head) head.classList.add('resizing');
+  function move(ev){
+    var h = Math.max(22, Math.min(140, startH + ev.clientY - startY));
+    s.rowHeights = s.rowHeights || {};
+    s.rowHeights[r] = h;
+    ofcApplyLayout();
+  }
+  function up(){
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+    if(head) head.classList.remove('resizing');
+    ofcSave();
+  }
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up);
+}
+function ofcAutoFitCol(c){
+  var s = ofcActiveSheet();
+  var max = 96;
+  for(var r=0;r<OFC_ROWS;r++){
+    var key = ofcKey(r,c);
+    var raw = s.cells[key];
+    if(raw==null || raw==='') continue;
+    var e = ofcCache[key];
+    var d = e ? (e.err ? e.err : ofcFormat(e.v)) : String(raw);
+    var w = Math.min(420, Math.max(48, Math.ceil(d.length * 7.4) + 26));
+    if(w > max) max = w;
+  }
+  s.colWidths = s.colWidths || {};
+  s.colWidths[c] = max;
+  ofcApplyLayout();
+  ofcSave();
+  showToast('Column ' + ofcColLetter(c) + ' auto-fit', '✓', 1200);
+}
+function ofcResetRowHeight(r){
+  var s = ofcActiveSheet();
+  if(s.rowHeights && s.rowHeights[r]){
+    delete s.rowHeights[r];
+    ofcApplyLayout();
+    ofcSave();
+  }
+}
+
+/* ═══ Cell formatting (B / I / U / align / colors / number format) ═══ */
+function ofcToggleFmt(prop){
+  var fm = ofcActiveSheet().fmt || {};
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var any = false;
+  for(var r=r0;r<=r1 && !any;r++) for(var c=c0;c<=c1;c++){
+    var f = fm[ofcKey(r,c)];
+    if(f && f[prop]){ any = true; break; }
+  }
+  ofcSetFmt(prop, any ? null : 1);
+}
+function ofcSetFmt(prop, value){
+  var s = ofcActiveSheet();
+  if(!s.fmt) s.fmt = {};
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  ofcPushUndo();
+  for(var r=r0;r<=r1;r++) for(var c=c0;c<=c1;c++){
+    var key = ofcKey(r,c);
+    var f = s.fmt[key] || (s.fmt[key] = {});
+    if(value===null || value==='') delete f[prop];
+    else f[prop] = value;
+    if(!Object.keys(f).length) delete s.fmt[key];
+  }
+  ofcRenderCells();
+  ofcSave();
+  ofcSyncFmtBar();
+}
+function ofcSetNumFmt(nf){
+  ofcSetFmt('nf', (nf && nf!=='auto') ? nf : null);
+}
+function ofcClearFmt(){
+  var s = ofcActiveSheet();
+  if(!s.fmt) return;
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var any = false;
+  for(var r=r0;r<=r1 && !any;r++) for(var c=c0;c<=c1;c++){
+    if(s.fmt[ofcKey(r,c)]){ any=true; break; }
+  }
+  if(!any){ showToast('No formatting in the selection', '◇', 1500); return; }
+  ofcPushUndo();
+  for(var r2=r0;r2<=r1;r2++) for(var c2=c0;c2<=c1;c2++) delete s.fmt[ofcKey(r2,c2)];
+  ofcRenderCells();
+  ofcSave();
+  ofcSyncFmtBar();
+  showToast('Formatting cleared', '✓', 1400);
+}
+function ofcNumFmt(v, nf){
+  if(nf==='currency') return '$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if(nf==='percent') return (v*100).toLocaleString('en-US', {maximumFractionDigits:1}) + '%';
+  if(nf==='comma') return v.toLocaleString('en-US');
+  return ofcFormat(v);
+}
+function ofcSyncFmtBar(){
+  var fm = ofcActiveSheet().fmt || {};
+  var f = fm[ofcKey(ofcSel.fr, ofcSel.fc)];
+  ['b','i','u'].forEach(function(p){
+    var btn = document.querySelector('.ofc-fmt[data-fmt="'+p+'"]');
+    if(btn) btn.classList.toggle('on', !!(f && f[p]));
+  });
+}
+
+/* ═══ Data tools: AutoSum + sort ═══ */
+function ofcAutoSum(){
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  var tr, tc;
+  if((r1-r0) >= (c1-c0)){ tr = r1+1; tc = c0; }
+  else { tr = r0; tc = c1+1; }
+  if(tr >= OFC_ROWS || tc >= OFC_COLS){ showToast('No room for Σ — select a smaller range', '⚠️', 2000); return; }
+  ofcPushUndo();
+  var s = ofcActiveSheet();
+  s.cells[ofcKey(tr,tc)] = '=SUM(' + ofcKey(r0,c0) + ':' + ofcKey(r1,c1) + ')';
+  ofcRenderCells();   // refresh the eval cache BEFORE focus reads it
+  ofcSetFocus(tr, tc, false);
+  ofcUpdateSelUI();
+  ofcSave();
+  showToast('Σ inserted', '✓', 1400);
+}
+function ofcSort(dir){
+  var r0=Math.min(ofcSel.ar,ofcSel.fr), r1=Math.max(ofcSel.ar,ofcSel.fr);
+  var c0=Math.min(ofcSel.ac,ofcSel.fc), c1=Math.max(ofcSel.ac,ofcSel.fc);
+  if(r1 <= r0){ showToast('Select multiple rows to sort', '◇', 1800); return; }
+  ofcEvalAll();
+  var s = ofcActiveSheet();
+  ofcPushUndo();
+  var rows = [];
+  for(var r=r0;r<=r1;r++){
+    var row = { __k: ofcKey(r,c0) };
+    for(var c=c0;c<=c1;c++){
+      var v = s.cells[ofcKey(r,c)];
+      if(v != null) row[c] = v;
+    }
+    rows.push(row);
+  }
+  rows.sort(function(a,b){
+    var ea = ofcCache[a.__k], eb = ofcCache[b.__k];
+    var va = ea ? (ea.err ? null : ea.v) : null;
+    var vb = eb ? (eb.err ? null : eb.v) : null;
+    var na = ofcSortNum(va), nb = ofcSortNum(vb);
+    if(na!=null && nb!=null) return (na-nb) * dir;
+    return String(va==null?'':va).localeCompare(String(vb==null?'':vb)) * dir;
+  });
+  for(var r2=r0;r2<=r1;r2++) for(var c2=c0;c2<=c1;c2++) delete s.cells[ofcKey(r2,c2)];
+  rows.forEach(function(row,i){
+    for(var c3 in row){
+      if(Object.prototype.hasOwnProperty.call(row, c3) && c3 !== '__k'){
+        s.cells[ofcKey(r0+i, +c3)] = row[c3];
+      }
+    }
+  });
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+  showToast(dir > 0 ? 'Sorted A → Z' : 'Sorted Z → A', '✓', 1400);
+}
+function ofcSortNum(v){
+  if(typeof v==='number') return v;
+  if(typeof v==='string' && v.trim()!=='' && !isNaN(Number(v))) return Number(v);
+  return null;
+}
+
+/* ═══ Mode tabs ═══ */
+function ofcSetTab(tab){
+  if(!OFC) ofcLoad();
+  ofcFlushDocSave();
+  ofcMapCommitEdit();
+  OFC.tab = tab;
+  ofcSave();
+  var ts = document.getElementById('ofcTabSheets');
+  var td = document.getElementById('ofcTabDocs');
+  var tm = document.getElementById('ofcTabMaps');
+  var ps = document.getElementById('ofcPanelSheets');
+  var pd = document.getElementById('ofcPanelDocs');
+  var pm = document.getElementById('ofcPanelMaps');
+  if(ts){ ts.classList.toggle('active', tab==='sheets'); ts.setAttribute('aria-selected', tab==='sheets'?'true':'false'); }
+  if(td){ td.classList.toggle('active', tab==='docs'); td.setAttribute('aria-selected', tab==='docs'?'true':'false'); }
+  if(tm){ tm.classList.toggle('active', tab==='maps'); tm.setAttribute('aria-selected', tab==='maps'?'true':'false'); }
+  if(ps){ ps.classList.toggle('active', tab==='sheets'); ps.setAttribute('aria-hidden', tab==='sheets'?'false':'true'); }
+  if(pd){ pd.classList.toggle('active', tab==='docs'); pd.setAttribute('aria-hidden', tab==='docs'?'false':'true'); }
+  if(pm){ pm.classList.toggle('active', tab==='maps'); pm.setAttribute('aria-hidden', tab==='maps'?'false':'true'); }
+  if(tab==='sheets'){
+    ofcRenderSheetBar();
+    if(ofcLastSheetId!==OFC.activeSheetId) ofcBuildGrid();
+    ofcRenderCells();
+    ofcUpdateSelUI();
+  } else if(tab==='docs'){
+    ofcRenderDocList();
+    ofcOpenDoc(OFC.activeDocId);
+  } else if(tab==='maps'){
+    ofcRenderMapList();
+    ofcOpenMap(OFC.activeMapId);
+  }
+}
+
+/* ═══ Mind maps ═══
+   Hierarchical canvas: nodes + parent/child edges + free links.
+   Keyboard-first (Enter = sibling, Tab = child), drag to move,
+   pan/zoom canvas, tree auto-arrange, search, undo/redo,
+   JSON + PNG export. Data lives in OFC.maps (motion_office_v1). */
+const OFC_MAP_COLORS = ['#818cf8','#38bdf8','#34d399','#fbbf24','#fb7185','#c084fc','#f472b6','#2dd4bf'];
+const OFC_MAP_NODE_GAP = 68;   // vertical distance between sibling nodes
+const OFC_MAP_LEVEL_W = 280;   // horizontal distance between tree levels
+let ofcMapState = null;        // active canvas session state
+let ofcMapUndoStack = [], ofcMapRedoStack = [];
+let ofcRenamingMap = false;
+
+function ofcMapUid(){ return 'mn' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36); }
+function ofcActiveMap(){
+  for(var i=0;i<OFC.maps.length;i++) if(OFC.maps[i].id===OFC.activeMapId) return OFC.maps[i];
+  return OFC.maps[0];
+}
+function ofcMapNode(map, id){
+  for(var i=0;i<map.nodes.length;i++) if(map.nodes[i].id===id) return map.nodes[i];
+  return null;
+}
+function ofcMapChildren(map, id){
+  return map.nodes.filter(function(n){ return n.parent===id; });
+}
+function ofcMapDepth(map, n){
+  var d = 0, cur = n;
+  while(cur && cur.parent){
+    cur = ofcMapNode(map, cur.parent);
+    if(!cur) break;
+    d++;
+    if(d>500) break; // cycle guard
+  }
+  return d;
+}
+function ofcMapTruncate(s){
+  s = String(s==null?'':s);
+  return s.length>26 ? s.slice(0,25)+'…' : s;
+}
+function ofcMapNodeWidth(text){
+  var len = String(text==null?'':text).length;
+  return Math.max(96, Math.min(210, Math.round(len*7.4)+36));
+}
+function ofcMapSaveMap(){ ofcSave(); }
+
+/* ── Branch visibility (collapsed subtrees) ── */
+function ofcMapVisibleSet(m){
+  var visible = {};
+  var hidden = {};
+  function visit(n){
+    if(visible[n.id]) return; // cycle guard
+    visible[n.id] = true;
+    if(n.collapsed){
+      hidden[n.id] = countDescendants(m, n.id);
+      return;
+    }
+    var kids = ofcMapChildren(m, n.id);
+    for(var i=0;i<kids.length;i++) visit(kids[i]);
+  }
+  var roots = m.nodes.filter(function(n){ return !n.parent || !ofcMapNode(m, n.parent); });
+  if(!roots.length && m.nodes.length) roots = [m.nodes[0]];
+  for(var i=0;i<roots.length;i++) visit(roots[i]);
+  // nodes with broken parent refs stay visible
+  for(var j=0;j<m.nodes.length;j++){
+    if(m.nodes[j].parent && !ofcMapNode(m, m.nodes[j].parent)) visible[m.nodes[j].id] = true;
+  }
+  return { visible: visible, hidden: hidden };
+}
+function countDescendants(m, id, seen){
+  seen = seen || {};
+  if(seen[id]) return 0;
+  seen[id] = true;
+  var kids = ofcMapChildren(m, id);
+  var c = 0;
+  for(var i=0;i<kids.length;i++) c += 1 + countDescendants(m, kids[i].id, seen);
+  return c;
+}
+function ofcMapCollectSubtree(m, id){
+  var out = [id];
+  var queue = [id];
+  var seen = {};
+  seen[id] = true;
+  while(queue.length){
+    var kids = ofcMapChildren(m, queue.shift());
+    for(var i=0;i<kids.length;i++){
+      if(!seen[kids[i].id]){ seen[kids[i].id] = true; out.push(kids[i].id); queue.push(kids[i].id); }
+    }
+  }
+  return out;
+}
+let ofcMapClipboard = null;
+function ofcMapHead(){
+  var m = ofcActiveMap();
+  var el = document.getElementById('ofcMapName');
+  if(el) el.textContent = m ? m.name : '—';
+}
+function ofcMapUpdateStats(){
+  var m = ofcActiveMap();
+  var el = document.getElementById('ofcMapStats');
+  if(!el || !m) return;
+  var vis = ofcMapVisibleSet(m);
+  var hidden = m.nodes.length - Object.keys(vis.visible).length;
+  el.textContent = m.nodes.length + ' nodes' + (hidden>0 ? ' (' + hidden + ' hidden)' : '') + ' · ' + m.links.length + ' links';
+}
+
+/* ── Starter content (first run) ── */
+function ofcStarterMap(){
+  var id = ofcMapUid();
+  var L = OFC_MAP_LEVEL_W, G = OFC_MAP_NODE_GAP;
+  function n(suffix, x, y, text, ci, parent){
+    return { id: id+suffix, x:x, y:y, text:text, color: OFC_MAP_COLORS[ci%OFC_MAP_COLORS.length], parent: parent };
+  }
+  return {
+    id: id,
+    name: 'Launch Plan',
+    updated: Date.now(),
+    links: [],
+    nodes: [
+      n('r',  0,    0,    'Product Launch', 0, null),
+      n('m',  L,    -G,   'Marketing',      1, id+'r'),
+      n('e',  L,    0,    'Engineering',    2, id+'r'),
+      n('d',  L,    G,    'Design',         3, id+'r'),
+      n('m1', L*2,  -G*1.5, 'Landing page',   4, id+'m'),
+      n('m2', L*2,  -G*0.5, 'Social campaign',5, id+'m'),
+      n('e1', L*2,  0,    'Beta build',     6, id+'e'),
+      n('d1', L*2,  G,    'Brand assets',   7, id+'d')
+    ]
+  };
+}
+
+/* ── Map list sidebar ── */
+function ofcRenderMapList(){
+  var wrap = document.getElementById('ofcMapItems');
+  if(!wrap) return;
+  var html = '';
+  var maps = OFC.maps.slice().sort(function(a,b){ return (b.updated||0)-(a.updated||0); });
+  maps.forEach(function(m){
+    var active = m.id===OFC.activeMapId;
+    html += '<div class="ofc-doc-item'+(active?' active':'')+'" data-id="'+m.id+'">'+
+      '<div class="ofc-doc-item-main" role="button" tabindex="0" title="Double-click to rename" onclick="ofcSwitchMap(\''+m.id+'\')" ondblclick="ofcRenameMap(event,\''+m.id+'\')" onkeydown="if(event.key===\'Enter\')ofcSwitchMap(\''+m.id+'\')">'+
+        '<div class="ofc-doc-item-name">'+esc(m.name)+'</div>'+
+        '<div class="ofc-doc-time">'+m.nodes.length+' nodes · '+ofcTimeAgo(m.updated||Date.now())+'</div>'+
+      '</div>'+
+      '<button class="ofc-doc-del" title="Delete map" aria-label="Delete map" onclick="ofcDeleteMap(event,\''+m.id+'\',this)">×</button>'+
+    '</div>';
+  });
+  wrap.innerHTML = html;
+}
+function ofcNewMap(){
+  var m = {
+    id: ofcMapUid(),
+    name: 'Untitled Map',
+    nodes: [{ id: ofcMapUid(), x:0, y:0, text:'Central idea', color: OFC_MAP_COLORS[0], parent: null }],
+    links: [],
+    updated: Date.now()
+  };
+  OFC.maps.unshift(m);
+  OFC.activeMapId = m.id;
+  ofcSave();
+  ofcRenderMapList();
+  ofcOpenMap(m.id);
+  showToast('New mind map','✓',1400);
+}
+function ofcSwitchMap(id){
+  if(!OFC.maps.some(function(m){ return m.id===id; })) return;
+  ofcMapCommitEdit();
+  OFC.activeMapId = id;
+  ofcSave();
+  ofcRenderMapList();
+  ofcOpenMap(id);
+}
+function ofcRenameMap(e, id){
+  e.stopPropagation();
+  if(ofcRenamingMap) return;
+  var m = OFC.maps.filter(function(x){ return x.id===id; })[0];
+  var item = document.querySelector('.ofc-doc-item[data-id="'+id+'"] .ofc-doc-item-name');
+  if(!m || !item) return;
+  ofcRenamingMap = true;
+  var inp = document.createElement('input');
+  inp.type = 'text'; inp.value = m.name; inp.maxLength = 60;
+  inp.setAttribute('aria-label', 'Map name');
+  item.replaceWith(inp);
+  inp.focus();
+  try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(err){}
+  var done = function(commit){
+    if(!ofcRenamingMap) return;
+    ofcRenamingMap = false;
+    var v = inp.value.trim();
+    if(commit && v){ m.name = v; m.updated = Date.now(); ofcSave(); ofcMapHead(); }
+    ofcRenderMapList();
+  };
+  inp.addEventListener('keydown', function(ev){
+    ev.stopPropagation();
+    if(ev.key==='Enter'){ ev.preventDefault(); done(true); }
+    else if(ev.key==='Escape'){ ev.preventDefault(); done(false); }
+  });
+  inp.addEventListener('blur', function(){ done(true); });
+}
+function ofcDeleteMap(e, id, btn){
+  e.stopPropagation();
+  if(OFC.maps.length<=1){ showToast('You need at least one mind map','⚠️',2200); return; }
+  if(btn.dataset.armed){
+    var idx = OFC.maps.findIndex(function(m){ return m.id===id; });
+    OFC.maps.splice(idx,1);
+    if(OFC.activeMapId===id) OFC.activeMapId = OFC.maps[Math.max(0,idx-1)].id;
+    ofcSave();
+    ofcRenderMapList();
+    ofcOpenMap(OFC.activeMapId);
+    showToast('Mind map deleted','🗑',1800);
+  } else {
+    btn.dataset.armed = '1';
+    btn.textContent = 'Sure?';
+    btn.classList.add('armed');
+    setTimeout(function(){
+      if(btn.isConnected){ delete btn.dataset.armed; btn.textContent = '×'; btn.classList.remove('armed'); }
+    }, 2200);
+  }
+}
+function ofcOpenMap(id){
+  if(!OFC.maps.some(function(m){ return m.id===id; })) return;
+  ofcMapCommitEdit();
+  OFC.activeMapId = id;
+  ofcMapState = {
+    pan: {x:80, y:60}, zoom: 1,
+    tool: 'select', selected: null, connectFrom: null,
+    matches: [], matchIdx: -1,
+    drag: null, panDrag: null, editing: null
+  };
+  ofcMapUndoStack = []; ofcMapRedoStack = [];
+  ofcMapHead();
+  ofcMapSetToolUI('select');
+  var si = document.getElementById('ofcMapSearch');
+  if(si) si.value = '';
+  ofcMapUpdateMatchCount();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapFitView();
+}
+
+/* ── Rendering ── */
+function ofcMapEdgePath(a, b){
+  var wa = ofcMapNodeWidth(a.text), wb = ofcMapNodeWidth(b.text);
+  var y1 = a.y + 21, y2 = b.y + 21, x1, x2;
+  if(b.x >= a.x){ x1 = a.x + wa; x2 = b.x; }
+  else { x1 = a.x; x2 = b.x + wb; }
+  var dx = Math.max(48, Math.abs(x2-x1)*0.5);
+  return 'M'+x1.toFixed(1)+' '+y1.toFixed(1)+' C'+(x1+dx).toFixed(1)+' '+y1.toFixed(1)+', '+(x2-dx).toFixed(1)+' '+y2.toFixed(1)+', '+x2.toFixed(1)+' '+y2.toFixed(1);
+}
+function ofcMapRenderEdges(vis){
+  var m = ofcActiveMap(); if(!m) return;
+  if(!vis) vis = ofcMapVisibleSet(m);
+  var edges = document.getElementById('ofcMapEdges');
+  if(!edges) return;
+  var html = '', i, n, p;
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    if(!n.parent) continue;
+    if(!vis.visible[n.id]) continue;
+    p = ofcMapNode(m, n.parent);
+    if(!p || !vis.visible[p.id]) continue;
+    html += '<path class="omc-edge" d="'+ofcMapEdgePath(p,n)+'"/>';
+  }
+  for(i=0;i<m.links.length;i++){
+    var a = ofcMapNode(m, m.links[i].a);
+    var b = ofcMapNode(m, m.links[i].b);
+    if(!a || !b) continue;
+    if(!vis.visible[a.id] || !vis.visible[b.id]) continue;
+    html += '<path class="omc-link" d="'+ofcMapEdgePath(a,b)+'"/>';
+  }
+  edges.innerHTML = html;
+}
+function ofcMapBadgeHTML(m, n, w, vis){
+  var kids = ofcMapChildren(m, n.id);
+  if(!kids.length) return '';
+  var hidden = n.collapsed ? (vis.hidden[n.id] || kids.length) : 0;
+  var cls = 'omc-badge' + (n.collapsed ? ' collapsed' : '');
+  var label = n.collapsed ? ('+' + hidden) : '−';
+  return '<g class="'+cls+'" data-badge="'+n.id+'" transform="translate('+w+',21)" title="'+(n.collapsed ? 'Expand branch' : 'Collapse branch')+'">'+
+    '<circle r="9"></circle>'+
+    '<text y="3.5">'+label+'</text>'+
+    '</g>';
+}
+function ofcMapRender(){
+  var m = ofcActiveMap(); if(!m || !ofcMapState) return;
+  var vis = ofcMapVisibleSet(m);
+  ofcMapRenderEdges(vis);
+  var nodes = document.getElementById('ofcMapNodes');
+  if(!nodes) return;
+  var html = '';
+  for(var i=0;i<m.nodes.length;i++){
+    var n = m.nodes[i];
+    if(!vis.visible[n.id]) continue;
+    var w = ofcMapNodeWidth(n.text);
+    var cls = 'omc-node';
+    if(ofcMapState.selected===n.id) cls += ' sel';
+    if(ofcMapState.connectFrom===n.id) cls += ' connect';
+    if(ofcMapState.matches.indexOf(n.id)>=0) cls += ' match';
+    html += '<g class="'+cls+'" data-id="'+n.id+'" transform="translate('+n.x+','+n.y+')">'+
+      '<rect class="omc-node-rect" width="'+w+'" height="42" rx="10"></rect>'+
+      '<rect class="omc-node-bar" x="10" y="10" width="4" height="22" rx="2" style="fill:'+n.color+'"></rect>'+
+      '<text class="omc-node-text" x="21" y="26">'+esc(ofcMapTruncate(n.text))+'</text>'+
+      ofcMapBadgeHTML(m, n, w, vis)+
+      '</g>';
+  }
+  nodes.innerHTML = html;
+  ofcMapApplyTransform();
+  ofcMapSyncColorBar();
+}
+function ofcMapApplyTransform(){
+  var vp = document.getElementById('ofcMapViewport');
+  if(!vp || !ofcMapState) return;
+  vp.setAttribute('transform', 'translate('+ofcMapState.pan.x.toFixed(1)+','+ofcMapState.pan.y.toFixed(1)+') scale('+ofcMapState.zoom.toFixed(3)+')');
+  var zv = document.getElementById('ofcMapZoomVal');
+  if(zv) zv.textContent = Math.round(ofcMapState.zoom*100)+'%';
+  ofcMapPositionEditor();
+}
+function ofcMapSelect(id, reveal){
+  if(!ofcMapState) return;
+  ofcMapState.selected = id;
+  ofcMapRender();
+  if(reveal && id) ofcMapReveal(id);
+}
+function ofcMapFocusCanvas(){
+  var scroll = document.getElementById('ofcMapScroll');
+  if(scroll){ try{ scroll.focus({preventScroll:true}); }catch(e){ scroll.focus(); } }
+}
+function ofcMapScreenToWorld(e){
+  var scroll = document.getElementById('ofcMapScroll');
+  var rect = scroll.getBoundingClientRect();
+  var st = ofcMapState;
+  return { x: (e.clientX - rect.left - st.pan.x)/st.zoom, y: (e.clientY - rect.top - st.pan.y)/st.zoom };
+}
+
+/* ── Tools ── */
+function ofcMapSetTool(tool){
+  if(!ofcMapState) return;
+  ofcMapState.tool = tool;
+  ofcMapState.connectFrom = null;
+  ofcMapSetToolUI(tool);
+  ofcMapRender();
+}
+function ofcMapSetToolUI(tool){
+  var btns = document.querySelectorAll('#ofcMapToolbar .ofc-map-tool');
+  for(var i=0;i<btns.length;i++) btns[i].classList.toggle('on', btns[i].getAttribute('data-tool')===tool);
+}
+
+/* ── Pointer interaction: drag nodes, pan canvas, connect, add ── */
+function ofcMapPointerDown(e){
+  var st = ofcMapState; if(!st) return;
+  if(e.button!==undefined && e.button!==0) return;
+  var t = e.target;
+  // ignore clicks on floating UI chrome inside the canvas
+  if(t && t.closest && t.closest('.ofc-map-zoom, .ofc-map-editor')) return;
+  ofcMapCommitEdit();
+  ofcMapFocusCanvas();
+  var m = ofcActiveMap(); if(!m) return;
+  // collapse/expand badge on a node
+  var badgeEl = (t && t.closest) ? t.closest('.omc-badge') : null;
+  if(badgeEl){
+    ofcMapToggleCollapse(badgeEl.getAttribute('data-badge'));
+    return;
+  }
+  var nodeEl = (t && t.closest) ? t.closest('.omc-node') : null;
+  if(nodeEl){
+    var id = nodeEl.getAttribute('data-id');
+    var n = ofcMapNode(m, id);
+    if(!n) return;
+    if(st.tool==='connect'){
+      if(!st.connectFrom){
+        st.connectFrom = id;
+        ofcMapRender();
+        showToast('Now click a second node to connect them','◇',1800);
+      } else if(st.connectFrom!==id){
+        var already = m.links.some(function(l){
+          return (l.a===st.connectFrom && l.b===id) || (l.a===id && l.b===st.connectFrom);
+        });
+        if(already){
+          showToast('Already connected','◇',1200);
+        } else {
+          ofcMapPushUndo();
+          m.links.push({ id: ofcMapUid(), a: st.connectFrom, b: id });
+          m.updated = Date.now();
+          ofcMapSaveMap();
+          showToast('Nodes connected','✓',1200);
+        }
+        st.connectFrom = null;
+        ofcMapRender();
+      } else {
+        st.connectFrom = null;
+        ofcMapRender();
+      }
+      return;
+    }
+    if(st.tool==='add'){
+      ofcMapSelect(id);
+      ofcMapAddChild();
+      return;
+    }
+    var wasSelected = (st.selected === id);
+    ofcMapSelect(id);
+    st.drag = { id:id, sx:e.clientX, sy:e.clientY, ox:n.x, oy:n.y, moved:false, wasSelected:wasSelected, before:ofcMapSnapshot() };
+    e.preventDefault();
+    return;
+  }
+  // background click
+  if(st.tool==='add'){
+    var pt = ofcMapScreenToWorld(e);
+    ofcMapPushUndo();
+    var node = { id:ofcMapUid(), x:Math.round(pt.x-50), y:Math.round(pt.y-21), text:'New idea', color:OFC_MAP_COLORS[0], parent:null };
+    m.nodes.push(node);
+    m.updated = Date.now();
+    ofcMapRender();
+    ofcMapUpdateStats();
+    ofcMapSaveMap();
+    ofcMapSelect(node.id);
+    ofcMapEdit(node.id);
+    return;
+  }
+  ofcMapSelect(null);
+  st.panDrag = { sx:e.clientX, sy:e.clientY, ox:st.pan.x, oy:st.pan.y };
+  e.preventDefault();
+}
+function ofcMapOnMove(e){
+  var st = ofcMapState; if(!st) return;
+  if(st.drag){
+    var m = ofcActiveMap();
+    var n = ofcMapNode(m, st.drag.id);
+    if(!n){ st.drag = null; return; }
+    var dx = (e.clientX - st.drag.sx)/st.zoom;
+    var dy = (e.clientY - st.drag.sy)/st.zoom;
+    if(!st.drag.moved && Math.abs(dx)<2 && Math.abs(dy)<2) return;
+    st.drag.moved = true;
+    n.x = Math.round(st.drag.ox + dx);
+    n.y = Math.round(st.drag.oy + dy);
+    // live-update just the dragged node + the edges (cheap), not the whole DOM
+    var g = document.querySelector('.omc-node[data-id="'+st.drag.id+'"]');
+    if(g) g.setAttribute('transform', 'translate('+n.x+','+n.y+')');
+    ofcMapRenderEdges();
+  } else if(st.panDrag){
+    st.pan.x = st.panDrag.ox + (e.clientX - st.panDrag.sx);
+    st.pan.y = st.panDrag.oy + (e.clientY - st.panDrag.sy);
+    ofcMapApplyTransform();
+  }
+}
+function ofcMapOnUp(){
+  var st = ofcMapState; if(!st) return;
+  if(st.drag){
+    var drag = st.drag;
+    if(drag.moved){
+      try{
+        ofcMapUndoStack.push(drag.before);
+        if(ofcMapUndoStack.length>100) ofcMapUndoStack.shift();
+      }catch(e){}
+      ofcMapRedoStack = [];
+      var m = ofcActiveMap();
+      if(m) m.updated = Date.now();
+      ofcMapSaveMap();
+    }
+    st.drag = null;
+    // plain click (no drag) on an already-selected node → rename it
+    if(!drag.moved && drag.wasSelected && st.tool==='select') ofcMapEdit(drag.id);
+  }
+  st.panDrag = null;
+}
+function ofcMapWheel(e){
+  var st = ofcMapState; if(!st) return;
+  e.preventDefault();
+  var scroll = document.getElementById('ofcMapScroll');
+  if(!scroll) return;
+  if(e.ctrlKey || e.metaKey){
+    var rect = scroll.getBoundingClientRect();
+    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    var z0 = st.zoom;
+    var z1 = Math.min(2.5, Math.max(0.15, z0*(e.deltaY<0 ? 1.12 : 0.89)));
+    st.pan.x = mx - (mx - st.pan.x)*(z1/z0);
+    st.pan.y = my - (my - st.pan.y)*(z1/z0);
+    st.zoom = z1;
+    ofcMapApplyTransform();
+  } else {
+    st.pan.x -= e.deltaX;
+    st.pan.y -= e.deltaY;
+    ofcMapApplyTransform();
+  }
+}
+
+/* ── Keyboard: mind-map-style flow ── */
+function ofcMapKey(e){
+  var st = ofcMapState; if(!st) return;
+  var k = e.key;
+  if(e.ctrlKey || e.metaKey){
+    var kk = k.toLowerCase();
+    if(kk==='z'){ e.preventDefault(); if(e.shiftKey) ofcMapRedo(); else ofcMapUndo(); }
+    else if(kk==='y'){ e.preventDefault(); ofcMapRedo(); }
+    else if(kk==='f'){ e.preventDefault(); var si = document.getElementById('ofcMapSearch'); if(si) si.focus(); }
+    else if(kk==='d'){ e.preventDefault(); ofcMapDuplicateSelected(); }
+    else if(kk==='c'){ e.preventDefault(); ofcMapCopySelected(); }
+    else if(kk==='v'){ if(ofcMapClipboard && ofcMapClipboard.nodes.length){ e.preventDefault(); ofcMapPaste(); } }
+    return;
+  }
+  if(st.editing) return;
+  switch(k){
+    case 'Enter': e.preventDefault(); ofcMapAddSibling(); return;
+    case 'Tab':   e.preventDefault(); ofcMapAddChild(); return;
+    case 'Delete': case 'Backspace': e.preventDefault(); ofcMapDeleteSelected(); return;
+    case 'F2':    e.preventDefault(); if(st.selected) ofcMapEdit(st.selected); return;
+    case '-': case '_': e.preventDefault(); ofcMapCollapseSelected(); return;
+    case '=': case '+': e.preventDefault(); ofcMapExpandSelected(); return;
+    case 'Escape':
+      if(st.connectFrom){ st.connectFrom = null; ofcMapRender(); }
+      else ofcMapSelect(null);
+      return;
+    case 'ArrowUp': case 'ArrowDown': case 'ArrowLeft': case 'ArrowRight':
+      e.preventDefault(); ofcMapTreeNav(k); return;
+    case 'v': case 'V': ofcMapSetTool('select'); return;
+    case 'a': case 'A': ofcMapSetTool('add'); return;
+    case 'c': case 'C': ofcMapSetTool('connect'); return;
+    case 'f': case 'F': ofcMapFitView(); return;
+  }
+}
+function ofcMapTreeNav(key){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st) return;
+  var cur = st.selected ? ofcMapNode(m, st.selected) : null;
+  if(!cur){
+    var roots = m.nodes.filter(function(n){ return !n.parent || !ofcMapNode(m, n.parent); });
+    if(roots.length) ofcMapSelect(roots[0].id, true);
+    else if(m.nodes.length) ofcMapSelect(m.nodes[0].id, true);
+    return;
+  }
+  if(key==='ArrowLeft'){
+    if(cur.parent && ofcMapNode(m, cur.parent)) ofcMapSelect(cur.parent, true);
+    else {
+      var kids0 = ofcMapChildren(m, cur.id);
+      if(kids0.length) ofcMapSelect(kids0[0].id, true);
+    }
+    return;
+  }
+  if(key==='ArrowRight'){
+    var kids = ofcMapChildren(m, cur.id);
+    if(kids.length) ofcMapSelect(kids[0].id, true);
+    return;
+  }
+  var sibs = cur.parent ? ofcMapChildren(m, cur.parent) : m.nodes.filter(function(n){ return !n.parent; });
+  var idx = -1;
+  for(var i=0;i<sibs.length;i++) if(sibs[i].id===cur.id){ idx = i; break; }
+  if(idx<0) return;
+  var next = sibs[idx + (key==='ArrowDown' ? 1 : -1)];
+  if(next) ofcMapSelect(next.id, true);
+}
+
+/* ── Node operations ── */
+function ofcMapAddChild(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st) return;
+  var parent = st.selected ? ofcMapNode(m, st.selected) : null;
+  if(!parent){
+    var roots = m.nodes.filter(function(n){ return !n.parent || !ofcMapNode(m, n.parent); });
+    parent = roots[0] || null;
+  }
+  if(!parent){
+    ofcMapPushUndo();
+    var r = { id:ofcMapUid(), x:0, y:0, text:'Central idea', color:OFC_MAP_COLORS[0], parent:null };
+    m.nodes.push(r);
+    m.updated = Date.now();
+    ofcMapRender(); ofcMapUpdateStats(); ofcMapSaveMap();
+    ofcMapSelect(r.id);
+    ofcMapEdit(r.id);
+    return;
+  }
+  ofcMapPushUndo();
+  var d = ofcMapDepth(m, parent);
+  var kids = ofcMapChildren(m, parent.id);
+  var y = kids.length ? kids[kids.length-1].y + OFC_MAP_NODE_GAP : parent.y;
+  var node = {
+    id: ofcMapUid(),
+    x: parent.x + OFC_MAP_LEVEL_W,
+    y: y,
+    text: 'New idea',
+    color: OFC_MAP_COLORS[(d+1)%OFC_MAP_COLORS.length],
+    parent: parent.id
+  };
+  m.nodes.push(node);
+  m.updated = Date.now();
+  ofcMapRender(); ofcMapUpdateStats(); ofcMapSaveMap();
+  ofcMapSelect(node.id);
+  ofcMapEdit(node.id);
+}
+function ofcMapAddSibling(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st) return;
+  var cur = st.selected ? ofcMapNode(m, st.selected) : null;
+  if(!cur || !cur.parent){ ofcMapAddChild(); return; }
+  ofcMapPushUndo();
+  // shift later siblings down to make room
+  m.nodes.forEach(function(n){
+    if(n.parent===cur.parent && n.y > cur.y) n.y += OFC_MAP_NODE_GAP;
+  });
+  var node = {
+    id: ofcMapUid(),
+    x: cur.x,
+    y: cur.y + OFC_MAP_NODE_GAP,
+    text: 'New idea',
+    color: cur.color,
+    parent: cur.parent
+  };
+  m.nodes.push(node);
+  m.updated = Date.now();
+  ofcMapRender(); ofcMapUpdateStats(); ofcMapSaveMap();
+  ofcMapSelect(node.id);
+  ofcMapEdit(node.id);
+}
+function ofcMapDeleteSelected(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !st.selected) return;
+  var n = ofcMapNode(m, st.selected);
+  if(!n) return;
+  ofcMapPushUndo();
+  var id = n.id;
+  // children of the deleted node move up to its parent
+  m.nodes.forEach(function(x){ if(x.parent===id) x.parent = n.parent; });
+  m.nodes = m.nodes.filter(function(x){ return x.id!==id; });
+  m.links = m.links.filter(function(l){ return l.a!==id && l.b!==id; });
+  m.updated = Date.now();
+  st.selected = null;
+  ofcMapRender(); ofcMapUpdateStats(); ofcMapSaveMap();
+  showToast('Node deleted','🗑',1200);
+}
+
+/* ── Collapse / expand branches ── */
+function ofcMapToggleCollapse(id){
+  var m = ofcActiveMap();
+  var n = ofcMapNode(m, id);
+  if(!n || !ofcMapChildren(m, n.id).length) return;
+  ofcMapPushUndo();
+  if(n.collapsed) delete n.collapsed;
+  else n.collapsed = true;
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+}
+function ofcMapCollapseSelected(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !st.selected) return;
+  var n = ofcMapNode(m, st.selected);
+  if(!n || n.collapsed || !ofcMapChildren(m, n.id).length) return;
+  ofcMapPushUndo();
+  n.collapsed = true;
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+  showToast('Branch collapsed — click the + badge to expand','◇',1600);
+}
+function ofcMapExpandSelected(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !st.selected) return;
+  var n = ofcMapNode(m, st.selected);
+  if(!n || !n.collapsed) return;
+  ofcMapPushUndo();
+  delete n.collapsed;
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+}
+
+/* ── Node color ── */
+function ofcMapSetColor(color){
+  var st = ofcMapState;
+  if(!st || !st.selected){ showToast('Select a node first','◇',1400); return; }
+  var m = ofcActiveMap();
+  var n = ofcMapNode(m, st.selected);
+  if(!n || n.color===color) return;
+  ofcMapPushUndo();
+  n.color = color;
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapSaveMap();
+}
+function ofcMapSyncColorBar(){
+  var st = ofcMapState;
+  var sw = document.querySelectorAll('#ofcMapToolbar .ofc-map-swatch');
+  if(!sw.length) return;
+  var m = ofcActiveMap();
+  var n = st && st.selected ? ofcMapNode(m, st.selected) : null;
+  for(var i=0;i<sw.length;i++){
+    sw[i].classList.toggle('on', !!(n && n.color === sw[i].getAttribute('data-color')));
+  }
+}
+
+/* ── Duplicate / copy / paste subtrees ── */
+function ofcMapDuplicateSelected(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !st.selected) return;
+  var n = ofcMapNode(m, st.selected);
+  if(!n) return;
+  var subtree = ofcMapCollectSubtree(m, n.id);
+  ofcMapPushUndo();
+  var copies = {};
+  subtree.forEach(function(id){
+    var node = ofcMapNode(m, id);
+    var copy = {
+      id: ofcMapUid(),
+      x: node.x + 70,
+      y: node.y + 50,
+      text: node.text,
+      color: node.color,
+      parent: null
+    };
+    if(node.collapsed) copy.collapsed = true;
+    copies[id] = copy;
+    m.nodes.push(copy);
+  });
+  subtree.forEach(function(id){
+    var node = ofcMapNode(m, id);
+    var copy = copies[id];
+    copy.parent = (node.parent && copies[node.parent]) ? copies[node.parent].id : (node.parent || null);
+  });
+  m.links.forEach(function(l){
+    if(copies[l.a] && copies[l.b]) m.links.push({ id: ofcMapUid(), a: copies[l.a].id, b: copies[l.b].id });
+  });
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+  ofcMapSelect(copies[n.id].id);
+  showToast(subtree.length>1 ? 'Duplicated ' + subtree.length + ' nodes' : 'Node duplicated','✓',1200);
+}
+function ofcMapCopySelected(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !st.selected) return;
+  var n = ofcMapNode(m, st.selected);
+  if(!n) return;
+  var subtree = ofcMapCollectSubtree(m, n.id);
+  ofcMapClipboard = {
+    root: n.id,
+    nodes: subtree.map(function(id){
+      var node = ofcMapNode(m, id);
+      return { id: id, x: node.x, y: node.y, text: node.text, color: node.color, parent: node.parent, collapsed: node.collapsed ? true : undefined };
+    }),
+    links: m.links.filter(function(l){
+      return subtree.indexOf(l.a)>=0 && subtree.indexOf(l.b)>=0;
+    }).map(function(l){ return { a: l.a, b: l.b }; })
+  };
+  showToast('Copied ' + subtree.length + ' node' + (subtree.length>1?'s':''),'✓',1200);
+}
+function ofcMapPaste(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !ofcMapClipboard || !ofcMapClipboard.nodes.length) return;
+  var target = st.selected ? ofcMapNode(m, st.selected) : null;
+  ofcMapPushUndo();
+  var rootSrc = ofcMapClipboard.nodes[0];
+  var ox = target ? target.x + 70 : rootSrc.x + 70;
+  var oy = target ? target.y + 50 : rootSrc.y + 50;
+  var dx = ox - rootSrc.x, dy = oy - rootSrc.y;
+  var copies = {};
+  ofcMapClipboard.nodes.forEach(function(src){
+    var copy = {
+      id: ofcMapUid(),
+      x: src.x + dx,
+      y: src.y + dy,
+      text: src.text,
+      color: src.color,
+      parent: null
+    };
+    if(src.collapsed) copy.collapsed = true;
+    copies[src.id] = copy;
+    m.nodes.push(copy);
+  });
+  ofcMapClipboard.nodes.forEach(function(src){
+    var copy = copies[src.id];
+    if(src.parent && copies[src.parent]) copy.parent = copies[src.parent].id;
+    else copy.parent = target ? target.id : null;
+  });
+  ofcMapClipboard.links.forEach(function(l){
+    if(copies[l.a] && copies[l.b]) m.links.push({ id: ofcMapUid(), a: copies[l.a].id, b: copies[l.b].id });
+  });
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+  ofcMapSelect(copies[rootSrc.id].id);
+  showToast('Pasted','✓',1200);
+}
+
+/* ── SVG export ── */
+function ofcMapExportSVG(){
+  var m = ofcActiveMap();
+  if(!m || !m.nodes.length){ showToast('Nothing to export','◇',1400); return; }
+  var vis = ofcMapVisibleSet(m);
+  var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  var i, n, w;
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    if(!vis.visible[n.id]) continue;
+    w = ofcMapNodeWidth(n.text);
+    if(n.x<minX) minX = n.x;
+    if(n.y<minY) minY = n.y;
+    if(n.x+w>maxX) maxX = n.x+w;
+    if(n.y+42>maxY) maxY = n.y+42;
+  }
+  var pad = 70;
+  var w2 = Math.round((maxX-minX)+pad*2), h2 = Math.round((maxY-minY)+pad*2);
+  var parts = [];
+  parts.push('<?xml version="1.0" encoding="UTF-8"?>');
+  parts.push('<svg xmlns="http://www.w3.org/2000/svg" width="'+w2+'" height="'+h2+'" viewBox="0 0 '+w2+' '+h2+'">');
+  parts.push('<rect width="'+w2+'" height="'+h2+'" fill="#171426"/>');
+  parts.push('<g transform="translate('+(pad-minX)+','+(pad-minY)+')">');
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    if(!n.parent) continue;
+    if(!vis.visible[n.id]) continue;
+    var p = ofcMapNode(m, n.parent);
+    if(!p || !vis.visible[p.id]) continue;
+    parts.push('<path d="'+ofcMapEdgePath(p,n)+'" fill="none" stroke="rgba(122,113,166,.75)" stroke-width="2"/>');
+  }
+  for(i=0;i<m.links.length;i++){
+    var a = ofcMapNode(m, m.links[i].a);
+    var b = ofcMapNode(m, m.links[i].b);
+    if(!a || !b || !vis.visible[a.id] || !vis.visible[b.id]) continue;
+    parts.push('<path d="'+ofcMapEdgePath(a,b)+'" fill="none" stroke="#f5c548" stroke-width="1.8" stroke-dasharray="6 5" stroke-opacity=".8"/>');
+  }
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    if(!vis.visible[n.id]) continue;
+    var nw = ofcMapNodeWidth(n.text);
+    parts.push('<g transform="translate('+n.x+','+n.y+')">');
+    parts.push('<rect width="'+nw+'" height="42" rx="10" fill="#262041" stroke="'+n.color+'" stroke-opacity=".6" stroke-width="1.5"/>');
+    parts.push('<rect x="10" y="10" width="4" height="22" rx="2" fill="'+n.color+'"/>');
+    parts.push('<text x="21" y="26" fill="#f6f3fc" font-family="Inter, system-ui, sans-serif" font-size="13">'+esc(ofcMapTruncate(n.text))+'</text>');
+    parts.push('</g>');
+  }
+  parts.push('</g>');
+  parts.push('</svg>');
+  var fname = (m.name||'mindmap').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'mindmap';
+  ofcDownload(fname+'.svg', parts.join('\n'), 'image/svg+xml');
+  showToast('Map exported as SVG','✓',1400);
+}
+
+/* ── Inline node text editor ── */
+function ofcMapPositionEditor(){
+  var st = ofcMapState; if(!st || !st.editing) return;
+  var m = ofcActiveMap(); if(!m) return;
+  var n = ofcMapNode(m, st.editing); if(!n) return;
+  var ed = document.getElementById('ofcMapEditor'); if(!ed) return;
+  var w = ofcMapNodeWidth(ed.value != null ? ed.value : n.text);
+  ed.style.left = (st.pan.x + n.x*st.zoom) + 'px';
+  ed.style.top = (st.pan.y + n.y*st.zoom) + 'px';
+  ed.style.width = Math.max(60, w*st.zoom) + 'px';
+  ed.style.height = (42*st.zoom) + 'px';
+  ed.style.fontSize = Math.max(10, 13*st.zoom) + 'px';
+}
+function ofcMapEdit(id){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st) return;
+  var n = ofcMapNode(m, id);
+  if(!n) return;
+  st.editing = id;
+  var ed = document.getElementById('ofcMapEditor');
+  if(!ed) return;
+  ed.style.display = 'block';
+  ed.value = n.text;
+  ofcMapPositionEditor();
+  ed.focus();
+  // select the whole name so typing replaces it instead of appending
+  try{ ed.select(); }
+  catch(e){ try{ ed.setSelectionRange(0, ed.value.length); }catch(e2){} }
+}
+function ofcMapEditorKey(e){
+  e.stopPropagation();
+  if(e.key==='Enter'){ e.preventDefault(); ofcMapCommitEdit(); ofcMapFocusCanvas(); }
+  else if(e.key==='Escape'){ e.preventDefault(); ofcMapCancelEdit(); ofcMapFocusCanvas(); }
+}
+function ofcMapCommitEdit(){
+  var st = ofcMapState; if(!st || !st.editing) return;
+  var ed = document.getElementById('ofcMapEditor');
+  var m = ofcActiveMap();
+  var n = m ? ofcMapNode(m, st.editing) : null;
+  if(ed && n){
+    var v = ed.value.trim();
+    if(v && v!==n.text){
+      ofcMapPushUndo();
+      n.text = v;
+      m.updated = Date.now();
+    }
+  }
+  st.editing = null;
+  if(ed) ed.style.display = 'none';
+  ofcMapRender();
+  ofcMapSaveMap();
+}
+function ofcMapCancelEdit(){
+  var st = ofcMapState; if(!st) return;
+  st.editing = null;
+  var ed = document.getElementById('ofcMapEditor');
+  if(ed) ed.style.display = 'none';
+}
+
+/* ── Arrange / view ── */
+function ofcMapAutoLayout(){
+  var m = ofcActiveMap();
+  if(!m || !m.nodes.length){ showToast('Nothing to arrange','◇',1200); return; }
+  ofcMapPushUndo();
+  var vis = ofcMapVisibleSet(m).visible;
+  var roots = m.nodes.filter(function(n){ return !n.parent || !ofcMapNode(m, n.parent); });
+  if(!roots.length) roots = [m.nodes[0]];
+  var nextY = 0;
+  function layout(n, depth){
+    n.x = depth * OFC_MAP_LEVEL_W;
+    var kids = ofcMapChildren(m, n.id).filter(function(k){ return vis[k.id] && k.id!==n.id; });
+    if(!kids.length){ n.y = nextY; nextY += OFC_MAP_NODE_GAP; return; }
+    for(var i=0;i<kids.length;i++) layout(kids[i], depth+1);
+    n.y = (kids[0].y + kids[kids.length-1].y)/2;
+  }
+  for(var i=0;i<roots.length;i++) layout(roots[i], 0);
+  // orphaned nodes (broken parent refs) — stack at the left
+  var placed = {};
+  function track(n){
+    placed[n.id] = 1;
+    var ks = ofcMapChildren(m, n.id);
+    for(var j=0;j<ks.length;j++) track(ks[j]);
+  }
+  for(var r=0;r<roots.length;r++) track(roots[r]);
+  var orphans = m.nodes.filter(function(n){ return !placed[n.id]; });
+  for(var o=0;o<orphans.length;o++){
+    orphans[o].x = 0;
+    orphans[o].y = nextY;
+    nextY += OFC_MAP_NODE_GAP;
+  }
+  m.updated = Date.now();
+  ofcMapRender();
+  ofcMapSaveMap();
+  ofcMapFitView();
+  showToast('Auto-arranged','✓',1200);
+}
+function ofcMapFitView(){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st || !m.nodes.length) return;
+  var scroll = document.getElementById('ofcMapScroll');
+  if(!scroll) return;
+  var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  var vis = ofcMapVisibleSet(m).visible;
+  for(var i=0;i<m.nodes.length;i++){
+    var n = m.nodes[i];
+    if(!vis[n.id]) continue;
+    var w = ofcMapNodeWidth(n.text);
+    if(n.x<minX) minX = n.x;
+    if(n.y<minY) minY = n.y;
+    if(n.x+w>maxX) maxX = n.x+w;
+    if(n.y+42>maxY) maxY = n.y+42;
+  }
+  var bw = maxX-minX+140, bh = maxY-minY+140;
+  var sw = scroll.clientWidth||800, sh = scroll.clientHeight||500;
+  var z = Math.min(1.25, Math.max(0.15, Math.min(sw/bw, sh/bh)));
+  st.zoom = z;
+  st.pan.x = (sw-(maxX-minX)*z)/2 - minX*z;
+  st.pan.y = (sh-(maxY-minY)*z)/2 - minY*z;
+  ofcMapApplyTransform();
+}
+function ofcMapZoomDelta(d){
+  var st = ofcMapState; if(!st) return;
+  var scroll = document.getElementById('ofcMapScroll');
+  if(!scroll) return;
+  var sw = scroll.clientWidth, sh = scroll.clientHeight;
+  var z0 = st.zoom;
+  var z1 = Math.min(2.5, Math.max(0.15, z0+d));
+  if(z1===z0) return;
+  st.pan.x = sw/2 - (sw/2 - st.pan.x)*(z1/z0);
+  st.pan.y = sh/2 - (sh/2 - st.pan.y)*(z1/z0);
+  st.zoom = z1;
+  ofcMapApplyTransform();
+}
+
+/* ── Search ── */
+function ofcMapSearch(q){
+  var st = ofcMapState; if(!st) return;
+  var m = ofcActiveMap();
+  st.matches = [];
+  st.matchIdx = -1;
+  if(q && q.trim() && m){
+    var needle = q.trim().toLowerCase();
+    for(var i=0;i<m.nodes.length;i++){
+      if(String(m.nodes[i].text).toLowerCase().indexOf(needle)>=0) st.matches.push(m.nodes[i].id);
+    }
+  }
+  if(st.matches.length){
+    st.matchIdx = 0;
+    ofcMapSelect(st.matches[0]);
+    ofcMapReveal(st.matches[0]);
+  }
+  ofcMapRender();
+  ofcMapUpdateMatchCount();
+}
+function ofcMapSearchNext(dir){
+  var st = ofcMapState; if(!st || !st.matches.length) return;
+  st.matchIdx = (st.matchIdx + dir + st.matches.length)%st.matches.length;
+  var id = st.matches[st.matchIdx];
+  ofcMapSelect(id);
+  ofcMapReveal(id);
+  ofcMapRender();
+  ofcMapUpdateMatchCount();
+}
+function ofcMapUpdateMatchCount(){
+  var st = ofcMapState;
+  var c = document.getElementById('ofcMapMatchCount');
+  if(!c) return;
+  c.textContent = st && st.matches.length ? (st.matchIdx+1)+'/'+st.matches.length : '';
+}
+function ofcMapReveal(id){
+  var m = ofcActiveMap(); var st = ofcMapState;
+  if(!m || !st) return;
+  var n = ofcMapNode(m, id);
+  if(!n) return;
+  // expand collapsed ancestors so the node is actually visible
+  var changed = false;
+  var cur = n;
+  var guard = 0;
+  while(cur && cur.parent && guard++<500){
+    var p = ofcMapNode(m, cur.parent);
+    if(!p) break;
+    if(p.collapsed){ delete p.collapsed; changed = true; }
+    cur = p;
+  }
+  if(changed) ofcMapRender();
+  var scroll = document.getElementById('ofcMapScroll');
+  if(!scroll) return;
+  var sw = scroll.clientWidth, sh = scroll.clientHeight;
+  var sx = n.x*st.zoom + st.pan.x, sy = n.y*st.zoom + st.pan.y;
+  var w = ofcMapNodeWidth(n.text)*st.zoom, h = 42*st.zoom;
+  if(sx<40 || sx+w>sw-40 || sy<40 || sy+h>sh-40){
+    st.pan.x = sw/2 - (n.x + ofcMapNodeWidth(n.text)/2)*st.zoom;
+    st.pan.y = sh/2 - (n.y+21)*st.zoom;
+    ofcMapApplyTransform();
+  }
+}
+
+/* ── Undo / redo ── */
+function ofcMapSnapshot(){
+  var m = ofcActiveMap();
+  return JSON.stringify({ nodes: m ? m.nodes : [], links: m ? m.links : [] });
+}
+function ofcMapPushUndo(){
+  try{
+    ofcMapUndoStack.push(ofcMapSnapshot());
+    if(ofcMapUndoStack.length>100) ofcMapUndoStack.shift();
+  }catch(e){}
+  ofcMapRedoStack = [];
+}
+function ofcMapRestore(snap){
+  try{
+    var d = JSON.parse(snap);
+    var m = ofcActiveMap();
+    m.nodes = d.nodes || [];
+    m.links = d.links || [];
+  }catch(e){ return; }
+  if(ofcMapState){ ofcMapState.selected = null; ofcMapState.editing = null; }
+  var ed = document.getElementById('ofcMapEditor');
+  if(ed) ed.style.display = 'none';
+  ofcMapRender();
+  ofcMapUpdateStats();
+  ofcMapSaveMap();
+}
+function ofcMapUndo(){
+  if(!ofcMapUndoStack.length){ showToast('Nothing to undo','◇',1000); return; }
+  ofcMapRedoStack.push(ofcMapSnapshot());
+  ofcMapRestore(ofcMapUndoStack.pop());
+}
+function ofcMapRedo(){
+  if(!ofcMapRedoStack.length){ showToast('Nothing to redo','◇',1000); return; }
+  ofcMapUndoStack.push(ofcMapSnapshot());
+  ofcMapRestore(ofcMapRedoStack.pop());
+}
+
+/* ── Export / import ── */
+function ofcMapExportJSON(){
+  var m = ofcActiveMap();
+  if(!m){ showToast('Nothing to export','◇',1200); return; }
+  ofcDownload((m.name||'mindmap').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'mindmap',
+    JSON.stringify({ name:m.name, nodes:m.nodes, links:m.links }, null, 2), 'application/json');
+  showToast('Map exported as JSON','✓',1400);
+}
+function ofcMapImportJSON(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var d = JSON.parse(reader.result);
+      if(!d || !Array.isArray(d.nodes)) throw new Error('bad file');
+      var m = ofcActiveMap();
+      ofcMapPushUndo();
+      d.nodes.forEach(function(n){
+        if(!n.id) n.id = ofcMapUid();
+        if(typeof n.x!=='number') n.x = 0;
+        if(typeof n.y!=='number') n.y = 0;
+        if(n.text==null) n.text = '';
+        if(!n.color) n.color = OFC_MAP_COLORS[0];
+        if(n.parent==null) n.parent = null;
+      });
+      m.nodes = d.nodes;
+      m.links = Array.isArray(d.links) ? d.links : [];
+      m.updated = Date.now();
+      if(ofcMapState){ ofcMapState.selected = null; ofcMapState.matches = []; ofcMapState.matchIdx = -1; }
+      ofcMapRender();
+      ofcMapUpdateStats();
+      ofcMapSaveMap();
+      ofcMapFitView();
+      showToast('Map imported','✓',1600);
+    }catch(err){
+      showToast('Invalid map file','⚠️',2000);
+    }
+  };
+  reader.readAsText(file);
+}
+function ofcMapRoundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+function ofcMapDrawCurve(ctx, a, b){
+  var wa = ofcMapNodeWidth(a.text), wb = ofcMapNodeWidth(b.text);
+  var y1 = a.y+21, y2 = b.y+21, x1, x2;
+  if(b.x >= a.x){ x1 = a.x+wa; x2 = b.x; }
+  else { x1 = a.x; x2 = b.x+wb; }
+  var dx = Math.max(48, Math.abs(x2-x1)*0.5);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.bezierCurveTo(x1+dx, y1, x2-dx, y2, x2, y2);
+  ctx.stroke();
+}
+function ofcMapExportPNG(){
+  var m = ofcActiveMap();
+  if(!m || !m.nodes.length){ showToast('Nothing to export','◇',1400); return; }
+  var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  var i, n, w;
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    w = ofcMapNodeWidth(n.text);
+    if(n.x<minX) minX = n.x;
+    if(n.y<minY) minY = n.y;
+    if(n.x+w>maxX) maxX = n.x+w;
+    if(n.y+42>maxY) maxY = n.y+42;
+  }
+  var pad = 70;
+  var w2 = (maxX-minX)+pad*2, h2 = (maxY-minY)+pad*2;
+  var scale = 2;
+  if(w2*scale>6000) scale = 6000/w2;
+  if(h2*scale>6000) scale = Math.min(scale, 6000/h2);
+  var cv = document.createElement('canvas');
+  cv.width = Math.round(w2*scale);
+  cv.height = Math.round(h2*scale);
+  var ctx = cv.getContext('2d');
+  ctx.scale(scale, scale);
+  ctx.fillStyle = '#171426';
+  ctx.fillRect(0, 0, w2, h2);
+  ctx.translate(pad-minX, pad-minY);
+  // edges
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(122,113,166,.75)';
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    if(!n.parent) continue;
+    var p = ofcMapNode(m, n.parent);
+    if(!p) continue;
+    ofcMapDrawCurve(ctx, p, n);
+  }
+  ctx.strokeStyle = 'rgba(245,197,72,.8)';
+  ctx.setLineDash([6,5]);
+  for(i=0;i<m.links.length;i++){
+    var a = ofcMapNode(m, m.links[i].a);
+    var b = ofcMapNode(m, m.links[i].b);
+    if(!a || !b) continue;
+    ofcMapDrawCurve(ctx, a, b);
+  }
+  ctx.setLineDash([]);
+  // nodes
+  ctx.textBaseline = 'middle';
+  ctx.font = '13px Inter, system-ui, sans-serif';
+  for(i=0;i<m.nodes.length;i++){
+    n = m.nodes[i];
+    var nw = ofcMapNodeWidth(n.text);
+    ofcMapRoundRect(ctx, n.x, n.y, nw, 42, 10);
+    ctx.fillStyle = '#262041';
+    ctx.fill();
+    ctx.globalAlpha = .6;
+    ctx.strokeStyle = n.color || '#818cf8';
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = n.color || '#818cf8';
+    ofcMapRoundRect(ctx, n.x+10, n.y+10, 4, 22, 2);
+    ctx.fill();
+    ctx.fillStyle = '#f6f3fc';
+    ctx.fillText(ofcMapTruncate(n.text), n.x+21, n.y+22);
+  }
+  var fname = (m.name||'mindmap').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'mindmap';
+  var link = document.createElement('a');
+  link.download = fname+'.png';
+  link.href = cv.toDataURL('image/png');
+  link.click();
+  showToast('Map exported as PNG','✓',1600);
+}
+
+/* ── Wiring ── */
+function ofcMapWire(){
+  var scroll = document.getElementById('ofcMapScroll');
+  if(!scroll) return;
+  scroll.addEventListener('pointerdown', ofcMapPointerDown);
+  scroll.addEventListener('wheel', ofcMapWheel, {passive:false});
+  scroll.addEventListener('keydown', ofcMapKey);
+  scroll.addEventListener('dblclick', function(e){
+    var t = e.target;
+    var badgeEl = (t && t.closest) ? t.closest('.omc-badge') : null;
+    if(badgeEl) return; // handled by the pointerdown toggle
+    var nodeEl = (t && t.closest) ? t.closest('.omc-node') : null;
+    if(nodeEl){ e.preventDefault(); ofcMapCommitEdit(); ofcMapEdit(nodeEl.getAttribute('data-id')); return; }
+    // double-click empty canvas in select mode — drop a node right there
+    if(ofcMapState && ofcMapState.tool==='select'){
+      var m = ofcActiveMap();
+      if(!m) return;
+      var pt = ofcMapScreenToWorld(e);
+      ofcMapPushUndo();
+      var node = { id:ofcMapUid(), x:Math.round(pt.x-50), y:Math.round(pt.y-21), text:'New idea', color:OFC_MAP_COLORS[0], parent:null };
+      m.nodes.push(node);
+      m.updated = Date.now();
+      ofcMapRender();
+      ofcMapUpdateStats();
+      ofcMapSaveMap();
+      ofcMapSelect(node.id);
+      ofcMapEdit(node.id);
+    }
+  });
+  document.addEventListener('pointermove', ofcMapOnMove);
+  document.addEventListener('pointerup', ofcMapOnUp);
+  var ed = document.getElementById('ofcMapEditor');
+  if(ed){
+    ed.addEventListener('keydown', ofcMapEditorKey);
+    ed.addEventListener('blur', ofcMapCommitEdit);
+    ed.addEventListener('input', ofcMapPositionEditor);
+  }
+  var file = document.getElementById('ofcMapFile');
+  if(file) file.addEventListener('change', function(){
+    if(file.files && file.files[0]) ofcMapImportJSON(file.files[0]);
+    file.value = '';
+  });
+  var head = document.getElementById('ofcMapName');
+  if(head) head.addEventListener('dblclick', function(e){
+    e.preventDefault();
+    if(OFC && OFC.activeMapId) ofcRenameMap(e, OFC.activeMapId);
+  });
+}
+
+/* ═══ Wiring + entry point ═══ */
+function ofcWire(){
+  var scroll = document.getElementById('ofcGridScroll');
+  if(scroll){
+    scroll.addEventListener('keydown', ofcGridKey);
+    scroll.addEventListener('mousedown', ofcGridMouseDown);
+    scroll.addEventListener('mouseover', ofcGridMouseOver);
+    scroll.addEventListener('dblclick', ofcGridDblClick);
+    scroll.addEventListener('copy', ofcGridCopy);
+    scroll.addEventListener('cut', ofcGridCut);
+    scroll.addEventListener('paste', ofcGridPaste);
+  }
+  document.addEventListener('mouseup', function(){ ofcDragging = false; });
+  var fin = document.getElementById('ofcFormulaIn');
+  if(fin) fin.addEventListener('keydown', ofcFormulaKey);
+  var csv = document.getElementById('ofcCsvFile');
+  if(csv) csv.addEventListener('change', function(){
+    if(csv.files && csv.files[0]) ofcImportCSV(csv.files[0]);
+    csv.value = '';
+  });
+  var paper = document.getElementById('ofcPaper');
+  if(paper) paper.addEventListener('input', ofcDocDirty);
+  var head = document.getElementById('ofcDocName');
+  if(head) head.addEventListener('dblclick', function(e){
+    e.preventDefault();
+    if(OFC && OFC.activeDocId) ofcRenameDoc(e, OFC.activeDocId);
+  });
+  document.addEventListener('selectionchange', function(){
+    if(!OFC || OFC.tab!=='docs' || currentView!=='office') return;
+    ofcSyncToolbar();
+  });
+  ofcMapWire();
+  window.addEventListener('beforeunload', function(){
+    try{ ofcFlushDocSave(); ofcCommitEdit(); ofcMapCommitEdit(); }catch(e){}
+  });
+}
+function renderOffice(){
+  if(!OFC) ofcLoad();
+  if(!ofcWired){ ofcWire(); ofcWired = true; }
+  ofcSetTab(OFC.tab);
+  if(OFC.tab==='sheets') ofcFocusGrid();
+  else if(OFC.tab==='maps') ofcMapFocusCanvas();
+}
+</script>
 
 </body>
 </html>
