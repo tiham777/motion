@@ -36981,8 +36981,28 @@ function getTimeRemaining(block){
 
 /* ═══ BACKUP & RESTORE ═══ */
 const BACKUP_KEYS = ['ft_global_tasks_v1','ft_rules_v1','ft_habits_v1','ft_habit_log_v1','ft_countdowns_v1','ft_thoughts_v1','ft_notebooks_v2','ft_daily_tasks_permanent_v1','ft_settings_v1','ft_theme','ft_aihub_favs_v1','ft_aihub_filter_v1','ft_aihub_custom_v1','ft_aihub_hidden_v1','ft_trash','ft_tracker_v1','ft_fitness_v1','ft_challenges_v1','ft_travel_v1','ft_finance_v1','ft_projects_v1','ft_custom_tools_v1','ft_roadmaps_v1','ft_goals_v1'];
-// AI assistant keys (motion_ prefix) — included in backups & cloud sync
-const AI_BACKUP_KEYS = ['motion_asst_convs','motion_asst_settings','motion_asst_websearch','motion_asst_memories','motion_asst_actions','motion_asst_sidebar','motion_removed_models','motion_api_keys','motionSleepLog'];
+// AI assistant + Office + Focus session keys (motion_ prefix) — included in backups & cloud sync.
+// IMPORTANT: motion_office_v1 holds the entire Office suite state (spreadsheets,
+// documents, mind maps). Without it in this list, fbPushToCloud() never uploads
+// Office data AND fbApplyCloudData() wipes local Office data on every cloud apply
+// (because it deletes every motion_* key, then writes back only the keys that
+// were in the cloud payload — which never included motion_office_v1).
+// Same goes for the motion_focus_* keys (pomo, braindump, distract, eisen, etc.) —
+// without these in the whitelist, every cross-device sync wipes the user's
+// focus-session state.
+const AI_BACKUP_KEYS = [
+  'motion_asst_convs','motion_asst_settings','motion_asst_websearch',
+  'motion_asst_memories','motion_asst_actions','motion_asst_sidebar',
+  'motion_removed_models','motion_api_keys','motionSleepLog',
+  // Office suite (spreadsheets + documents + mind maps)
+  'motion_office_v1',
+  // Focus page session state
+  'motion_focus_intention','motion_focus_last_day','motion_focus_streak',
+  'motion_focus_pomo','motion_focus_braindump','motion_focus_distract',
+  'motion_focus_goal','motion_focus_eisen','motion_focus_energy',
+  // AI sidebar v2 flag + undo stack
+  'motion_asst_sidebar_v2','motion_asst_undostack'
+];
 // daily tasks are stored with date keys (ft_daily_tasks_v1_YYYY-MM-DD), included via the loop below
 
 function getAllBackupData(){
