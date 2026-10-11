@@ -4368,79 +4368,119 @@ z-index:50;
 .rules-header-area{flex-shrink:0;margin-bottom:24px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .rules-header-area h2{font-family:var(--font-head);font-size:24px;font-weight:700;letter-spacing:-.02em}
 .rules-header-area p{font-size:13.5px;color:var(--text3);margin-top:5px;letter-spacing:-.01em}
+/* Guidelines — search field + live counts (right side of the header) */
+.rules-search-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.rules-search-box{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;min-width:250px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text3);
+  transition:border-color .3s,background .2s;
+}
+/* Quiet focus: the app deliberately keeps text inputs free of accent rings
+   (see the global input:focus rule), so this only shifts the border. */
+.rules-search-box:focus-within{border-color:var(--accent-glow6);background:rgba(255,255,255,.05);color:var(--accent2)}
+.rules-search-box input{
+  flex:1;min-width:0;padding:0;background:none;border:none;outline:none;
+  color:var(--text);font-family:var(--font-body);font-size:13.5px;letter-spacing:-.01em;
+}
+.rules-search-box input::placeholder{color:var(--text3);font-style:italic}
+.rules-search-box input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
+.rules-search-clear{
+  width:20px;height:20px;padding:0;border:none;background:none;border-radius:50%;
+  color:inherit;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;
+}
+.rules-search-clear:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.rules-search-meta{font-size:11.5px;color:var(--text3);letter-spacing:-.01em}
+.rules-search-meta.is-filtering{color:var(--accent2);font-weight:600}
+mark.rule-hit{background:var(--accent-glow);color:var(--accent2);border-radius:3px;padding:0 2px}
+.rules-reset-btn{
+  margin-top:14px;padding:9px 18px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text2);
+  border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;
+  transition:var(--t-common) var(--spring-fast);
+}
+.rules-reset-btn:hover{border-color:var(--accent-glow5);color:var(--text)}
+/* Guidelines — refined empty state (no categories / no search matches) */
+.rules-empty{
+  text-align:center;padding:40px 24px !important;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  max-width:480px;margin:8px auto 0;
+}
+.rules-empty .empty-icon{
+  color:var(--text3);opacity:.5;margin-bottom:4px;
+}
+.rules-empty h3{
+  font-family:var(--font-head);font-size:16px;font-weight:700;
+  color:var(--text);letter-spacing:-.02em;margin-top:4px;
+}
+.rules-empty p{
+  font-size:13px;color:var(--text3);line-height:1.5;
+  max-width:340px;margin:0;letter-spacing:-.01em;
+}
+@media (max-width:640px){
+  .rules-search-wrap{width:100%;align-items:stretch}
+  .rules-search-box{min-width:0}
+}
 /* Rules add-category bar — matches task-composer style */
 .add-cat-row{
   background:var(--bg2);
   border:1px solid var(--border);
   border-radius:var(--radius-sm);
-  padding:18px 20px;
-  margin-bottom:22px;
-  box-shadow:0 4px 24px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.03) inset;
-  position:relative;
-  overflow:hidden;
-}
-.add-cat-row::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--accent-glow),transparent);
-  pointer-events:none;
+  padding:16px 18px;
+  margin-bottom:18px;
 }
 .add-cat-row-label{
-  font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:7px;
-}
-.add-cat-row-label::after{
-  content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:10px;
 }
 .add-cat-input-row{display:flex;gap:8px;align-items:stretch}
 .cat-emoji-inp{display:none}
 .cat-name-inp{
-  flex:1;padding:11px 16px;
+  flex:1;padding:11px 14px;
   border-radius:var(--radius-sm);
   border:1px solid var(--border);
   background:rgba(255,255,255,.03);
   color:var(--text);font-family:var(--font-body);font-size:14px;
   outline:none;
-  transition:border-color .46s,box-shadow .46s,background .2s;
+  transition:border-color .2s,background .2s;
   letter-spacing:-.01em;
 }
 .cat-name-inp:focus{
-  border-color:var(--accent-glow6);
-  box-shadow:0 0 0 3px var(--accent-glow2);
-  background:rgba(255,255,255,.045);
+  border-color:var(--accent);
+  background:rgba(255,255,255,.05);
 }
-.cat-name-inp::placeholder{color:var(--text3);font-style:italic}
+.cat-name-inp::placeholder{color:var(--text3)}
 .cat-add-btn{
-  padding:11px 20px;border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  padding:11px 18px;border:none;
+  background:var(--accent);
   color:var(--btn-text);border-radius:var(--radius-sm);cursor:pointer;
-  font-family:var(--font-body);font-size:13.5px;font-weight:700;
+  font-family:var(--font-body);font-size:13.5px;font-weight:600;
   display:flex;align-items:center;gap:6px;
-  transition:transform .52s cubic-bezier(.34,1.4,.64,1),box-shadow .52s,filter .44s;
+  transition:background .2s;
   white-space:nowrap;flex-shrink:0;
-  box-shadow:0 3px 14px var(--accent-glow4);
   letter-spacing:-.01em;
 }
-.cat-add-btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 6px 22px var(--accent-glow6);filter:brightness(1.06)}
-.cat-add-btn:active{transform:scale(.96)}@keyframes ruleAccIn{
+.cat-add-btn:hover{background:var(--accent2)}
+.cat-add-btn:active{transform:scale(.98)}@keyframes ruleAccIn{
   from{opacity:0;transform:translateY(16px) scale(.98)}
   to{opacity:1;transform:translateY(0) scale(1)}
 }
-.rules-list{display:flex;flex-direction:column;gap:14px}
+.rules-list{display:flex;flex-direction:column;gap:10px}
 .rule-accordion{
-  background:var(--bg2);border:1px solid var(--border);
+  background:var(--bg2);
+  border:1px solid var(--border);
   border-radius:var(--radius-sm);
   display:grid;grid-template-rows:auto 0fr;
-  transition:border-color .55s cubic-bezier(.16,1,.3,1),
-             box-shadow .55s cubic-bezier(.16,1,.3,1),
-             transform .35s cubic-bezier(.16,1,.3,1),
-             grid-template-rows .95s cubic-bezier(.16,1,.3,1);
-  position:relative;
+  transition:border-color .2s ease,box-shadow .2s ease,grid-template-rows .4s ease;
 }
-.rule-accordion:hover{border-color:var(--accent-glow);box-shadow:0 8px 40px rgba(0,0,0,.35);transform:translateY(-1px)}
+.rule-accordion:hover{border-color:var(--accent-glow)}
 .rule-accordion.open{
   grid-template-rows:auto 1fr;
   border-color:var(--accent-glow5);
-  box-shadow:0 0 0 1px var(--accent-glow2),0 16px 48px rgba(0,0,0,.3);
 }
 .rule-acc-head{display:flex;align-items:center;cursor:pointer;padding:0;border:none;background:none;width:100%;text-align:left;user-select:none}
 .rule-acc-emoji{
@@ -4448,140 +4488,116 @@ z-index:50;
   display:flex;align-items:center;justify-content:center;
 }
 .rule-acc-emoji-badge{
-  width:44px;height:44px;border-radius:13px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--accent-glow2) 0%,var(--glass2) 100%);
-  border:1px solid rgba(255,255,255,.07);
-  box-shadow:0 4px 18px rgba(0,0,0,.35),0 0 0 1px var(--accent-glow2) inset,0 1px 0 rgba(255,255,255,.08) inset;
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  background:var(--accent-glow);
+  border:1px solid var(--accent-glow5);
   display:flex;align-items:center;justify-content:center;
-  color:var(--text2);
-  position:relative;overflow:hidden;
-  transition:transform var(--spring-fast),box-shadow var(--spring-fast),border-color var(--spring-fast);
-  backdrop-filter:blur(4px);
-}
-.rule-acc-emoji-badge::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.06) 0%,transparent 55%);
-  pointer-events:none;
-}
-.rule-accordion:hover .rule-acc-emoji-badge{
-  transform:scale(1.08) rotate(-4deg);
-  box-shadow:0 6px 24px rgba(0,0,0,.4),0 0 0 1px var(--accent-glow) inset,0 1px 0 rgba(255,255,255,.12) inset;
-  border-color:rgba(255,255,255,.12);
+  color:var(--accent2);
 }
 .rule-accordion.open .rule-acc-emoji-badge{
-  box-shadow:0 4px 20px var(--accent-glow),0 0 0 1px var(--accent-glow) inset,0 1px 0 rgba(255,255,255,.1) inset;
-  border-color:var(--accent-glow);
-  transform:scale(1.08);
+  background:var(--accent-glow2);
+  border-color:var(--accent-glow5);
 }
 .rule-acc-info{flex:1;padding:18px 0;min-width:0}
-.rule-acc-name{font-family:var(--font-head);font-size:16px;font-weight:800;letter-spacing:-.03em;color:var(--text)}
+.rule-acc-name{font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
 .rule-acc-count{
   display:inline-flex;align-items:center;gap:5px;margin-top:5px;
-  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--text3);transition:color .44s;
+  font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--text3);transition:color .2s ease;
 }
 .rule-accordion.open .rule-acc-count{color:var(--accent2)}
 .rule-acc-actions{display:flex;align-items:center;gap:4px;padding:0 10px}
-.rule-icon-btn{width:32px;height:32px;border:1px solid transparent;background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);transition:var(--t-common) var(--spring-fast);flex-shrink:0}
-.rule-icon-btn:hover{background:rgba(255,255,255,.06);border-color:var(--border);color:var(--text)}
-.rule-icon-btn.del:hover{background:rgba(240,82,82,.1);border-color:rgba(240,82,82,.2);color:var(--red)}
-.rule-acc-chevron{font-size:11px;color:var(--text3);padding:18px 20px;transition:transform .7s cubic-bezier(.34,1.56,.64,1),color .44s,opacity .44s;flex-shrink:0;opacity:.5}
+.rule-icon-btn{width:30px;height:30px;border:1px solid transparent;background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);transition:background .15s ease,color .15s ease;flex-shrink:0}
+.rule-icon-btn:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.rule-icon-btn.del:hover{background:rgba(240,82,82,.1);color:var(--red)}
+.rule-acc-chevron{font-size:11px;color:var(--text3);padding:18px 20px;transition:transform .25s ease,color .2s ease,opacity .2s ease;flex-shrink:0;opacity:.5}
 .rule-accordion.open .rule-acc-chevron{transform:rotate(180deg);opacity:1;color:var(--accent2)}
 
 /* Body — overflow:hidden on wrapper enables grid-template-rows animation */
 .rule-acc-body{
   overflow:hidden;
   border-top:0px solid var(--border);
-  transition:border-top-width 0s .7s, opacity .55s cubic-bezier(.16,1,.3,1), transform .55s cubic-bezier(.16,1,.3,1);
+  transition:border-top-width 0s .3s, opacity .25s ease, transform .25s ease;
   opacity:0;
-  transform:translateY(-6px);
+  transform:translateY(-4px);
 }
 .rule-accordion.open .rule-acc-body{
   border-top-width:1px;
   border-top-color:var(--border);
-  transition:border-top-width 0s 0s, opacity .6s .12s cubic-bezier(.16,1,.3,1), transform .6s .12s cubic-bezier(.16,1,.3,1);
+  transition:border-top-width 0s 0s, opacity .25s ease .05s, transform .25s ease .05s;
   opacity:1;
   transform:translateY(0);
 }
 
-/* Inner body gradient wash */
+/* Entries list */
 .rule-entries-list{
-  padding:18px 20px 10px;
-  background:linear-gradient(180deg,var(--accent-glow3) 0%,transparent 100%);
+  padding:14px 18px 8px;
   display:flex;flex-direction:column;gap:6px;
 }
 
 /* Each entry card */
 .rule-entry{
-  display:flex;align-items:flex-start;gap:14px;
-  padding:13px 14px 13px 16px;
-  border-radius:10px;
+  display:flex;align-items:flex-start;gap:12px;
+  padding:11px 14px;
+  border-radius:8px;
   border:1px solid transparent;
   background:var(--bg3);
-  transition:background .18s,border-color .18s,transform .18s,box-shadow .18s;
-  position:relative;
-  overflow:hidden;
-}
-.rule-entry::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:linear-gradient(180deg,var(--accent),var(--accent2));
-  opacity:0;border-radius:0 2px 2px 0;
-  transition:opacity var(--ease);
+  transition:background .15s ease,border-color .15s ease;
 }
 .rule-entry:hover{
   background:var(--surface);
-  border-color:var(--border2);
-  transform:translateX(3px);
-  box-shadow:0 4px 20px rgba(0,0,0,.18);
+  border-color:var(--border);
 }
-.rule-entry:hover::before{opacity:1}
 
 /* Number badge */
 .rule-entry-num{
-  font-family:var(--font-head);font-size:11px;font-weight:800;
-  letter-spacing:.04em;color:var(--accent2);
-  background:var(--accent-glow);border:1px solid var(--accent-glow);
-  border-radius:6px;padding:2px 7px;flex-shrink:0;margin-top:2px;
-  min-width:28px;text-align:center;line-height:1.6;
+  font-family:var(--font-mono);font-size:11px;font-weight:600;
+  color:var(--accent2);
+  flex-shrink:0;margin-top:1px;
+  min-width:24px;text-align:center;line-height:1.6;
 }
 
 /* Text */
 .rule-entry-text{
-  font-size:14px;font-weight:500;color:var(--text);
-  line-height:1.72;flex:1;word-break:break-word;letter-spacing:-.01em;
+  font-size:14px;font-weight:400;color:var(--text);
+  line-height:1.6;flex:1;word-break:break-word;letter-spacing:-.01em;
 }
 
 /* Delete */
 .rule-entry-del{
-  opacity:0;width:26px;height:26px;border:none;background:transparent;
+  opacity:0;width:24px;height:24px;border:none;background:transparent;
   border-radius:6px;cursor:pointer;display:flex;align-items:center;
-  justify-content:center;font-size:12px;color:var(--text3);
-  transition:var(--t-common) var(--spring-fast);flex-shrink:0;margin-top:1px;
+  justify-content:center;font-size:13px;color:var(--text3);
+  transition:opacity .15s ease,background .15s ease,color .15s ease;flex-shrink:0;margin-top:0;
 }
 .rule-entry:hover .rule-entry-del{opacity:1}
 .rule-entry-del:hover{background:rgba(240,82,82,.12);color:var(--red)}
 
 /* Footer */
 .rule-acc-footer{
-  padding:14px 20px 16px;display:flex;gap:8px;
+  padding:12px 18px 14px;display:flex;gap:8px;
   border-top:1px solid var(--border);
-  background:rgba(0,0,0,.12);
+  background:var(--bg3);
 }
 .rule-entry-input{
-  flex:1;padding:10px 14px;border-radius:9px;border:1px solid var(--border);
+  flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);
   background:var(--bg2);color:var(--text);font-family:var(--font-body);
-  font-size:13.5px;outline:none;transition:border-color .44s,box-shadow .44s;
+  font-size:13.5px;outline:none;transition:border-color .2s,background .2s;
 }
-.rule-entry-input:focus{border-color:var(--accent-glow6);box-shadow:0 0 0 3px var(--accent-glow2)}
+.rule-entry-input:focus{border-color:var(--accent);background:rgba(255,255,255,.04)}
 .rule-entry-input::placeholder{color:var(--text3)}
 .rule-entry-add-btn{
-  padding:10px 18px;border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  color:var(--btn-text);border-radius:9px;cursor:pointer;font-size:13px;
-  font-weight:700;transition:var(--t-common) var(--spring-fast);white-space:nowrap;
-  box-shadow:0 3px 12px var(--accent-glow4);
+  padding:10px 16px;border:none;
+  background:var(--accent);
+  color:var(--btn-text);border-radius:8px;cursor:pointer;font-size:13px;
+  font-weight:600;transition:background .2s;white-space:nowrap;
 }
-.rule-entry-add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow5)}
+.rule-entry-add-btn:hover{background:var(--accent2)}
+
+/* The per-category colour rules for the Guidelines page live in
+   <style id="rules-category-color">, the last stylesheet in the document:
+   the per-theme polish blocks further down re-colour these same surfaces
+   with !important, so the category tint has to be declared after them. */
 
 /* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,5,0);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);transition:background .65s cubic-bezier(.16,1,.3,1),backdrop-filter .65s cubic-bezier(.16,1,.3,1)}
@@ -20272,40 +20288,28 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
 .content.office-active{padding:12px 16px}
 .office-page{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}
 
-.ofc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.ofc-title{display:flex;align-items:center;gap:12px;min-width:0}
-.ofc-title-icon{
-  width:40px;height:40px;border-radius:12px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,var(--accent-glow4),var(--accent-glow2));
-  border:1px solid var(--border);color:var(--accent);
-  box-shadow:var(--glow-accent);
-}
-.ofc-title h2{
-  font-family:var(--font-head);font-size:1.28rem;font-weight:800;
-  letter-spacing:-.01em;color:var(--text);line-height:1.15;
-}
-.ofc-sub{font-size:.78rem;color:var(--text3);margin-top:2px}
-
-/* ── Mode tabs (Spreadsheet / Documents) ── */
+/* ── Mode tabs (Spreadsheet / Documents) — full-width pill bar,
+   same language as the Tracker's category tabs ── */
 .ofc-tabs{
-  display:flex;gap:2px;padding:3px;border-radius:12px;
+  display:flex;gap:3px;padding:4px;border-radius:13px;
   background:var(--bg2);border:1px solid var(--border);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--text) 5%,transparent),
+             0 1px 2px rgba(0,0,0,.06);
 }
 .ofc-tab{
-  display:flex;align-items:center;gap:7px;
-  padding:7px 15px;border-radius:9px;border:none;cursor:pointer;
-  background:transparent;color:var(--text2);
-  font-family:var(--font-body);font-size:.84rem;font-weight:600;
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 15px;border-radius:9px;border:none;cursor:pointer;
+  background:transparent;color:var(--text3);
+  font-family:var(--font-body);font-size:.84rem;font-weight:600;white-space:nowrap;
   transition:background .35s var(--prem-silk),color .35s var(--prem-silk),box-shadow .35s var(--prem-silk);
 }
 .ofc-tab:hover{color:var(--text);background:var(--glass2)}
 .ofc-tab.active{
-  background:var(--surface2);color:var(--text);
-  box-shadow:var(--shadow-sm),inset 0 0 0 1px var(--border);
+  color:var(--accent2);
+  background:linear-gradient(180deg,var(--accent-glow,rgba(99,102,241,.16)) 0%,color-mix(in srgb,var(--accent-glow,rgba(99,102,241,.1)) 55%,transparent) 100%);
+  box-shadow:inset 0 0 0 1px var(--accent-glow2,rgba(99,102,241,.3)),
+             0 1px 2px rgba(0,0,0,.06);
 }
-.ofc-head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-
 /* ── Panels ── */
 .ofc-panel{display:none;flex:1;min-height:0;flex-direction:column;gap:10px}
 .ofc-panel.active{display:flex;animation:ofcPanelIn .5s var(--prem-silk) both}
@@ -20427,6 +20431,92 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   background:var(--surface);border:2px solid var(--accent);border-radius:4px;
   color:var(--text);font-family:var(--font-body);font-size:.84rem;
   padding:0 7px;outline:none;box-shadow:0 6px 20px rgba(0,0,0,.45);
+}
+
+/* ── Find & replace bar (spreadsheet) ── */
+.ofc-find{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  padding:6px 8px;border-radius:11px;
+  background:var(--bg2);border:1px solid var(--border);
+  animation:ofcPanelIn .28s var(--prem-silk) both;
+}
+.ofc-find input{
+  flex:0 1 190px;min-width:120px;padding:6px 9px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:var(--font-body);font-size:.8rem;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.ofc-find input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.ofc-find input::placeholder{color:var(--text3)}
+.ofc-find-count{
+  font-family:var(--font-mono);font-size:.72rem;color:var(--text3);
+  min-width:58px;text-align:center;white-space:nowrap;
+}
+.ofc-find .ofc-btn{padding:6px 9px}
+.ofc-find-spacer{flex:1}
+
+/* ── Doc list search ── */
+.ofc-doc-search{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;
+  padding:5px 8px;color:var(--text3);flex-shrink:0;
+  transition:border-color .2s,box-shadow .2s;
+}
+.ofc-doc-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.ofc-doc-search input{
+  flex:1;min-width:0;background:none;border:none;outline:none;
+  color:var(--text);font-family:var(--font-body);font-size:.8rem;
+}
+.ofc-doc-search input::placeholder{color:var(--text3)}
+.ofc-doc-empty-msg{
+  padding:18px 10px;text-align:center;font-size:.8rem;color:var(--text3);line-height:1.6;
+}
+.ofc-doc-meta{display:flex;align-items:center;gap:6px}
+.ofc-doc-dup{
+  align-self:center;flex-shrink:0;width:22px;height:22px;border-radius:7px;
+  border:none;background:transparent;color:var(--text3);cursor:pointer;
+  font-size:.8rem;line-height:1;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s,background .2s,color .2s;margin-right:2px;
+}
+.ofc-doc-item:hover .ofc-doc-dup{opacity:1}
+.ofc-doc-dup:hover{background:var(--glass2);color:var(--text)}
+
+/* ── Keyboard shortcuts help overlay ── */
+.ofc-help{
+  position:fixed;inset:0;z-index:8200;display:none;
+  align-items:center;justify-content:center;padding:20px;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(5px);
+}
+.ofc-help.open{display:flex;animation:ofcPanelIn .22s var(--prem-silk) both}
+.ofc-help-card{
+  width:min(620px,100%);max-height:82vh;overflow-y:auto;scrollbar-width:thin;
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);padding:22px 24px 24px;
+}
+.ofc-help-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ofc-help-head h3{font-family:var(--font-head);font-size:1.05rem;font-weight:800;color:var(--text);margin:0}
+.ofc-help-close{
+  width:28px;height:28px;border-radius:8px;border:1px solid var(--border);cursor:pointer;
+  background:var(--bg3);color:var(--text2);font-size:.95rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;
+}
+.ofc-help-close:hover{background:var(--surface2);color:var(--text)}
+.ofc-help-sub{font-size:.78rem;color:var(--text3);margin:0 0 14px}
+.ofc-help-group{margin-bottom:14px}
+.ofc-help-group h4{
+  font-family:var(--font-head);font-size:.7rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--text3);margin:0 0 6px;
+}
+.ofc-help-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  font-size:.8rem;color:var(--text2);padding:5px 0;
+  border-bottom:1px dashed var(--border);
+}
+.ofc-help-row:last-child{border-bottom:none}
+.ofc-help-row kbd{
+  font-family:var(--font-mono);font-size:.7rem;color:var(--text);
+  background:var(--bg3);border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:6px;padding:2px 7px;white-space:nowrap;
 }
 
 /* ── Status bar ── */
@@ -20593,15 +20683,14 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
 @media (max-width:900px){
   .ofc-docs{flex-direction:column}
   .ofc-doc-list{width:100%;flex-shrink:1;min-height:0;max-height:168px}
+  .ofc-help-grid{grid-template-columns:1fr}
+  .ofc-find input{flex:1 1 100%}
   .ofc-doc-items{flex-direction:row;overflow-x:auto;overflow-y:hidden}
   .ofc-doc-item{min-width:158px}
   .ofc-paper{padding:30px 24px;min-height:60vh}
-  .ofc-head-actions{margin-left:0;width:100%}
   .ofc-formula{min-width:100%;order:10}
 }
 @media (max-width:560px){
-  .ofc-title h2{font-size:1.1rem}
-  .ofc-sub{display:none}
   .ofc-paper{padding:24px 18px}
 }
 
@@ -20624,12 +20713,16 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
 .omc-node.match .omc-node-rect{stroke:#fbbf24;stroke-width:2}
 .omc-node.sel.match .omc-node-rect{stroke:var(--accent)}
 .omc-node-text{fill:var(--text);font-size:13px;pointer-events:none}
+/* While the inline editor covers a node, hide its SVG label — otherwise
+   the label shows through the input's translucent background and the
+   two texts render on top of each other. */
+.omc-node.editing .omc-node-text{opacity:0}
 .omc-node-bar{pointer-events:none}
 @keyframes omcPulse{0%,100%{opacity:1}50%{opacity:.35}}
 .ofc-map-editor{
   position:absolute;z-index:6;display:none;
-  background:var(--glass);border:1px solid var(--accent);border-radius:10px;
-  color:var(--text);padding:0 10px;font-family:var(--font);outline:none;
+  background:var(--bg2);border:1px solid var(--accent);border-radius:10px;
+  color:var(--text);padding:0 10px 0 21px;font-family:var(--font);outline:none;
   box-shadow:0 0 0 3px var(--accent-glow);
 }
 .ofc-map-zoom{
@@ -21951,14 +22044,24 @@ requestAnimationFrame(draw);
     <div id="view-rules">
       <div class="rules-header-area">
         <div>
-          <h2>Guidelines</h2>
+          <h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-right:9px;color:var(--accent)"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Guidelines</h2>
           <p>Your personal philosophy — discipline, focus, life, quotes &amp; wisdom.</p>
+        </div>
+        <div class="rules-search-wrap">
+          <div class="rules-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="rulesSearch" type="search" placeholder="Search rules" autocomplete="off" spellcheck="false" aria-label="Search guidelines"
+              oninput="rulesSearchInput(this.value)"
+              onkeydown="if(event.key==='Escape'&&this.value){event.preventDefault();rulesSearchClear()}"/>
+            <button class="rules-search-clear" id="rulesSearchClear" type="button" title="Clear search" aria-label="Clear search" style="display:none" onclick="rulesSearchClear()">×</button>
+          </div>
+          <div class="rules-search-meta" id="rulesMeta"></div>
         </div>
       </div>
       <div class="add-cat-row">
         <div class="add-cat-input-row">
           <input class="cat-emoji-inp" id="catEmoji" type="text" placeholder="📌" maxlength="4" value="📌"/>
-          <input class="cat-name-inp" id="catName" type="text" placeholder="Category name (e.g. Discipline, Quotes, Study…)" maxlength="40" onkeydown="if(event.key==='Enter')addCategory()"/>
+          <input class="cat-name-inp" id="catName" type="text" placeholder="Category name" maxlength="40" onkeydown="if(event.key==='Enter')addCategory()"/>
           <button class="cat-add-btn" onclick="addCategory()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Category
@@ -22117,31 +22220,19 @@ requestAnimationFrame(draw);
     <div id="view-office" style="display:none">
       <div class="office-page" id="officePage">
 
-        <!-- Header -->
-        <div class="ofc-head">
-          <div class="ofc-title">
-            <span class="ofc-title-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-            </span>
-            <div>
-              <h2>Office</h2>
-              <div class="ofc-sub">Spreadsheets, documents &amp; mind maps — autosaved as you work</div>
-            </div>
-          </div>
-          <div class="ofc-tabs" role="tablist" aria-label="Office mode">
-            <button class="ofc-tab active" id="ofcTabSheets" role="tab" aria-selected="true" onclick="ofcSetTab('sheets')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-              Spreadsheet
-            </button>
-            <button class="ofc-tab" id="ofcTabDocs" role="tab" aria-selected="false" onclick="ofcSetTab('docs')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Documents
-            </button>
-            <button class="ofc-tab" id="ofcTabMaps" role="tab" aria-selected="false" onclick="ofcSetTab('maps')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="9.5" y1="9.5" x2="6.5" y2="6.5"/><line x1="14.5" y1="9.5" x2="17.5" y2="6.5"/><line x1="9.5" y1="14.5" x2="6.5" y2="17.5"/><line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/></svg>
-              Mind Maps
-            </button>
-          </div>
+        <div class="ofc-tabs" role="tablist" aria-label="Office mode">
+          <button class="ofc-tab active" id="ofcTabSheets" role="tab" aria-selected="true" onclick="ofcSetTab('sheets')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            Spreadsheet
+          </button>
+          <button class="ofc-tab" id="ofcTabDocs" role="tab" aria-selected="false" onclick="ofcSetTab('docs')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Documents
+          </button>
+          <button class="ofc-tab" id="ofcTabMaps" role="tab" aria-selected="false" onclick="ofcSetTab('maps')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="9.5" y1="9.5" x2="6.5" y2="6.5"/><line x1="14.5" y1="9.5" x2="17.5" y2="6.5"/><line x1="9.5" y1="14.5" x2="6.5" y2="17.5"/><line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/></svg>
+            Mind Maps
+          </button>
         </div>
 
         <!-- ═══ SPREADSHEET PANEL ═══ -->
@@ -22167,6 +22258,10 @@ requestAnimationFrame(draw);
               <button class="ofc-btn" onclick="ofcExportCSV()" title="Download the current sheet as a CSV file">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Export
+              </button>
+              <button class="ofc-btn" onclick="ofcToggleFind()" title="Find (and replace) in this sheet — Ctrl+F">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Find
               </button>
               <button class="ofc-btn ofc-btn-danger" onclick="ofcClearRange()" title="Clear the selected cells (Delete)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -22224,6 +22319,24 @@ requestAnimationFrame(draw);
             </button>
           </div>
 
+          <div class="ofc-find" id="ofcFindBar" style="display:none" role="search" aria-label="Find and replace in sheet">
+            <input type="text" id="ofcFindInp" placeholder="Find in sheet…" spellcheck="false" autocomplete="off" aria-label="Search text" oninput="ofcFindRun()" onkeydown="ofcFindKey(event)"/>
+            <span class="ofc-find-count" id="ofcFindCount" aria-live="polite"></span>
+            <button class="ofc-btn" onclick="ofcFindStep(-1)" title="Previous match (Shift+Enter)" aria-label="Previous match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <button class="ofc-btn" onclick="ofcFindStep(1)" title="Next match (Enter)" aria-label="Next match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <span class="ofc-find-spacer"></span>
+            <input type="text" id="ofcReplInp" placeholder="Replace with…" spellcheck="false" autocomplete="off" aria-label="Replacement text" onkeydown="ofcFindKey(event)"/>
+            <button class="ofc-btn" onclick="ofcFindReplace()" title="Replace current match">Replace</button>
+            <button class="ofc-btn" onclick="ofcFindReplaceAll()" title="Replace every match in this sheet">All</button>
+            <button class="ofc-btn" onclick="ofcToggleFind()" title="Close (Esc)" aria-label="Close find bar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
           <div class="ofc-grid-scroll" id="ofcGridScroll" tabindex="0" role="application" aria-label="Spreadsheet grid. Use arrow keys to move, type to edit, Enter to commit."></div>
 
           <div class="ofc-statusbar">
@@ -22245,6 +22358,10 @@ requestAnimationFrame(draw);
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   New
                 </button>
+              </div>
+              <div class="ofc-doc-search" id="ofcDocSearchWrap" style="display:none">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="ofcDocSearch" placeholder="Search documents…" autocomplete="off" aria-label="Search documents" oninput="ofcRenderDocList()" onkeydown="if(event.key==='Escape'){this.value='';ofcRenderDocList();this.blur();}"/>
               </div>
               <div class="ofc-doc-items" id="ofcDocItems"></div>
             </aside>
@@ -22415,6 +22532,46 @@ requestAnimationFrame(draw);
         </div>
         <input type="file" id="ofcMapFile" accept=".json,application/json" style="display:none" aria-hidden="true"/>
 
+      </div>
+
+      <!-- Keyboard shortcuts help overlay -->
+      <div class="ofc-help" id="ofcHelp" role="dialog" aria-modal="true" aria-labelledby="ofcHelpTitle" onclick="if(event.target===this)ofcToggleHelp()">
+        <div class="ofc-help-card">
+          <div class="ofc-help-head">
+            <h3 id="ofcHelpTitle">Keyboard shortcuts</h3>
+            <button class="ofc-help-close" onclick="ofcToggleHelp()" aria-label="Close shortcuts">×</button>
+          </div>
+          <p class="ofc-help-sub">Everything in Office is keyboard-first. These work while the relevant tab is open.</p>
+          <div class="ofc-help-group">
+            <h4>Spreadsheet</h4>
+            <div class="ofc-help-row"><span>Move the cursor</span><kbd>↑ ↓ ← →</kbd></div>
+            <div class="ofc-help-row"><span>Commit and move down / right</span><kbd>Enter / Tab</kbd></div>
+            <div class="ofc-help-row"><span>Edit the current cell</span><kbd>F2</kbd></div>
+            <div class="ofc-help-row"><span>Find &amp; replace in sheet</span><kbd>Ctrl F</kbd></div>
+            <div class="ofc-help-row"><span>Select the whole sheet</span><kbd>Ctrl A</kbd></div>
+            <div class="ofc-help-row"><span>Undo / redo</span><kbd>Ctrl Z / Ctrl Y</kbd></div>
+            <div class="ofc-help-row"><span>Clear selected cells</span><kbd>Delete</kbd></div>
+          </div>
+          <div class="ofc-help-group">
+            <h4>Documents</h4>
+            <div class="ofc-help-row"><span>Bold / italic / underline</span><kbd>Ctrl B / I / U</kbd></div>
+            <div class="ofc-help-row"><span>Find this document</span><kbd>Ctrl F</kbd></div>
+            <div class="ofc-help-row"><span>New document</span><kbd>Ctrl Alt N</kbd></div>
+          </div>
+          <div class="ofc-help-group">
+            <h4>Mind maps</h4>
+            <div class="ofc-help-row"><span>Add a sibling / child node</span><kbd>Enter / Tab</kbd></div>
+            <div class="ofc-help-row"><span>Collapse / expand a branch</span><kbd>− / +</kbd></div>
+            <div class="ofc-help-row"><span>Rename the selected node</span><kbd>F2</kbd></div>
+            <div class="ofc-help-row"><span>Duplicate / delete</span><kbd>Ctrl D / Delete</kbd></div>
+            <div class="ofc-help-row"><span>Fit the map to view</span><kbd>F</kbd></div>
+          </div>
+          <div class="ofc-help-group" style="margin-bottom:0">
+            <h4>Anywhere in Office</h4>
+            <div class="ofc-help-row"><span>Switch mode</span><kbd>Ctrl 1 / 2 / 3</kbd></div>
+            <div class="ofc-help-row"><span>Show this help</span><kbd>?</kbd></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -24700,15 +24857,74 @@ function saveRules(r){lsSet(K_RULES,r);}
   if(changed) lsSet(K_RULES,existing);
 })();
 
+/* ── Guidelines: one accent hue per rules box ──
+   Picked from a fixed palette by hashing the category id, so a box keeps its
+   colour when categories are added, deleted or reordered. The colour is only
+   ever used through colour-mix() in CSS, so it stays legible on every theme. */
+const RULE_PALETTE=['#6366f1','#f59e0b','#34d399','#f472b6','#22d3ee','#a78bfa','#fb923c','#34a853','#60a5fa','#eab308'];
+function ruleCatColor(id){
+  const s=String(id||'');
+  let h=5381;
+  for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+  return RULE_PALETTE[h%RULE_PALETTE.length];
+}
+
+/* ── Guidelines: live search across categories, entries and quotes ── */
+var rulesQuery='';
+function rulesResetFilter(){
+  rulesQuery='';
+  const inp=document.getElementById('rulesSearch'); if(inp)inp.value='';
+  const btn=document.getElementById('rulesSearchClear'); if(btn)btn.style.display='none';
+}
+function rulesSearchInput(v){
+  rulesQuery=String(v||'');
+  const btn=document.getElementById('rulesSearchClear'); if(btn)btn.style.display=rulesQuery?'flex':'none';
+  renderRules();
+}
+function rulesSearchClear(){
+  rulesResetFilter();
+  renderRules();
+  const inp=document.getElementById('rulesSearch'); if(inp)inp.focus();
+}
+/* Highlight matches — each slice is escaped on its own so the markup stays safe */
+function ruleHl(text,q){
+  if(!q)return esc(text);
+  const lower=text.toLowerCase();
+  let out='',i=0,j;
+  while((j=lower.indexOf(q,i))!==-1){
+    out+=esc(text.slice(i,j))+'<mark class="rule-hit">'+esc(text.slice(j,j+q.length))+'</mark>';
+    i=j+q.length;
+  }
+  return out+esc(text.slice(i));
+}
 function renderRules(){
   const rules=loadRules();
   const grid=document.getElementById('rulesGrid');
+  const q=rulesQuery.trim().toLowerCase();
+  const meta=document.getElementById('rulesMeta');
+  if(meta){meta.textContent='';meta.className='rules-search-meta';}
   if(!rules.length){
-    grid.innerHTML=`<div class="empty-state"><span class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h3>No categories yet</h3><p>Add your first category above</p></div>`;
+    grid.innerHTML=`<div class="empty-state rules-empty"><span class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><h3>No categories yet</h3><p>Add your first category above.</p></div>`;
     return;
   }
-  grid.innerHTML=rules.map((cat,ci)=>`
-    <div class="rule-accordion${cat._open?' open':''}" id="acc-${ci}" style="animation:ruleAccIn .65s cubic-bezier(.16,1,.3,1) ${(ci*0.1).toFixed(2)}s both">
+  let shownCats=0,shownEntries=0,totalEntries=0;
+  const html=rules.map((cat,ci)=>{
+    totalEntries+=cat.entries.length;
+    /* A hit on the category name reveals every rule inside it; otherwise
+       only the matching rules survive the filter. */
+    const nameHit=!!q&&String(cat.name).toLowerCase().indexOf(q)!==-1;
+    const hits=[];
+    cat.entries.forEach((e,ei)=>{
+      if(!q||nameHit||String(e).toLowerCase().indexOf(q)!==-1)hits.push(ei);
+    });
+    if(q&&!nameHit&&!hits.length)return '';
+    shownCats++;shownEntries+=hits.length;
+    const open=q?true:!!cat._open;
+    const countLbl=(q&&!nameHit)
+      ? hits.length+' of '+cat.entries.length+' '+(cat.entries.length===1?'rule':'rules')
+      : cat.entries.length+' '+(cat.entries.length===1?'rule':'rules');
+    return `
+    <div class="rule-accordion${open?' open':''}" id="acc-${ci}" style="animation:ruleAccIn .65s cubic-bezier(.16,1,.3,1) ${(ci*0.1).toFixed(2)}s both">
       <div class="rule-acc-head" onclick="toggleAccordion(${ci})">
         <span class="rule-acc-emoji"><span class="rule-acc-emoji-badge">${(()=>{
           const RULE_ICONS={
@@ -24722,24 +24938,24 @@ function renderRules(){
         })()}</span></span>
         <div class="rule-acc-info">
           <div class="rule-acc-name">${esc(cat.name)}</div>
-          <div class="rule-acc-count"${cat._open?' style="color:var(--accent2)"':''}>${cat.entries.length} ${cat.entries.length===1?'rule':'rules'}</div>
+          <div class="rule-acc-count">${countLbl}</div>
         </div>
         <div class="rule-acc-actions" onclick="event.stopPropagation()">
           <button class="rule-icon-btn del" onclick="delCategory(${ci})" title="Delete category">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
           </button>
         </div>
-        <span class="rule-acc-chevron" style="transform:${cat._open?'rotate(180deg)':'rotate(0deg)'}">▼</span>
+        <span class="rule-acc-chevron" style="transform:${open?'rotate(180deg)':'rotate(0deg)'}">▼</span>
       </div>
       <div class="rule-acc-body">
         <div class="rule-entries-list">
-          ${cat.entries.length===0?`<div style="padding:8px 6px;font-size:13px;color:var(--text3)">No entries yet — add one below</div>`:''}
-          ${cat.entries.map((e,ei)=>`
+          ${hits.length===0?`<div style="padding:8px 6px;font-size:13px;color:var(--text3)">No entries yet — add one below</div>`:''}
+          ${hits.map(ei=>{const e=cat.entries[ei];return `
             <div class="rule-entry">
               <span class="rule-entry-num">${ei+1}.</span>
-              <div class="rule-entry-text">${esc(e)}</div>
+              <div class="rule-entry-text">${ruleHl(String(e),q)}</div>
               <button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>
-            </div>`).join('')}
+            </div>`;}).join('')}
         </div>
         <div class="rule-acc-footer">
           <input class="rule-entry-input" id="einp-${ci}" type="text" placeholder="Add a rule, quote or advice…" maxlength="220"
@@ -24747,7 +24963,20 @@ function renderRules(){
           <button class="rule-entry-add-btn" onclick="addEntry(${ci})">Add</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;}).join('');
+
+  /* Live counts — totals when idle, "showing X of Y" while filtering */
+  if(meta){
+    meta.className='rules-search-meta'+(q?' is-filtering':'');
+    meta.textContent=q
+      ? shownEntries+' of '+totalEntries+' rules in '+shownCats+' of '+rules.length+' categories'
+      : rules.length+' categories, '+totalEntries+' rules';
+  }
+  if(q&&!shownCats){
+    grid.innerHTML=`<div class="empty-state rules-empty"><span class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><h3>No rules match &ldquo;${esc(rulesQuery.trim())}&rdquo;</h3><p>Try a shorter word, or clear the search.</p><button class="rules-reset-btn" onclick="rulesSearchClear()">Clear search</button></div>`;
+    return;
+  }
+  grid.innerHTML=html;
 }
 
 /* toggleAccordion is defined in the IIFE below — no stub needed */
@@ -24761,6 +24990,7 @@ function addCategory(){
   saveRules(rules);
   document.getElementById('catName').value='';
   document.getElementById('catEmoji').value='📌';
+  if(rulesQuery)rulesResetFilter(); /* new category must be visible */
   renderRules();
 }
 function delCategory(ci){
@@ -24771,8 +25001,15 @@ function delCategory(ci){
 function addEntry(ci){
   const inp=document.getElementById('einp-'+ci);
   const text=inp.value.trim();if(!text){inp.focus();return;}
-  const rules=loadRules();rules[ci].entries.push(text);saveRules(rules);
+  const rules=loadRules();  rules[ci].entries.push(text);saveRules(rules);
   inp.value='';
+  /* Filtered view: an inline append could land outside the filter — drop the
+     search and re-render so the rule the user just typed is on screen. */
+  if(rulesQuery){
+    rulesResetFilter();renderRules();
+    setTimeout(()=>{const el=document.getElementById('einp-'+ci);if(el)el.focus();},30);
+    return;
+  }
   /* Append inline — no full re-render which would collapse the accordion */
   const list=document.querySelector('#acc-'+ci+' .rule-entries-list');
   if(list){
@@ -24800,6 +25037,9 @@ function addEntry(ci){
 }
 function delEntry(ci,ei){
   const rules=loadRules();rules[ci].entries.splice(ei,1);saveRules(rules);
+  /* Filtered view: indices no longer line up with the visible rows, so let
+     renderRules() rebuild instead of patching the list in place. */
+  if(rulesQuery){renderRules();return;}
   /* Remove the specific entry row inline */
   const list=document.querySelector('#acc-'+ci+' .rule-entries-list');
   if(list){
@@ -36971,9 +37211,8 @@ document.addEventListener('click', e=>{
     const isOpen = acc.classList.contains('open');
     acc.classList.toggle('open');
     const chev  = acc.querySelector('.rule-acc-chevron');
-    const count = acc.querySelector('.rule-acc-count');
     if(chev)  chev.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    if(count) count.style.color    = isOpen ? '' : 'var(--accent2)';
+    /* the count pill's colour is handled in CSS via .rule-accordion.open */
     const rules = loadRules();
     if(rules[ci]){ rules[ci]._open = !isOpen; saveRules(rules); }
   };
@@ -79295,17 +79534,11 @@ html[data-theme="pure-light"] #view-rules .rules-header-area p{
   color:#6b7280 !important;
 }
 
-/* ── Add-category composer — premium surface ── */
+/* ── Add-category composer — flat surface ── */
 html[data-theme="light"] #view-rules .add-cat-row,
 html[data-theme="pure-light"] #view-rules .add-cat-row{
-  background:linear-gradient(160deg,#ffffff 0%,#fbfbfd 100%) !important;
-  border:1px solid rgba(15,17,33,.08) !important;
-  border-top:1px solid color-mix(in srgb, var(--accent) 12%, transparent) !important;
-  box-shadow:0 1px 2px rgba(15,17,33,.04),0 4px 14px -4px rgba(15,17,33,.06) !important;
-}
-html[data-theme="light"] #view-rules .add-cat-row::before,
-html[data-theme="pure-light"] #view-rules .add-cat-row::before{
-  background:linear-gradient(90deg,transparent,color-mix(in srgb, var(--accent) 20%, transparent),transparent) !important;
+  background:#ffffff !important;
+  border:1px solid rgba(15,17,33,.10) !important;
 }
 html[data-theme="light"] #view-rules .add-cat-row-label,
 html[data-theme="pure-light"] #view-rules .add-cat-row-label{
@@ -79321,44 +79554,36 @@ html[data-theme="pure-light"] #view-rules .cat-name-inp{
 html[data-theme="light"] #view-rules .cat-name-inp:focus,
 html[data-theme="pure-light"] #view-rules .cat-name-inp:focus{
   background:#ffffff !important;
-  border-color:color-mix(in srgb, var(--accent) 40%, transparent) !important;
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  border-color:var(--accent) !important;
 }
 html[data-theme="light"] #view-rules .cat-name-inp::placeholder,
 html[data-theme="pure-light"] #view-rules .cat-name-inp::placeholder{
   color:var(--text3) !important;
 }
-/* Category add button — indigo gradient + sheen */
+/* Category add button — solid accent */
 html[data-theme="light"] #view-rules .cat-add-btn,
 html[data-theme="pure-light"] #view-rules .cat-add-btn{
-  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+  background:var(--accent) !important;
   color:#ffffff !important;
-  box-shadow:0 1px 3px color-mix(in srgb, var(--accent) 30%, transparent),inset 0 1px 0 rgba(255,255,255,.25) !important;
 }
 html[data-theme="light"] #view-rules .cat-add-btn:hover,
 html[data-theme="pure-light"] #view-rules .cat-add-btn:hover{
-  box-shadow:0 4px 10px color-mix(in srgb, var(--accent) 40%, transparent),inset 0 1px 0 rgba(255,255,255,.25) !important;
+  background:var(--accent2) !important;
 }
 
-/* ── Rule accordion — premium surface ── */
+/* ── Rule accordion — flat surface ── */
 html[data-theme="light"] #view-rules .rule-accordion,
 html[data-theme="pure-light"] #view-rules .rule-accordion{
-  background:linear-gradient(160deg,#ffffff 0%,#fbfbfd 100%) !important;
-  border:1px solid rgba(15,17,33,.08) !important;
-  border-top:1px solid color-mix(in srgb, var(--accent) 10%, transparent) !important;
-  box-shadow:0 1px 2px rgba(15,17,33,.04),0 2px 8px -2px rgba(15,17,33,.05) !important;
+  background:#ffffff !important;
+  border:1px solid rgba(15,17,33,.10) !important;
 }
 html[data-theme="light"] #view-rules .rule-accordion:hover,
 html[data-theme="pure-light"] #view-rules .rule-accordion:hover{
-  border-color:color-mix(in srgb, var(--accent) 20%, transparent) !important;
-  border-top-color:color-mix(in srgb, var(--accent) 30%, transparent) !important;
-  box-shadow:0 4px 10px rgba(15,17,33,.05),0 8px 24px -4px color-mix(in srgb, var(--accent) 15%, transparent) !important;
+  border-color:color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
 html[data-theme="light"] #view-rules .rule-accordion.open,
 html[data-theme="pure-light"] #view-rules .rule-accordion.open{
-  border-color:color-mix(in srgb, var(--accent) 25%, transparent) !important;
-  border-top-color:color-mix(in srgb, var(--accent) 35%, transparent) !important;
-  box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent),0 12px 36px -6px color-mix(in srgb, var(--accent) 18%, transparent) !important;
+  border-color:color-mix(in srgb, var(--accent) 40%, transparent) !important;
 }
 /* Rule accordion name — readable */
 html[data-theme="light"] #view-rules .rule-acc-name,
@@ -79383,61 +79608,34 @@ html[data-theme="pure-light"] #view-rules .rule-accordion.open .rule-acc-chevron
   color:var(--accent) !important;
 }
 
-/* ── Emoji badge — refined accent tint ── */
+/* ── Emoji badge — flat accent tint ── */
 html[data-theme="light"] #view-rules .rule-acc-emoji-badge,
 html[data-theme="pure-light"] #view-rules .rule-acc-emoji-badge{
-  background:linear-gradient(135deg,color-mix(in srgb, var(--accent) 10%, transparent),color-mix(in srgb, var(--accent2) 6%, transparent)) !important;
-  border:1px solid color-mix(in srgb, var(--accent) 14%, transparent) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 6px color-mix(in srgb, var(--accent) 8%, transparent) !important;
+  background:color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border:1px solid color-mix(in srgb, var(--accent) 20%, transparent) !important;
   color:var(--accent) !important;
-}
-html[data-theme="light"] #view-rules .rule-accordion:hover .rule-acc-emoji-badge,
-html[data-theme="pure-light"] #view-rules .rule-accordion:hover .rule-acc-emoji-badge{
-  background:linear-gradient(135deg,color-mix(in srgb, var(--accent) 14%, transparent),color-mix(in srgb, var(--accent2) 10%, transparent)) !important;
-  border-color:color-mix(in srgb, var(--accent) 22%, transparent) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 12px color-mix(in srgb, var(--accent) 15%, transparent) !important;
 }
 html[data-theme="light"] #view-rules .rule-accordion.open .rule-acc-emoji-badge,
 html[data-theme="pure-light"] #view-rules .rule-accordion.open .rule-acc-emoji-badge{
-  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
-  border-color:var(--accent) !important;
-  color:#ffffff !important;
-  box-shadow:0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent),inset 0 1px 0 rgba(255,255,255,.25) !important;
+  background:color-mix(in srgb, var(--accent) 18%, transparent) !important;
+  border-color:color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
 
-/* ── Rule entries list — soft accent wash ── */
-html[data-theme="light"] #view-rules .rule-entries-list,
-html[data-theme="pure-light"] #view-rules .rule-entries-list{
-  background:linear-gradient(180deg,color-mix(in srgb, var(--accent) 4%, transparent) 0%,transparent 100%) !important;
-}
-
-/* ── Rule entry cards — refined recessed surface ── */
+/* ── Rule entry cards ── */
 html[data-theme="light"] #view-rules .rule-entry,
 html[data-theme="pure-light"] #view-rules .rule-entry{
   background:rgba(15,17,33,.025) !important;
-  border:1px solid rgba(15,17,33,.06) !important;
-  transition:background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .2s ease !important;
+  border:1px solid transparent !important;
 }
 html[data-theme="light"] #view-rules .rule-entry:hover,
 html[data-theme="pure-light"] #view-rules .rule-entry:hover{
   background:#ffffff !important;
-  border-color:color-mix(in srgb, var(--accent) 20%, transparent) !important;
-  transform:translateX(3px) !important;
-  box-shadow:0 2px 8px rgba(15,17,33,.05),0 0 0 1px color-mix(in srgb, var(--accent) 6%, transparent) !important;
+  border-color:rgba(15,17,33,.10) !important;
 }
-/* Entry left-accent line — indigo */
-html[data-theme="light"] #view-rules .rule-entry::before,
-html[data-theme="pure-light"] #view-rules .rule-entry::before{
-  background:linear-gradient(180deg,var(--accent2),var(--accent)) !important;
-  box-shadow:0 0 4px color-mix(in srgb, var(--accent) 20%, transparent) !important;
-}
-/* Entry number badge — refined accent tint */
+/* Entry number — plain accent text */
 html[data-theme="light"] #view-rules .rule-entry-num,
 html[data-theme="pure-light"] #view-rules .rule-entry-num{
-  background:color-mix(in srgb, var(--accent) 8%, transparent) !important;
   color:var(--accent) !important;
-  border-color:color-mix(in srgb, var(--accent) 15%, transparent) !important;
-  font-weight:800 !important;
 }
 /* Entry text — readable */
 html[data-theme="light"] #view-rules .rule-entry-text,
@@ -79448,17 +79646,14 @@ html[data-theme="pure-light"] #view-rules .rule-entry-text{
 html[data-theme="light"] #view-rules .rule-entry-del,
 html[data-theme="pure-light"] #view-rules .rule-entry-del{
   color:var(--text3) !important;
-  background:rgba(255,255,255,.6) !important;
-  border:1px solid rgba(15,17,33,.06) !important;
 }
 html[data-theme="light"] #view-rules .rule-entry-del:hover,
 html[data-theme="pure-light"] #view-rules .rule-entry-del:hover{
   background:rgba(220,38,38,.08) !important;
   color:var(--red) !important;
-  border-color:rgba(220,38,38,.24) !important;
 }
 
-/* ── Rule icon buttons — refined ── */
+/* ── Rule icon buttons ── */
 html[data-theme="light"] #view-rules .rule-icon-btn,
 html[data-theme="pure-light"] #view-rules .rule-icon-btn{
   color:#6b7280 !important;
@@ -79466,17 +79661,15 @@ html[data-theme="pure-light"] #view-rules .rule-icon-btn{
 html[data-theme="light"] #view-rules .rule-icon-btn:hover,
 html[data-theme="pure-light"] #view-rules .rule-icon-btn:hover{
   background:color-mix(in srgb, var(--accent) 8%, transparent) !important;
-  border-color:color-mix(in srgb, var(--accent) 18%, transparent) !important;
   color:var(--accent) !important;
 }
 html[data-theme="light"] #view-rules .rule-icon-btn.del:hover,
 html[data-theme="pure-light"] #view-rules .rule-icon-btn.del:hover{
   background:rgba(220,38,38,.08) !important;
-  border-color:rgba(220,38,38,.20) !important;
   color:var(--red) !important;
 }
 
-/* ── Footer (add rule input) — recessed ── */
+/* ── Footer (add rule input) ── */
 html[data-theme="light"] #view-rules .rule-acc-footer,
 html[data-theme="pure-light"] #view-rules .rule-acc-footer{
   background:rgba(15,17,33,.02) !important;
@@ -79491,23 +79684,21 @@ html[data-theme="pure-light"] #view-rules .rule-entry-input{
 html[data-theme="light"] #view-rules .rule-entry-input:focus,
 html[data-theme="pure-light"] #view-rules .rule-entry-input:focus{
   background:#ffffff !important;
-  border-color:color-mix(in srgb, var(--accent) 40%, transparent) !important;
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  border-color:var(--accent) !important;
 }
 html[data-theme="light"] #view-rules .rule-entry-input::placeholder,
 html[data-theme="pure-light"] #view-rules .rule-entry-input::placeholder{
   color:var(--text3) !important;
 }
-/* Entry add button — indigo gradient */
+/* Entry add button — solid accent */
 html[data-theme="light"] #view-rules .rule-entry-add-btn,
 html[data-theme="pure-light"] #view-rules .rule-entry-add-btn{
-  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+  background:var(--accent) !important;
   color:#ffffff !important;
-  box-shadow:0 1px 3px color-mix(in srgb, var(--accent) 30%, transparent),inset 0 1px 0 rgba(255,255,255,.25) !important;
 }
 html[data-theme="light"] #view-rules .rule-entry-add-btn:hover,
 html[data-theme="pure-light"] #view-rules .rule-entry-add-btn:hover{
-  box-shadow:0 4px 10px color-mix(in srgb, var(--accent) 40%, transparent),inset 0 1px 0 rgba(255,255,255,.25) !important;
+  background:var(--accent2) !important;
 }
 
 /* ═══ 2. AI HUB PAGE (#view-aihub) ═══ */
@@ -90581,6 +90772,176 @@ html:not([data-theme]) #view-settings .settings-row-desc{
 }
 </style>
 
+<style id="rules-category-color">
+/* ════════════════════════════════════════════════════════════════════
+   GUIDELINES — DE-SLOPED, SINGLE-ACCENT
+   ════════════════════════════════════════════════════════════════════
+   This sheet sits LAST in the document so it can override the four
+   separate per-theme polish blocks earlier in the file (block 57 dark
+   depth-polish, the light-theme polish at ~79525, and three duplicate
+   "DARK THEME POLISH (flat)" copies at ~69830/82637/83965/85293).
+
+   All those blocks re-introduce the same AI-sloop patterns the base
+   <style> at ~4472 was stripped of:
+     · no-op gradients on flat surfaces
+     · triple-layer box-shadows (inner highlight + outer drop + ring)
+     · inset highlights on every badge / button / footer / input
+     · linear-gradient accent bars on .rule-entry::before
+     · gradient backgrounds on accent buttons (cat-add-btn,
+       rule-entry-add-btn) with a "sheen" inset
+     · translateX(3px) hover shift on .rule-entry
+     · gradient bg wash on .rule-entries-list
+     · 3px box-shadow ring on input focus
+
+   This sheet re-asserts a flat, single-accent aesthetic on every
+   theme. Selectors are written with an extra `.rules-list` class
+   so specificity is (1, 3, 1) for the themed case and (1, 5, 1) for
+   the no-theme catch-all — both beat the per-theme polish blocks
+   (1, 2, 1) and the catch-all there (1, 4, 1).
+   `!important` is used because every block being overridden also
+   uses `!important`; equal-important ties are settled by specificity. */
+
+/* ── Theme + no-theme selectors cover every case ── */
+
+/* Card container — flat bg, single border, no layered shadow */
+html[data-theme] #view-rules .rules-list .rule-accordion,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion{
+  background:var(--bg2) !important;
+  border:1px solid var(--border) !important;
+  border-top:1px solid var(--border) !important;
+  box-shadow:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion:hover{
+  border-color:var(--accent-glow) !important;
+  border-top-color:var(--accent-glow) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion.open,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion.open{
+  border-color:var(--accent-glow5) !important;
+  border-top-color:var(--accent-glow5) !important;
+  box-shadow:none !important;
+}
+
+/* Emoji badge — flat accent tint, single hairline border, no inset/sheen */
+html[data-theme] #view-rules .rules-list .rule-acc-emoji-badge,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-acc-emoji-badge{
+  background:var(--accent-glow) !important;
+  border:1px solid var(--accent-glow5) !important;
+  box-shadow:none !important;
+  color:var(--accent2) !important;
+  transform:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion:hover .rule-acc-emoji-badge,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion:hover .rule-acc-emoji-badge{
+  transform:none !important;
+  box-shadow:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion.open .rule-acc-emoji-badge,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion.open .rule-acc-emoji-badge{
+  background:var(--accent-glow2) !important;
+  border-color:var(--accent-glow5) !important;
+  color:var(--accent2) !important;
+  transform:none !important;
+  box-shadow:none !important;
+}
+
+/* Entries list — kill the gradient wash */
+html[data-theme] #view-rules .rules-list .rule-entries-list,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entries-list{
+  background:transparent !important;
+}
+
+/* Entry card — flat bg, transparent border, no layered shadow */
+html[data-theme] #view-rules .rules-list .rule-entry,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry{
+  background:var(--bg3) !important;
+  border:1px solid transparent !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry:hover{
+  background:var(--surface) !important;
+  border-color:var(--border) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+/* Kill the accent-bar ::before entirely */
+html[data-theme] #view-rules .rules-list .rule-entry::before,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry::before,
+html[data-theme] #view-rules .rules-list .rule-entry:hover::before,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry:hover::before{
+  display:none !important;
+}
+
+/* Entry number — plain colored text, no badge background/border/shadow */
+html[data-theme] #view-rules .rules-list .rule-entry-num,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-num{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  color:var(--accent2) !important;
+  font-weight:600 !important;
+}
+
+/* Footer — flat bg, no inset highlight */
+html[data-theme] #view-rules .rules-list .rule-acc-footer,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-acc-footer{
+  background:var(--bg3) !important;
+  border-top:1px solid var(--border) !important;
+  box-shadow:none !important;
+}
+
+/* Inputs — flat bg, no inset shadow, focus = single border change */
+html[data-theme] #view-rules .rules-list .rule-entry-input,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-input,
+html[data-theme] #view-rules .cat-name-inp,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .cat-name-inp{
+  box-shadow:none !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry-input:focus,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-input:focus,
+html[data-theme] #view-rules .cat-name-inp:focus,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .cat-name-inp:focus{
+  border-color:var(--accent) !important;
+  box-shadow:none !important;
+}
+
+/* Icon buttons — no inset highlight on hover */
+html[data-theme] #view-rules .rules-list .rule-icon-btn:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-icon-btn:hover{
+  box-shadow:none !important;
+}
+
+/* Accent buttons — solid color, no gradient, no sheen, no box-shadow */
+html[data-theme] #view-rules .cat-add-btn,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .cat-add-btn,
+html[data-theme] #view-rules .rules-list .rule-entry-add-btn,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-add-btn{
+  background:var(--accent) !important;
+  box-shadow:none !important;
+}
+html[data-theme] #view-rules .cat-add-btn:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .cat-add-btn:hover,
+html[data-theme] #view-rules .rules-list .rule-entry-add-btn:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-add-btn:hover{
+  background:var(--accent2) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+
+/* Search highlight — single accent, matches mark.rule-hit on other pages */
+html[data-theme] #view-rules .rules-list mark.rule-hit,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list mark.rule-hit{
+  background:var(--accent-glow) !important;
+  color:var(--accent2) !important;
+  border-radius:3px;
+}
+</style>
+
 <script>
 /* ════════════════════════════════════════════════════════════════
    MOTION OFFICE — spreadsheet engine + document editor
@@ -91136,6 +91497,7 @@ function ofcGridKey(e){
   if(e.ctrlKey || e.metaKey){
     var kk = k.toLowerCase();
     if(kk==='a'){ e.preventDefault(); ofcSel={ar:0,ac:0,fr:OFC_ROWS-1,fc:OFC_COLS-1}; ofcUpdateSelUI(); }
+    else if(kk==='f'){ e.preventDefault(); ofcToggleFind(true); }
     else if(kk==='z'){ e.preventDefault(); if(e.shiftKey) ofcRedo(); else ofcUndo(); }
     else if(kk==='y'){ e.preventDefault(); ofcRedo(); }
     return;
@@ -91518,8 +91880,25 @@ function ofcImportCSV(file){
 function ofcRenderDocList(){
   var wrap = document.getElementById('ofcDocItems');
   if(!wrap) return;
-  var html = '';
+  var dsw = document.getElementById('ofcDocSearchWrap');
+  if(dsw) dsw.style.display = (OFC.docs.length>3) ? 'flex' : 'none';
+  var sInp = document.getElementById('ofcDocSearch');
+  var q = (sInp ? sInp.value : '').trim().toLowerCase();
   var docs = OFC.docs.slice().sort(function(a,b){ return (b.updated||0)-(a.updated||0); });
+  if(q){
+    docs = docs.filter(function(d){
+      if(d.name.toLowerCase().indexOf(q)>=0) return true;
+      // Match on the visible text of the document too
+      var tmp = document.createElement('div');
+      tmp.innerHTML = d.html || '';
+      return (tmp.textContent||'').toLowerCase().indexOf(q)>=0;
+    });
+  }
+  if(!docs.length){
+    wrap.innerHTML = '<div class="ofc-doc-empty-msg">No documents match “'+esc(q)+'”.<br/>Try a different word, or clear the search.</div>';
+    return;
+  }
+  var html = '';
   docs.forEach(function(d){
     var active = d.id===OFC.activeDocId;
     html += '<div class="ofc-doc-item'+(active?' active':'')+'" data-id="'+d.id+'">'+
@@ -91527,10 +91906,31 @@ function ofcRenderDocList(){
         '<div class="ofc-doc-item-name">'+esc(d.name)+'</div>'+
         '<div class="ofc-doc-time">'+ofcTimeAgo(d.updated||Date.now())+'</div>'+
       '</div>'+
-      '<button class="ofc-doc-del" title="Delete document" aria-label="Delete document" onclick="ofcDeleteDoc(event,\''+d.id+'\',this)">×</button>'+
+      '<div class="ofc-doc-meta">'+
+        '<button class="ofc-doc-dup" title="Duplicate document" aria-label="Duplicate document" onclick="ofcDuplicateDoc(event,\''+d.id+'\')">⧉</button>'+
+        '<button class="ofc-doc-del" title="Delete document" aria-label="Delete document" onclick="ofcDeleteDoc(event,\''+d.id+'\',this)">×</button>'+
+      '</div>'+
     '</div>';
   });
   wrap.innerHTML = html;
+}
+function ofcDuplicateDoc(e, id){
+  if(e) e.stopPropagation();
+  var d = OFC.docs.filter(function(x){ return x.id===id; })[0];
+  if(!d) return;
+  var copy = {
+    id:'d'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36),
+    name: d.name.replace(/ copy( \d+)?$/i,'') + ' copy',
+    html: d.html,
+    updated: Date.now()
+  };
+  var idx = OFC.docs.findIndex(function(x){ return x.id===id; });
+  OFC.docs.splice(idx+1, 0, copy);
+  OFC.activeDocId = copy.id;
+  ofcSave();
+  ofcRenderDocList();
+  ofcOpenDoc(copy.id);
+  showToast('Document duplicated', '✓', 1600);
 }
 function ofcDocHead(){
   var d = ofcActiveDoc();
@@ -91927,6 +92327,7 @@ function ofcSetTab(tab){
   if(!OFC) ofcLoad();
   ofcFlushDocSave();
   ofcMapCommitEdit();
+  if(ofcFindOpen) ofcToggleFind(false);
   OFC.tab = tab;
   ofcSave();
   var ts = document.getElementById('ofcTabSheets');
@@ -91953,6 +92354,133 @@ function ofcSetTab(tab){
     ofcRenderMapList();
     ofcOpenMap(OFC.activeMapId);
   }
+  // Doc search only makes sense in Documents
+  var dsw2 = document.getElementById('ofcDocSearchWrap');
+  if(dsw2) dsw2.style.display = (tab==='docs' && OFC.docs.length>3) ? 'flex' : 'none';
+}
+
+/* ═══ Keyboard-shortcuts help overlay ═══ */
+function ofcToggleHelp(force){
+  var el = document.getElementById('ofcHelp');
+  if(!el) return;
+  var open = (force!=null) ? force : !el.classList.contains('open');
+  el.classList.toggle('open', open);
+  if(open){ var c = el.querySelector('.ofc-help-close'); if(c) c.focus(); }
+  else if(currentView==='office'){
+    if(OFC && OFC.tab==='sheets') ofcFocusGrid();
+    else if(OFC && OFC.tab==='maps') ofcMapFocusCanvas();
+  }
+}
+
+/* ═══ Find & replace (spreadsheet) ═══
+   Searches the raw cell contents AND the evaluated display text, so
+   you can find "=SUM(B4:B6)" by typing "121" as well as by formula. */
+var ofcFindOpen = false;
+var ofcFindMatches = [];   // [{r,c}] in reading order
+var ofcFindIdx = -1;
+var ofcFindSig = '';       // signature of the last scan (query+sheet)
+
+function ofcToggleFind(open){
+  var bar = document.getElementById('ofcFindBar');
+  if(!bar) return;
+  ofcFindOpen = (open!=null) ? open : !ofcFindOpen;
+  bar.style.display = ofcFindOpen ? 'flex' : 'none';
+  if(ofcFindOpen){
+    var inp = document.getElementById('ofcFindInp');
+    if(inp){ inp.focus(); inp.select(); }
+    ofcFindRun();
+  } else {
+    ofcFindMatches = []; ofcFindIdx = -1; ofcFindSig = '';
+    if(currentView==='office' && OFC && OFC.tab==='sheets') ofcFocusGrid();
+  }
+}
+function ofcFindKey(e){
+  if(e.key==='Escape'){ e.preventDefault(); ofcToggleFind(false); }
+  else if(e.key==='Enter'){ e.preventDefault(); ofcFindStep(e.shiftKey?-1:1); }
+}
+function ofcFindRun(){
+  var inp = document.getElementById('ofcFindInp');
+  var q = (inp ? inp.value : '').trim();
+  var sig = (OFC ? OFC.activeSheetId : '') + '\u0000' + q.toLowerCase();
+  var s = ofcActiveSheet();
+  var prevKey = (ofcFindIdx>=0 && ofcFindMatches[ofcFindIdx]) ? ofcKey(ofcFindMatches[ofcFindIdx].r, ofcFindMatches[ofcFindIdx].c) : null;
+  ofcFindMatches = [];
+  if(q){
+    var lq = q.toLowerCase();
+    for(var key in s.cells){
+      var p = ofcParseRef(key); if(!p) continue;
+      var raw = String(s.cells[key] == null ? '' : s.cells[key]);
+      var ce = ofcCache[key];
+      var disp = ce ? (ce.err ? ce.err : ofcFormat(ce.v)) : raw;
+      if(raw.toLowerCase().indexOf(lq)>=0 || String(disp).toLowerCase().indexOf(lq)>=0){
+        ofcFindMatches.push({r:p.r, c:p.c});
+      }
+    }
+    ofcFindMatches.sort(function(a,b){ return a.r - b.r || a.c - b.c; });
+  }
+  // Keep the cursor on the same match when the query didn't change
+  ofcFindIdx = -1;
+  if(prevKey && sig === ofcFindSig){
+    for(var i=0;i<ofcFindMatches.length;i++){
+      if(ofcKey(ofcFindMatches[i].r, ofcFindMatches[i].c)===prevKey){ ofcFindIdx = i; break; }
+    }
+  }
+  ofcFindSig = sig;
+  if(!q){ document.getElementById('ofcFindCount').textContent = ''; return; }
+  if(ofcFindIdx<0 && ofcFindMatches.length){ ofcFindIdx = 0; ofcGotoMatch(); }
+  else ofcFindLabel();
+}
+function ofcFindLabel(){
+  var el = document.getElementById('ofcFindCount');
+  if(!el) return;
+  var q = (document.getElementById('ofcFindInp')||{}).value || '';
+  if(!q.trim()){ el.textContent = ''; return; }
+  el.textContent = ofcFindMatches.length ? (ofcFindIdx+1) + ' / ' + ofcFindMatches.length : 'No matches';
+  el.style.color = ofcFindMatches.length ? '' : 'var(--red)';
+}
+function ofcFindStep(d){
+  if(!ofcFindMatches.length) return;
+  ofcFindIdx = (ofcFindIdx + d + ofcFindMatches.length) % ofcFindMatches.length;
+  ofcGotoMatch();
+}
+function ofcGotoMatch(){
+  var m = ofcFindMatches[ofcFindIdx];
+  if(!m) return;
+  ofcSetFocus(m.r, m.c, false);
+  ofcScrollToCell(m.r, m.c);
+  ofcFindLabel();
+}
+function ofcFindReplace(){
+  var m = ofcFindMatches[ofcFindIdx];
+  if(!m){ showToast('No match to replace', '◇', 1600); return; }
+  var repl = (document.getElementById('ofcReplInp')||{}).value || '';
+  var s = ofcActiveSheet();
+  var key = ofcKey(m.r, m.c);
+  ofcPushUndo();
+  if(repl==='') delete s.cells[key]; else s.cells[key] = repl;
+  ofcRenderCells();
+  var keep = ofcFindIdx;
+  ofcFindRun();
+  ofcFindIdx = ofcFindMatches.length ? Math.min(keep, ofcFindMatches.length-1) : -1;
+  if(ofcFindIdx>=0) ofcGotoMatch(); else ofcFindLabel();
+  ofcSave();
+}
+function ofcFindReplaceAll(){
+  var repl = (document.getElementById('ofcReplInp')||{}).value || '';
+  if(!ofcFindMatches.length){ showToast('Nothing to replace', '◇', 1600); return; }
+  ofcPushUndo();
+  var s = ofcActiveSheet();
+  var n = 0;
+  for(var i=0;i<ofcFindMatches.length;i++){
+    var key = ofcKey(ofcFindMatches[i].r, ofcFindMatches[i].c);
+    if(repl==='') delete s.cells[key]; else s.cells[key] = repl;
+    n++;
+  }
+  ofcRenderCells();
+  ofcUpdateSelUI();
+  ofcSave();
+  ofcFindRun();
+  showToast(n + (n===1 ? ' cell replaced' : ' cells replaced'), '✓', 1800);
 }
 
 /* ═══ Mind maps ═══
@@ -92248,6 +92776,7 @@ function ofcMapRender(){
     if(!vis.visible[n.id]) continue;
     var w = ofcMapNodeWidth(n.text);
     var cls = 'omc-node';
+    if(ofcMapState.editing===n.id) cls += ' editing';
     if(ofcMapState.selected===n.id) cls += ' sel';
     if(ofcMapState.connectFrom===n.id) cls += ' connect';
     if(ofcMapState.matches.indexOf(n.id)>=0) cls += ' match';
@@ -92815,6 +93344,7 @@ function ofcMapEdit(id){
   st.editing = id;
   var ed = document.getElementById('ofcMapEditor');
   if(!ed) return;
+  ofcMapRender();               // re-render so the node gets .editing and its label hides
   ed.style.display = 'block';
   ed.value = n.text;
   ofcMapPositionEditor();
@@ -92851,6 +93381,7 @@ function ofcMapCancelEdit(){
   st.editing = null;
   var ed = document.getElementById('ofcMapEditor');
   if(ed) ed.style.display = 'none';
+  ofcMapRender();   // drop the .editing class so the node's label shows again
 }
 
 /* ── Arrange / view ── */
@@ -93238,6 +93769,40 @@ function ofcWire(){
   document.addEventListener('selectionchange', function(){
     if(!OFC || OFC.tab!=='docs' || currentView!=='office') return;
     ofcSyncToolbar();
+  });
+  // Office-wide shortcuts: Ctrl+1/2/3 switch mode, ? opens help,
+  // Ctrl+F focuses the contextual search (grid find / doc search / map search)
+  document.addEventListener('keydown', function(e){
+    if(currentView!=='office') return;
+    var t = e.target;
+    var inField = t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.tagName==='SELECT');
+    if(e.ctrlKey || e.metaKey){
+      var n = e.key;
+      if(n==='1'){ e.preventDefault(); ofcSetTab('sheets'); }
+      else if(n==='2'){ e.preventDefault(); ofcSetTab('docs'); }
+      else if(n==='3'){ e.preventDefault(); ofcSetTab('maps'); }
+      else if(n.toLowerCase()==='f' && !inField && OFC){
+        if(OFC.tab==='sheets' && !ofcFindOpen){ e.preventDefault(); ofcToggleFind(true); }
+        else if(OFC.tab==='docs'){
+          e.preventDefault();
+          var dsw = document.getElementById('ofcDocSearchWrap');
+          var dsi = document.getElementById('ofcDocSearch');
+          if(dsw && dsw.style.display!=='none' && dsi) dsi.focus();
+          else showToast('Search appears in the list once you have 4+ documents', '💡', 2400);
+        }
+        else if(OFC.tab==='maps'){
+          e.preventDefault();
+          var ms = document.getElementById('ofcMapSearch');
+          if(ms) ms.focus();
+        }
+      }
+      return;
+    }
+    if(inField || ofcEditing) return;
+    if(e.key==='?'){ e.preventDefault(); ofcToggleHelp(); }
+    else if(e.key==='Escape' && document.getElementById('ofcHelp').classList.contains('open')){
+      e.preventDefault(); ofcToggleHelp(false);
+    }
   });
   ofcMapWire();
   window.addEventListener('beforeunload', function(){
