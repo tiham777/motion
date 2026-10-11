@@ -21241,7 +21241,7 @@ requestAnimationFrame(draw);
     <button class="tab-btn" id="tab-notes"  onclick="setView('notes',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Notes</button>
     <button class="tab-btn" id="tab-office" onclick="setView('office',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Office</button>
     <button class="tab-btn" id="tab-assistant" onclick="setView('assistant',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg> Assistant</button>
-    <button class="tab-btn" id="tab-rules"  onclick="setView('rules',null)">Guidelines</button>
+    <button class="tab-btn" id="tab-rules"  onclick="setView('rules',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Guidelines</button>
     <button class="tab-btn" id="tab-tools" onclick="setView('tools',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Tools</button>
     <button class="tab-btn" id="tab-aihub" onclick="setView('aihub',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg> AI Hub</button>
     <button class="tab-btn" id="tab-settings" onclick="setView('settings',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</button>
@@ -93836,6 +93836,225 @@ function renderOffice(){
   if(OFC.tab==='sheets') ofcFocusGrid();
   else if(OFC.tab==='maps') ofcMapFocusCanvas();
 }
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ELEVATION PASS v1 — navigation & mobile refinement layer
+     ───────────────────────────────────────────────────────────────────────────
+     A surgical, additive polish pass. No existing rules or functions are
+     modified — everything here either appends new behavior or layers CSS
+     on top (same pattern as perf-butter-smooth / ux-refinement passes).
+
+     What this pass adds:
+       1. Tab-bar edge fades — when the horizontal tab strip overflows
+          (mobile), soft gradient masks appear on the scrollable edge(s) so
+          the overflow is discoverable. Masks are toggled dynamically by
+          scroll position (left mask only once scrolled, right mask only
+          while more content remains). Mirrors the vertical fade-mask
+          already used on .content, so it matches the design language.
+       2. Active-tab auto-centering — switching views smoothly scrolls the
+          tab strip so the active tab is centered (mobile + narrow desktop).
+       3. Main scroll reset — .content is a single shared scroller for all
+          views; without a reset, a view opened after a long page inherits
+          the previous view's scroll offset. Focus already resets its own
+          scroller (see _wrapSetView); this extends that to every view.
+       4. iOS safe-area — .content gets bottom safe-area padding so the
+          last card clears the home indicator in standalone/PWA mode.
+       5. Touch targets — the dashboard date-nav arrows grow from 30px to
+          40px on small screens (44px hit slop added via ::after).
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="elevation-pass">
+/* ── 1. Tab-bar edge fades (toggled by JS: .tf-l = fade left edge,
+      .tf-r = fade right edge; only applied while the strip overflows) ── */
+.tabs.tf-l{
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 26px);
+  mask-image:linear-gradient(to right,transparent 0,#000 26px);
+}
+.tabs.tf-r{
+  -webkit-mask-image:linear-gradient(to left,transparent 0,#000 26px);
+  mask-image:linear-gradient(to left,transparent 0,#000 26px);
+}
+.tabs.tf-l.tf-r{
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%);
+}
+/* ── 4. Safe-area bottom breathing room for the main scroll region.
+      env() evaluates to 0 on desktop, so this is a no-op outside iOS
+      standalone/PWA. The last card no longer hugs the home indicator. ── */
+@media (max-width: 900px){
+  .content{
+    padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ── 5. Comfortable touch targets for the dashboard date-nav arrows.
+      Visual size grows modestly (30px → 36px) and an invisible ::after
+      expands the tap area to a 44px circle without affecting layout. ── */
+@media (max-width: 768px), (pointer: coarse){
+  .db-day-nav-btn{
+    width:36px !important;
+    height:36px !important;
+    position:relative;
+  }
+  .db-day-nav-btn::after{
+    content:'';
+    position:absolute;
+    inset:-4px;
+    border-radius:50%;
+  }
+}
+
+/* ── 6. Guidelines "Add Category" row — overflow fix (mobile).
+      The name input is a flex child with default min-width:auto, so it
+      could not shrink below its intrinsic width and pushed the
+      flex-shrink:0 button ~48px past the viewport edge. ── */
+.add-cat-input-row .cat-name-inp{
+  min-width:0;
+}
+
+/* ── 7. Sound Studio master row — overflow fix (mobile).
+      Label (nowrap) + value + Stop-all + range min-content measured
+      ~426px inside a ~221px row — everything past the range spilled out
+      of the card. On small screens the row now wraps into three clean
+      lines: label + value, full-width slider, full-width stop button. ── */
+@media (max-width: 640px){
+  .sound-master-row{
+    flex-wrap:wrap;
+    row-gap:10px;
+  }
+  .sound-master-label{ order:1; }
+  .sound-master-val{
+    order:2;
+    margin-left:auto;
+  }
+  .sound-master-range{
+    order:3;
+    flex:1 1 100%;
+    min-width:0;
+  }
+  .sound-stopall{
+    order:4;
+    flex:1 1 100%;
+  }
+}
+
+/* ── Reduced-motion: the fade masks stay (they are static paint effects),
+      but nothing here animates, so no overrides are required. ── */
+</style>
+<script id="elevation-pass-js">
+(function(){
+  'use strict';
+  if(window.__elevationPassV1) return; /* guard against double-inject */
+  window.__elevationPassV1 = true;
+
+  var raf = window.requestAnimationFrame || function(f){ return setTimeout(f, 16); };
+
+  /* ── 1. Edge-fade controller for the horizontal tab strip ── */
+  var tabs = document.querySelector('.tabs');
+
+  function updTabFades(){
+    if(!tabs) return;
+    var overflow = tabs.scrollWidth - tabs.clientWidth > 4;
+    if(!overflow){
+      tabs.classList.remove('tf-l','tf-r');
+      return;
+    }
+    var atStart = tabs.scrollLeft <= 4;
+    var atEnd = tabs.scrollLeft >= tabs.scrollWidth - tabs.clientWidth - 4;
+    tabs.classList.toggle('tf-l', !atStart);
+    tabs.classList.toggle('tf-r', !atEnd);
+  }
+
+  if(tabs){
+    var fadeTick = false;
+    tabs.addEventListener('scroll', function(){
+      if(fadeTick) return;
+      fadeTick = true;
+      raf(function(){ fadeTick = false; updTabFades(); });
+    }, { passive: true });
+    window.addEventListener('resize', updTabFades);
+    /* Re-check after boot: fonts settle, sidebar state changes, and the
+       splash dismissal can all change the strip width. */
+    setTimeout(updTabFades, 150);
+    setTimeout(updTabFades, 900);
+    setTimeout(updTabFades, 2600);
+  }
+
+  /* ── 2. Center the active tab inside the strip when the view changes ── */
+  function centerActiveTab(v){
+    if(!tabs) return;
+    var tab = document.getElementById('tab-' + v);
+    if(!tab) return;
+    if(tabs.scrollWidth - tabs.clientWidth <= 4) return; /* nothing to center */
+    /* Rect-relative math: .tabs has no position: and sits next to the
+       sidebar, so offsetLeft would be measured from <body>. getBoundingClientRect
+       is immune to both the offsetParent chain and the strip's zoom:1.05
+       (residual zoom error stays under ~5%, far below tab width). */
+    var tRect = tab.getBoundingClientRect();
+    var sRect = tabs.getBoundingClientRect();
+    var target = tabs.scrollLeft + (tRect.left - sRect.left) + (tRect.width - sRect.width) / 2;
+    target = Math.max(0, Math.min(target, tabs.scrollWidth - tabs.clientWidth));
+    try{
+      tabs.scrollTo({ left: Math.round(target), behavior: 'smooth' });
+    }catch(e){
+      tabs.scrollLeft = Math.round(target);
+    }
+    raf(updTabFades);
+  }
+
+  /* ── 3. Reset the active view's scroller on every view switch.
+         Block-style views (dashboard, tasks, settings, …) each scroll on
+         their own #view-<name> div inside .content. Without a reset, a
+         re-entered view resumes mid-scroll while its .view-enter animation
+         replays — a mismatch. The focus page already resets its own
+         scroller on re-enter (see _wrapSetView); this generalizes that to
+         every block-style view. Flex views (assistant chat, notes stream,
+         calendar, office) scroll on inner elements which are deliberately
+         NOT touched — chat/notes scroll positions are worth preserving.
+         Smooth where supported; instant fallback. Guarded so it never
+         throws inside setView. ── */
+  function resetMainScroll(v){
+    var el = document.getElementById('view-' + v);
+    if(!el || el.scrollTop < 2){
+      /* Fallback for any layout where .content itself is the scroller */
+      var c = document.querySelector('.content');
+      if(c && c.scrollTop > 1){
+        try{ c.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ c.scrollTop = 0; }
+      }
+      return;
+    }
+    try{
+      el.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(e){
+      el.scrollTop = 0;
+    }
+  }
+
+  /* Wrap setView using the same pattern as _wrapSetView() and the
+     particle pass — chain onto whatever is currently installed. */
+  var prevSetView = window.setView;
+  if(typeof prevSetView === 'function'){
+    window.setView = function(v, sideEl){
+      var r = prevSetView.apply(this, arguments);
+      try{
+        centerActiveTab(v);
+        resetMainScroll(v);
+        setTimeout(updTabFades, 420); /* after the smooth scroll settles */
+      }catch(e){ /* never break navigation */ }
+      return r;
+    };
+  }
+
+  /* Sidebar nav clicks also navigate (they call setView too, so the wrap
+     above already covers them) — but sidebar clicks can collapse/expand
+     the layout, so re-measure the fades once more afterwards. */
+  document.addEventListener('click', function(ev){
+    var nav = ev.target && ev.target.closest ? ev.target.closest('.nav-item') : null;
+    if(nav) setTimeout(updTabFades, 500);
+  }, { passive: true });
+
+})();
 </script>
 
 </body>
