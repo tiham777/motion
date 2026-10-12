@@ -52479,7 +52479,8 @@ function fbPullOnSignIn(){
         }, 500);
       }
 
-      showToast('Cloud data loaded', '☁️', 2000);
+      // Toast removed by request — cloud data reload is silent (the UI
+      // refresh below already reflects the new data).
     } catch(e){
       console.error('[SignIn] Error parsing cloud data:', e);
     }
@@ -52751,13 +52752,9 @@ function fbStartSnapshotListener(){
           fbLastSyncTime = cloudTime;
           localStorage.setItem('ft_cloud_lastsync', fbLastSyncTime.toISOString());
           
-          // Show which device sent the data
-          var deviceLabel = 'another device';
-          if(cloudData.deviceInfo && cloudData.deviceInfo.deviceName){
-            deviceLabel = cloudData.deviceInfo.deviceName;
-          }
-          showToast('Synced from ' + deviceLabel, '☁️', 2000);
-          
+          // Device-label toast removed by request — cross-device data
+          // application is silent; the re-render below shows the new data.
+
           // Re-render UI to show the new data (no full page reload!)
           fbRefreshUI();
           
