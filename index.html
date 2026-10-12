@@ -50621,11 +50621,13 @@ function initApiKeyList(){
   // Dismiss when DOM is ready + a minimum branded display time.
   // v21: WhatsApp-style loading — the brand word + filling line
   // play from the first frame; the line completes at ~2.3s, so the
-  // splash lifts at 2600ms (+ ~0.85s silk fade) for a ~3.4s intro.
+  // splash lifts at 2300ms (trimmed 0.3s from 2600ms; the fill's silk
+  // easing is ~90% done by then, so the cut isn't noticeable) +
+  // ~1.05s silk fade for a ~3.3s intro.
   var ready = false;
   var minTime = Date.now();
   function tryDismiss(){
-    if(ready && Date.now() - minTime > 2600){
+    if(ready && Date.now() - minTime > 2300){
       dismissSplash();
     }
   }
