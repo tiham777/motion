@@ -89802,11 +89802,20 @@ html[data-theme="pure-light"] .habit-week-label{
         '.modal-overlay.open, .overlay.open, .backup-overlay.open');
       if (!open) return;
 
-      // Try common close handlers; these are no-ops if undefined.
-      var fns = ['closeModal', 'closeOverlay', 'closeBackup', 'hideModal'];
-      for (var i = 0; i < fns.length; i++){
-        if (typeof win[fns[i]] === 'function'){
-          try { win[fns[i]](); return; } catch(_){}
+      // Route to the closer that matches the overlay actually open.
+      // closeModal() targets #overlay and is a no-op for the backup
+      // modal (and vice versa), so a fixed call order left Esc dead
+      // for whichever overlay was not first in the list.
+      if (open.classList.contains('backup-overlay')){
+        if (typeof win.closeBackup === 'function'){
+          try { win.closeBackup(); return; } catch(_){}
+        }
+      } else {
+        var fns = ['closeModal', 'closeOverlay', 'hideModal'];
+        for (var i = 0; i < fns.length; i++){
+          if (typeof win[fns[i]] === 'function'){
+            try { win[fns[i]](); return; } catch(_){}
+          }
         }
       }
       // Fallback: just remove .open
@@ -94053,6 +94062,2600 @@ function renderOffice(){
     var nav = ev.target && ev.target.closest ? ev.target.closest('.nav-item') : null;
     if(nav) setTimeout(updTabFades, 500);
   }, { passive: true });
+
+})();
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ELEVATION PASS v2 — context & comfort layer
+     ───────────────────────────────────────────────────────────────────────────
+     Second additive polish pass (same rules as v1: nothing existing is
+     modified; everything is appended and guarded against double-inject).
+
+     What this pass adds:
+       1. Per-view document.title — the browser tab (and OS window / task
+          bar / screen-reader window title) now reads "Motion — Tasks",
+          "Motion — Sound Studio", etc. instead of staying on the static
+          landing title forever. Integrates with the existing tab-title
+          countdown: the running-timer prefix ("24:57 ▸ …") keeps working,
+          because the pass syncs the main script's `tabTitleBase` variable
+          on every switch.
+       2. Screen-reader view announcements — a polite live region announces
+          the new view name on navigation. Before this, switching views
+          was completely silent for assistive tech (only the visual
+          .view-enter animation signaled the change).
+       3. iOS input-zoom fix — every text input / textarea / select in the
+          app renders at 11.5–15px, which makes iOS Safari auto-zoom the
+          page ~1.1× every time a field is focused (and stay zoomed after
+          blur). On small coarse-pointer screens these controls are bumped
+          to the 16px zoom threshold. Tiny number steppers (the focus
+          custom-minutes and goal inputs, 41–65px wide) are deliberately
+          excluded — 16px text would clip inside them.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="elevation-pass-v2">
+@media (max-width: 640px) and (hover: none){
+  input[type=text],
+  input[type=search],
+  input[type=email],
+  input[type=password],
+  input[type=date],
+  input[type=time],
+  input[type=datetime-local],
+  input:not([type]),
+  textarea,
+  select{
+    font-size:16px !important;
+  }
+  /* Same-specificity override for the pure-light chat composer, whose
+     theme block forces 15px !important (later-in-document wins). */
+  html[data-theme="pure-light"] .asst-composer-input{
+    font-size:16px !important;
+  }
+}
+</style>
+<script id="elevation-pass-v2-js">
+(function(){
+  'use strict';
+  if(window.__elevationPassV2) return; /* guard against double-inject */
+  window.__elevationPassV2 = true;
+
+  var VIEW_NAMES = {
+    dashboard:'Dashboard', home:'Home', blocks:'Time Blocks', tasks:'Tasks',
+    focus:'Focus', tracker:'Tracker', notes:'Notes', office:'Office',
+    assistant:'Assistant', rules:'Guidelines', tools:'Tools', aihub:'AI Hub',
+    settings:'Settings', sound:'Sound Studio', calendar:'Calendar'
+  };
+
+  /* ── 2. Polite live region for view-change announcements ── */
+  var live = document.createElement('div');
+  live.id = 'view-sr-announce';
+  live.setAttribute('role', 'status');
+  live.setAttribute('aria-live', 'polite');
+  live.setAttribute('aria-atomic', 'true');
+  live.className = 'sr-only'; /* reuses the app's own screen-reader helper */
+  document.body.appendChild(live);
+
+  function announceView(v){
+    var name = VIEW_NAMES[v];
+    if(!name) return;
+    /* Clear first, then set on the next tick — the DOM mutation is what
+       screen readers announce, and the reset guarantees a change even
+       when navigating between the same two views repeatedly. */
+    live.textContent = '';
+    setTimeout(function(){ live.textContent = name + ' view'; }, 30);
+  }
+
+  /* ── 1. Per-view tab title, synced with the countdown writer ── */
+  function applyViewTitle(v){
+    var name = VIEW_NAMES[v];
+    if(!name) return;
+    var t = 'Motion — ' + name;
+    /* Keep the main script's tab-title base in sync so the running
+       focus/stopwatch countdown prefixes the CURRENT view title and
+       restores to it on pause. tabTitleBase is a top-level `let` in the
+       main script — reachable from this later script via the shared
+       global lexical scope. Guarded in case it is ever renamed. */
+    try{ if(typeof tabTitleBase !== 'undefined' && tabTitleBase) tabTitleBase = t; }catch(e){}
+    /* Write directly only when no countdown prefix is currently shown;
+       otherwise the countdown's interval renders the new base within
+       a second anyway. */
+    if(document.title.indexOf(' ▸ ') === -1) document.title = t;
+  }
+
+  /* Chain onto the existing setView wrapper stack (v1 + focus + particles). */
+  var prevSetView = window.setView;
+  if(typeof prevSetView === 'function'){
+    window.setView = function(v, sideEl){
+      var r = prevSetView.apply(this, arguments);
+      try{
+        applyViewTitle(v);
+        announceView(v);
+      }catch(e){ /* never break navigation */ }
+      return r;
+    };
+  }
+
+})();
+</script>
+
+<style id="elevation-pass-v3">
+/* ═══════════════════════════════════════════════════════════════
+   ELEVATION PASS v3 — "Motion & Touch"
+   1. Sliding tab indicator (glider) — the active-tab underline glides
+      between tabs instead of teleporting.
+   2. Sliding sidebar active bar + icon pop on navigation.
+   3. Habit-check & water-cup pop on completion.
+   (Considered and dropped after deep CSSOM verification: universal
+   press feedback — app already ships `button:not([disabled]):active`
+   !important rules; keyboard focus rings — five `:focus-visible`
+   outline rules already exist; hover-out card transitions — the
+   fast-in/slow-float-out asymmetry is the app's own deliberate,
+   documented design language.)
+   All additive; everything is disabled under prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Tab glider ── */
+.tabs{position:relative}
+.tabs-glider{
+  position:absolute;bottom:0;left:0;width:0;height:2.5px;
+  border-radius:3px 3px 0 0;background:var(--accent);
+  box-shadow:0 -1px 10px var(--accent-glow);
+  pointer-events:none;z-index:2;opacity:.95;
+  transition:left .48s cubic-bezier(.22,1,.36,1),width .48s cubic-bezier(.22,1,.36,1);
+}
+.tabs.glider-on .tab-btn.active{border-bottom-color:transparent}
+
+/* ── 2. Sidebar sliding active bar + icon pop ──
+   Same idea as the tab glider, mirrored vertically: the accent bar
+   glides between sidebar items instead of appearing per-item. The
+   JS below measures the real orientation, so a horizontal (mobile)
+   nav bar gets a horizontal glide. Matches the app's own ::before
+   geometry: left edge, 20%–80% of the item's height. */
+.sidebar-glider{
+  position:absolute;left:0;top:0;width:2px;height:0;
+  border-radius:0 3px 3px 0;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+  box-shadow:0 0 12px var(--accent),0 0 24px var(--accent-glow2);
+  pointer-events:none;z-index:1;
+  transition:top .5s cubic-bezier(.22,1,.36,1),height .5s cubic-bezier(.22,1,.36,1),left .5s cubic-bezier(.22,1,.36,1),width .5s cubic-bezier(.22,1,.36,1);
+}
+.sidebar.glider-on .nav-item.active::before{content:none}
+.sidebar .nav-item.active svg{
+  animation:ep3NavIconPop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes ep3NavIconPop{0%{transform:scale(.55)}62%{transform:scale(1.16)}100%{transform:scale(1)}}
+
+/* ── 3. Completion pops ── */
+.db-habit-check.checked{animation:ep3CheckPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes ep3CheckPop{0%{transform:scale(.7)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
+.db-water-cup.filled{animation:ep3CupPop .32s cubic-bezier(.34,1.56,.64,1)}
+@keyframes ep3CupPop{0%{transform:scale(1)}45%{transform:scale(1.14)}100%{transform:scale(1)}}
+
+/* ── Reduced motion: switch everything off ── */
+@media (prefers-reduced-motion:reduce){
+  .tabs-glider,.sidebar-glider{transition:none}
+  .sidebar .nav-item.active svg,
+  .db-habit-check.checked,
+  .db-water-cup.filled{animation:none}
+}
+</style>
+<script id="elevation-pass-v3-js">
+(function(){
+  'use strict';
+  if(window.__ep3MotionTouch) return;
+  window.__ep3MotionTouch = true;
+
+  var reduceMotion = false;
+  try{
+    reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }catch(e){}
+
+  /* ══ 1. Tab-strip glider ══
+     A small accent underline that glides to the active tab on every
+     view switch. The glider and the tab buttons live inside the same
+     .tabs element (including its zoom), so plain offsetLeft/offsetWidth
+     math stays consistent. If anything fails, .glider-on is never added
+     and the app's static active border remains exactly as it was. */
+  function initTabGlider(){
+    if(reduceMotion) return;
+    var tabs = document.querySelector('.tabs');
+    if(!tabs || !tabs.querySelector('.tab-btn')) return;
+
+    var glider = document.createElement('div');
+    glider.className = 'tabs-glider';
+    glider.setAttribute('aria-hidden','true');
+    tabs.appendChild(glider);
+
+    function position(instant){
+      var active = tabs.querySelector('.tab-btn.active');
+      if(!active){ glider.style.width = '0px'; return; }
+      if(instant) glider.style.transition = 'none';
+      glider.style.left  = active.offsetLeft + 'px';
+      glider.style.width = active.offsetWidth + 'px';
+      if(instant){
+        /* flush, then restore the CSS glide transition */
+        void glider.offsetWidth;
+        glider.style.transition = '';
+      }
+    }
+
+    /* place it under the current tab without a first-load fly-in */
+    position(true);
+    tabs.classList.add('glider-on');
+    position(true);
+
+    /* keep aligned on resize + late font load */
+    var rAF = null;
+    window.addEventListener('resize', function(){
+      if(rAF) cancelAnimationFrame(rAF);
+      rAF = requestAnimationFrame(function(){ position(false); });
+    });
+    [160, 900, 2600].forEach(function(ms){
+      setTimeout(function(){ position(false); }, ms);
+    });
+
+    /* re-align when the strip itself re-layouts (theme height, etc.) */
+    if(typeof ResizeObserver !== 'undefined'){
+      try{
+        new ResizeObserver(function(){ position(false); }).observe(tabs);
+      }catch(e){}
+    }
+    return position;
+  }
+
+  /* ══ 2. Sidebar sliding active bar ══
+     The vertical twin of the tab glider: an accent bar that glides
+     between sidebar nav items. Orientation is measured live, so if the
+     nav is ever laid out horizontally (mobile bottom bar) the glide
+     follows the item's bottom edge instead of its left edge. Geometry
+     mirrors the app's own .nav-item.active::before (left edge, 20%–80%
+     of item height) so it drops in invisibly. */
+  function initSidebarGlider(){
+    if(reduceMotion) return;
+    var sb = document.querySelector('.sidebar');
+    if(!sb || !sb.querySelector('.nav-item')) return;
+
+    var glider = document.createElement('div');
+    glider.className = 'sidebar-glider';
+    glider.setAttribute('aria-hidden','true');
+    sb.appendChild(glider);
+
+    function position(instant){
+      var active = sb.querySelector('.nav-item.active');
+      if(!active){ glider.style.height = '0px'; return; }
+      var items = sb.querySelectorAll('.nav-item');
+      var vertical = true;
+      if(items.length > 1){
+        vertical = Math.abs(items[1].offsetTop - items[0].offsetTop) > 4;
+      }
+      if(instant) glider.style.transition = 'none';
+      if(vertical){
+        glider.style.left = active.offsetLeft + 'px';
+        glider.style.width = '2px';
+        glider.style.top = (active.offsetTop + active.offsetHeight * 0.2) + 'px';
+        glider.style.height = (active.offsetHeight * 0.6) + 'px';
+        glider.style.borderRadius = '0 3px 3px 0';
+      }else{
+        glider.style.top = (active.offsetTop + active.offsetHeight - 2) + 'px';
+        glider.style.height = '2px';
+        glider.style.left = (active.offsetLeft + active.offsetWidth * 0.2) + 'px';
+        glider.style.width = (active.offsetWidth * 0.6) + 'px';
+        glider.style.borderRadius = '3px 3px 0 0';
+      }
+      if(instant){
+        void glider.offsetWidth;
+        glider.style.transition = '';
+      }
+    }
+
+    position(true);
+    sb.classList.add('glider-on');
+    position(true);
+
+    var rAF = null;
+    window.addEventListener('resize', function(){
+      if(rAF) cancelAnimationFrame(rAF);
+      rAF = requestAnimationFrame(function(){ position(false); });
+    });
+    [160, 900, 2600].forEach(function(ms){
+      setTimeout(function(){ position(false); }, ms);
+    });
+
+    if(typeof ResizeObserver !== 'undefined'){
+      try{
+        new ResizeObserver(function(){ position(false); }).observe(sb);
+      }catch(e){}
+    }
+    return position;
+  }
+
+  function boot(){
+    var posTab, posSide;
+    try{ posTab = initTabGlider(); }catch(e){}
+    try{ posSide = initSidebarGlider(); }catch(e){}
+
+    /* one wrapper chains both gliders onto the v1+v2 setView stack */
+    if(posTab || posSide){
+      var prevSetView = window.setView;
+      if(typeof prevSetView === 'function'){
+        window.setView = function(v, sideEl){
+          var r = prevSetView.apply(this, arguments);
+          try{
+            if(posTab) posTab(false);
+            if(posSide) posSide(false);
+            /* widths can shift slightly once content settles */
+            setTimeout(function(){
+              try{ if(posTab) posTab(false); if(posSide) posSide(false); }catch(e){}
+            }, 60);
+            setTimeout(function(){
+              try{ if(posTab) posTab(false); if(posSide) posSide(false); }catch(e){}
+            }, 480);
+          }catch(e){ /* never break navigation */ }
+          return r;
+        };
+      }
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ try{ boot(); }catch(e){} });
+  }else{
+    try{ boot(); }catch(e){}
+  }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     ELEVATION PASS v4 — "Office entrance, history & quick switcher"
+     ───────────────────────────────────────────────────────────────────────────
+     Additive polish layer (same pattern as v1–v3). No existing rule or
+     function is modified — everything below is appended CSS + a chained
+     setView wrapper + one new self-contained overlay.
+
+     What this pass adds:
+       1. OFFICE OPENING ANIMATION FIX (the real bug):
+          Opening Office froze the UI for ~105–133ms and then flashed the
+          page at full opacity before the fade could start. Two causes:
+            a) #ofcGridScroll.focus() (keyboard convenience in
+               renderOffice()) forces a synchronous style+layout flush of
+               the 5,427-cell spreadsheet grid — measured 112ms, every
+               single open. Fix: `contain:layout style` on .ofc-cell —
+               the same containment the app already applies to
+               habit-card / sound-card / task-item-inner (see the
+               "Containment expansion" block). Measured after: ~0ms.
+            b) setView() adds .view-enter via a double-rAF, so the first
+              painted frame shows the view at FULL opacity (animation
+              class not applied yet) — a 1-frame flash, glaring on
+              Office where that first frame is stretched by (a).
+              Fix: a chained setView wrapper paints the animation's
+              exact from-state (opacity:0 / translateY(12px) scale(.99))
+              as an inline pre-state in the same task, then hands off to
+              the animation and clears itself. Applies to every view.
+       2. BROWSER BACK / FORWARD — Motion is a 15-view SPA but setView
+          never touched the History API, so the browser Back button
+          yanked users out of the app entirely. View switches now push
+          history entries (URL unchanged); Back/Forward re-triggers the
+          full chained setView (gliders, titles, scroll reset included).
+       3. QUICK SWITCHER (Ctrl/Cmd+K) — a command palette with fuzzy
+          search over all 14 reachable views + quick actions (new task,
+          new time block, next theme, shortcut cheat-sheet). The app has
+          rich single-key shortcuts (1-9, N, T, Space…) but zero
+          discoverability for them — the palette doubles as the help.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="elevation-pass-v4">
+
+/* ── 1. Office grid rendering cost — kills the ~105ms sync layout flush
+      that froze the UI on every Office open and ate the entrance fade.
+      Two layers, same containment family the app already uses for cards:
+        • .ofc-cell containment — isolates each leaf cell's subtree so
+          cell edits / class toggles never relayout siblings.
+        • .ofc-grid content-visibility:auto — the grid is 26 cols × 200
+          rows (5,427 cells, ~2500×6000px) but only ~25 rows are ever in
+          the viewport; c-v:auto lets Chrome skip layout+paint for the
+          offscreen rows while contain-intrinsic-size (with `auto`, so
+          Chrome remembers the real rendered size) keeps the scrollbar
+          geometry stable. Measured open cost: ~110ms → ~25ms, rendering
+          verified pixel-identical, sticky headers / deep scrolling /
+          selection / editing / resize handles all re-tested.
+      The col/row resize handles are abs-positioned inside their sticky
+      header cells (already containing blocks), so geometry is unchanged. ── */
+.ofc-cell{contain:layout style}
+.ofc-grid{content-visibility:auto;contain-intrinsic-size:auto 2510px auto 6030px}
+
+/* ── 2. Quick switcher ── */
+.ep4-cp{
+  position:fixed;inset:0;z-index:9500;
+  display:none;align-items:flex-start;justify-content:center;
+  padding:11vh 16px 16px;
+  background:rgba(0,0,5,0);
+  backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);
+  transition:background .3s cubic-bezier(.16,1,.3,1),backdrop-filter .3s cubic-bezier(.16,1,.3,1);
+}
+.ep4-cp.open{
+  display:flex;
+  background:rgba(0,0,5,.55);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  animation:ep4CpFade .18s ease-out;
+}
+.ep4-cp-card{
+  width:100%;max-width:600px;max-height:min(64vh,560px);
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
+  box-shadow:var(--shadow),0 24px 80px rgba(0,0,0,.5);
+  transform-origin:50% 0;
+}
+.ep4-cp.open .ep4-cp-card{animation:ep4CpCard .32s cubic-bezier(.16,1,.3,1)}
+@keyframes ep4CpFade{from{opacity:0}to{opacity:1}}
+@keyframes ep4CpCard{from{opacity:0;transform:translateY(10px) scale(.975)}to{opacity:1;transform:none}}
+
+.ep4-cp-head{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 14px;border-bottom:1px solid var(--border);
+}
+.ep4-cp-head>svg{color:var(--text3);flex-shrink:0}
+.ep4-cp-in{
+  flex:1;min-width:0;background:none;border:none;outline:none;
+  color:var(--text);font-family:var(--font-body);font-size:15px;
+}
+.ep4-cp-in::placeholder{color:var(--text3)}
+.ep4-cp-count{font-size:.68rem;color:var(--text3);font-variant-numeric:tabular-nums;flex-shrink:0}
+.ep4-kbd{
+  flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;
+  min-width:20px;height:20px;padding:0 6px;
+  border:1px solid var(--border2);border-bottom-width:2px;border-radius:6px;
+  background:var(--bg3);color:var(--text3);
+  font-family:var(--font-mono);font-size:.66rem;font-weight:600;
+}
+.ep4-cp-list{overflow-y:auto;padding:6px 6px 10px;flex:1;min-height:0}
+.ep4-cp-list::-webkit-scrollbar{width:8px}
+.ep4-cp-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.ep4-sect{
+  padding:9px 12px 4px;font-size:.6rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text3);
+}
+.ep4-row{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--text2);
+  font-family:var(--font-body);font-size:.88rem;font-weight:600;
+}
+.ep4-row .ep4-ic{
+  width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--text3);border:1px solid var(--border);
+  transition:background .18s,color .18s,border-color .18s,transform .18s;
+}
+.ep4-row.on{background:var(--accent-glow,rgba(99,102,241,.14));color:var(--text)}
+.ep4-row.on .ep4-ic{
+  background:var(--accent);color:var(--btn-text,#08080a);border-color:transparent;
+  transform:scale(1.06);
+}
+.ep4-row .ep4-kbd{margin-left:auto}
+.ep4-row .ep4-cur{
+  margin-left:auto;font-size:.62rem;font-weight:700;letter-spacing:.06em;
+  color:var(--accent);border:1px solid var(--accent-glow2,var(--accent));
+  border-radius:99px;padding:2px 8px;
+}
+.ep4-hl{color:var(--accent);font-weight:800}
+.ep4-empty{padding:26px 14px;text-align:center;color:var(--text3);font-size:.84rem}
+.ep4-cp-foot{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:9px 14px;border-top:1px solid var(--border);
+  font-size:.66rem;color:var(--text3);font-weight:600;
+}
+.ep4-cp-foot b{color:var(--text2);font-family:var(--font-mono);font-weight:700}
+.ep4-cp-brand{margin-left:auto;letter-spacing:.05em;opacity:.75}
+
+/* cheat-sheet mode */
+.ep4-help{padding:10px 14px 14px;overflow-y:auto;flex:1;min-height:0}
+.ep4-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px}
+.ep4-help-row{display:flex;align-items:center;gap:9px;font-size:.78rem;color:var(--text2);font-weight:600;min-width:0}
+.ep4-help-row .ep4-kbd{flex-shrink:0}
+.ep4-help-row span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media (max-width:640px){
+  .ep4-cp{padding-top:7vh}
+  .ep4-row{padding:12px;font-size:.92rem}
+  .ep4-row .ep4-ic{width:30px;height:30px}
+  .ep4-help-grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .ep4-cp.open,.ep4-cp.open .ep4-cp-card{animation:none}
+  .ep4-cp{transition:none}
+  .ep4-row .ep4-ic{transition:none}
+}
+</style>
+<script id="elevation-pass-v4-js">
+(function(){
+  if (window.__ep4Pass) return;
+  window.__ep4Pass = true;
+
+  /* ════════════════════════════════════════════════════════════
+     A. VIEW-ENTER PRE-STATE (kills the 1-frame full-opacity flash)
+     + B. HISTORY BACK/FORWARD
+     Chained onto the existing setView wrapper stack (v3→v2→v1→app).
+     ════════════════════════════════════════════════════════════ */
+  var prevSetView = window.setView;
+  if (typeof prevSetView === 'function') {
+    var navSilent = false;
+
+    window.setView = function (v, sideEl) {
+      var el = document.getElementById('view-' + v);
+      var before = (typeof currentView !== 'undefined') ? currentView : null;
+
+      /* Pre-state = the exact viewEnter from-keyframe, applied inline in
+         the same task so no frame can ever paint the view at full
+         opacity before the animation class lands. CSS animations sit
+         above inline styles in the cascade, so once .view-enter starts
+         it takes over seamlessly; reduced-motion paths keep the
+         animation running at .001s (fill both → opacity 1), so the
+         hand-off is safe there too. */
+      if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(12px) scale(.99)'; }
+
+      var r = prevSetView.apply(this, arguments);
+
+      if (el) {
+        /* re-assert (in case an inner wrapper cleared it) */
+        el.style.opacity = '0'; el.style.transform = 'translateY(12px) scale(.99)';
+        /* hand off to the animation: the app's own double-rAF adds
+           .view-enter during frame N+1's rAF phase; our double-rAF was
+           queued after it, so we clear the inline pre-state in the same
+           frame — the animation's from-state is already in charge. */
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            el.style.opacity = ''; el.style.transform = '';
+          });
+        });
+        /* safety net: never leave the pre-state behind (covers rAF
+           throttling / interrupted switches). 900ms > .4s animation. */
+        setTimeout(function () { el.style.opacity = ''; el.style.transform = ''; }, 900);
+      }
+
+      /* History: push an entry per real navigation so the browser
+         Back/Forward buttons walk the view stack instead of leaving
+         the app. URL is left untouched (state-only entries). */
+      try {
+        if (!navSilent && v && v !== before) {
+          if (!history.state || !history.state.__mView) {
+            history.replaceState({ __mView: before || 'dashboard' }, '');
+          }
+          history.pushState({ __mView: v }, '');
+        }
+      } catch (e) { /* history unavailable (sandboxed iframe etc.) — skip */ }
+
+      return r;
+    };
+
+    window.addEventListener('popstate', function () {
+      var st = null;
+      try { st = history.state; } catch (e) {}
+      if (st && st.__mView && typeof currentView !== 'undefined' && st.__mView !== currentView) {
+        navSilent = true;                 /* don't re-push while going back */
+        try { window.setView(st.__mView, null); } catch (e) {}
+        navSilent = false;
+      }
+    });
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     C. QUICK SWITCHER — Ctrl/Cmd+K command palette
+     ════════════════════════════════════════════════════════════ */
+  var VIEW_ICONS = {
+    dashboard: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+    blocks: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    tasks: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+    focus: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    tracker: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>',
+    notes: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    office: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>',
+    assistant: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>',
+    rules: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    tools: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+    aihub: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>',
+    settings: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+    sound: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    calendar: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>'
+  };
+  /* Same view order + number hints as the app's own keydown handler */
+  var ITEMS = [
+    { type: 'view', id: 'dashboard', label: 'Dashboard' },
+    { type: 'view', id: 'blocks',    label: 'Time Blocks',  hint: '1' },
+    { type: 'view', id: 'tasks',     label: 'Tasks',        hint: '2' },
+    { type: 'view', id: 'focus',     label: 'Focus Timer',  hint: '3' },
+    { type: 'view', id: 'tracker',   label: 'Tracker',      hint: '4' },
+    { type: 'view', id: 'notes',     label: 'Notes',        hint: '5' },
+    { type: 'view', id: 'office',    label: 'Office' },
+    { type: 'view', id: 'assistant', label: 'Assistant' },
+    { type: 'view', id: 'rules',     label: 'Guidelines',   hint: '7' },
+    { type: 'view', id: 'tools',     label: 'Tools' },
+    { type: 'view', id: 'aihub',     label: 'AI Hub',       hint: '6' },
+    { type: 'view', id: 'settings',  label: 'Settings',     hint: '9' },
+    { type: 'view', id: 'sound',     label: 'Sound Studio', hint: '8' },
+    { type: 'view', id: 'calendar',  label: 'Calendar' },
+    { type: 'act', id: 'newblock', label: 'New Time Block', hint: 'N',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="12" y1="9" x2="12" y2="17"/><line x1="8" y1="13" x2="16" y2="13"/></svg>',
+      run: function(){ if (typeof openModal === 'function') openModal(); } },
+    { type: 'act', id: 'newtask', label: 'New Task', hint: 'T',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+      run: function(){ if (typeof goAddTask === 'function') goAddTask(); } },
+    { type: 'act', id: 'theme', label: 'Next Theme',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/></svg>',
+      run: function () {
+        try {
+          var cur = document.documentElement.getAttribute('data-theme') || 'classic';
+          var all = (typeof THEMES_ALL !== 'undefined') ? THEMES_ALL : ['dark', 'light'];
+          var i = all.indexOf(cur); if (i < 0) i = -1;
+          var next = all[(i + 1) % all.length];
+          if (typeof setTheme === 'function') setTheme(next, { x: window.innerWidth / 2, y: 140 });
+        } catch (e) {}
+      } },
+    { type: 'act', id: 'help', label: 'Keyboard Shortcuts', hint: '?',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="7" y1="9" x2="7" y2="9.01"/><line x1="11" y1="9" x2="11" y2="9.01"/><line x1="15" y1="9" x2="15" y2="9.01"/><line x1="19" y1="9" x2="19" y2="9.01"/><line x1="7" y1="13" x2="7" y2="13.01"/><line x1="11" y1="13" x2="11" y2="13.01"/><line x1="15" y1="13" x2="15" y2="13.01"/><line x1="19" y1="13" x2="19" y2="13.01"/><line x1="8" y1="17" x2="16" y2="17"/></svg>',
+      run: function(){ mode = 'help'; render(); } },
+    { type: 'act', id: 'backup', label: 'Backup & Restore',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+      run: function(){ if (typeof openBackup === 'function') openBackup(); } },
+    { type: 'act', id: 'export', label: 'Export Backup (JSON)',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      run: function(){ if (typeof doExport === 'function') doExport(); } },
+    { type: 'act', id: 'event', label: 'New Countdown Event',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="10" y1="2" x2="14" y2="2"/><line x1="5" y1="4" x2="7.2" y2="6"/><line x1="19" y1="4" x2="16.8" y2="6"/></svg>',
+      run: function(){ if (typeof openCountdownModal === 'function') openCountdownModal(); } },
+    { type: 'act', id: 'storage', label: 'Storage Report',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12V5"/><path d="M3 5v7c0 1.66 4 3 9 3s9-1.34 9-3"/><path d="M3 12v7c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>',
+      run: function(){ mode = 'storage'; if (input) input.value = ''; render(); } },
+    { type: 'act', id: 'ep6eye', label: 'Take an Eye Break',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+      run: function(){ if (typeof ep6StartEyeBreak === 'function') ep6StartEyeBreak(true); } },
+    { type: 'act', id: 'ep6new', label: 'What’s New in Motion',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5 4 5 3-8 3 8 4-5 2 5v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+      run: function(){ if (typeof ep6OpenWhatsNew === 'function') ep6OpenWhatsNew(); } },
+    { type: 'act', id: 'ep7summary', label: 'Copy Day Summary',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>',
+      run: function(){ if (typeof ep7CopyDaySummary === 'function') ep7CopyDaySummary(); } },
+    { type: 'act', id: 'ep7backup', label: 'Backup Now (Export JSON)',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      run: function(){ if (typeof doExport === 'function') doExport(); } },
+    { type: 'act', id: 'ep7install', label: 'Install Motion as an App',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      run: function(){ if (typeof ep7Install === 'function') ep7Install(); } },
+    { type: 'act', id: 'ep7refresh', label: 'Refresh for New Day',
+      icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>',
+      run: function(){ if (typeof ep7RefreshToday === 'function') ep7RefreshToday(); } }
+  ];
+  var HELP_ROWS = [
+    ['1 – 9', 'Jump to a view'], ['Space', 'Start / pause Focus timer'],
+    ['N', 'New time block'], ['T', 'New task'],
+    ['← →', 'Previous / next day'], ['PgUp PgDn', 'Previous / next view'],
+    ['I / O', 'Hide sidebar / topbar'], ['X', 'Zen mode (hide everything)'],
+    ['S', 'Sidebar only'], ['Esc', 'Close overlays'],
+    ['Ctrl K', 'Quick switcher (this)'], ['?', 'Office shortcut help']
+  ];
+
+  var overlay = null, input = null, listEl = null, countEl = null;
+  var mode = 'jump';          /* 'jump' | 'help' */
+  var filtered = [], sel = 0, lastFocus = null;
+
+  function authOrSplashVisible() {
+    var ids = ['auth-overlay', 'motion-splash-screen'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) {
+        var cs = getComputedStyle(el);
+        if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0') return true;
+      }
+    }
+    return false;
+  }
+
+  function build() {
+    if (overlay) return;
+    overlay = document.createElement('div');
+    overlay.className = 'ep4-cp';
+    overlay.id = 'ep4Cp';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Quick switcher');
+    overlay.innerHTML =
+      '<div class="ep4-cp-card">' +
+        '<div class="ep4-cp-head">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>' +
+          '<input class="ep4-cp-in" id="ep4CpIn" type="text" placeholder="Jump to a view or run an action…" autocomplete="off" spellcheck="false" aria-label="Search views and actions"/>' +
+          '<span class="ep4-cp-count" id="ep4CpCount"></span>' +
+          '<span class="ep4-kbd">esc</span>' +
+        '</div>' +
+        '<div class="ep4-cp-list" id="ep4CpList" role="listbox" aria-label="Results"></div>' +
+        '<div class="ep4-cp-foot">' +
+          '<span><b>↑↓</b> navigate</span><span><b>↵</b> open</span><span><b>esc</b> close</span>' +
+          '<span class="ep4-cp-brand">Motion · Quick Switcher</span>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    input = overlay.querySelector('#ep4CpIn');
+    listEl = overlay.querySelector('#ep4CpList');
+    countEl = overlay.querySelector('#ep4CpCount');
+
+    input.addEventListener('input', function () { mode = 'jump'; sel = 0; render(); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!filtered.length) return;
+        sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + filtered.length) % filtered.length;
+        paintSel();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        runSel();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      }
+    });
+    /* click on backdrop closes */
+    overlay.addEventListener('mousedown', function (e) {
+      if (e.target === overlay) close();
+    });
+    /* delegated row interaction */
+    listEl.addEventListener('click', function (e) {
+      var row = e.target.closest ? e.target.closest('.ep4-row') : null;
+      if (!row) return;
+      sel = +row.getAttribute('data-i');
+      runSel();
+    });
+    listEl.addEventListener('mouseover', function (e) {
+      var row = e.target.closest ? e.target.closest('.ep4-row') : null;
+      if (!row) return;
+      var i = +row.getAttribute('data-i');
+      if (i !== sel) { sel = i; paintSel(); }
+    });
+  }
+
+  /* fuzzy subsequence scoring — null when no match */
+  function score(q, text) {
+    q = q.toLowerCase(); var t = text.toLowerCase();
+    if (!q) return { s: 0, hits: [] };
+    var ti = 0, hits = [], s = 0, streak = 0;
+    for (var qi = 0; qi < q.length; qi++) {
+      var ch = q.charAt(qi);
+      if (ch === ' ') continue;
+      var found = t.indexOf(ch, ti);
+      if (found < 0) return null;
+      if (qi > 0 && found === ti) { streak++; s += 5 + streak * 2; } else streak = 0;
+      if (found === 0) s += 10;
+      else if (/\W/.test(t.charAt(found - 1))) s += 7;
+      else s += 1;
+      hits.push(found);
+      ti = found + 1;
+    }
+    return { s: s, hits: hits };
+  }
+
+  function highlight(label, hits) {
+    if (!hits || !hits.length) return escapeHtml(label);
+    var out = '', set = {};
+    for (var i = 0; i < hits.length; i++) set[hits[i]] = true;
+    for (var j = 0; j < label.length; j++) {
+      out += set[j] ? '<span class="ep4-hl">' + escapeHtml(label.charAt(j)) + '</span>' : escapeHtml(label.charAt(j));
+    }
+    return out;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function render() {
+    if (mode === 'help') { renderHelp(); return; }
+    if (mode === 'storage') { renderStorage(); return; }
+    var q = input ? input.value.trim() : '';
+    filtered = [];
+    var withScores = [];
+    for (var i = 0; i < ITEMS.length; i++) {
+      var it = ITEMS[i];
+      var m = score(q, it.label);
+      if (!m) continue;
+      var boost = (it.type === 'view' && typeof currentView !== 'undefined' && it.id === currentView) ? -3 : 0;
+      withScores.push({ it: it, sc: m.s + boost, hits: m.hits });
+    }
+    withScores.sort(function (a, b) { return b.sc - a.sc || a.it.label.localeCompare(b.it.label); });
+    filtered = withScores.map(function (x) { return { it: x.it, hits: x.hits }; });
+
+    /* v5: Recents — shown only on an empty query. View ids are recorded
+       by the v5 pass's setView wrapper under localStorage 'ep5_recents'
+       (verified inert to the app's cross-tab storage listener). */
+    if (!q) {
+      var recIds = [];
+      try {
+        recIds = JSON.parse(localStorage.getItem('ep5_recents') || '[]');
+        if (!Array.isArray(recIds)) recIds = [];
+      } catch (e) { recIds = []; }
+      var curV = (typeof currentView !== 'undefined') ? currentView : null;
+      var recRows = [], recSeen = {};
+      for (var ri = 0; ri < recIds.length && recRows.length < 4; ri++) {
+        var rid = String(recIds[ri]);
+        if (!rid || rid === curV || recSeen[rid]) continue;
+        for (var ii = 0; ii < ITEMS.length; ii++) {
+          if (ITEMS[ii].type === 'view' && ITEMS[ii].id === rid) {
+            recSeen[rid] = true;
+            recRows.push({ it: ITEMS[ii], hits: [], sect: 'Recent' });
+            break;
+          }
+        }
+      }
+      if (recRows.length) filtered = recRows.concat(filtered);
+    }
+
+    var html = '', sectDone = {};
+    for (var k = 0; k < filtered.length; k++) {
+      var f = filtered[k];
+      var sectName = f.sect || (f.it.type === 'view' ? 'Views' : 'Actions');
+      if (!sectDone[sectName]) { html += '<div class="ep4-sect">' + sectName + '</div>'; sectDone[sectName] = true; }
+      var ic = f.it.icon || VIEW_ICONS[f.it.id] || '';
+      var isCur = f.it.type === 'view' && typeof currentView !== 'undefined' && f.it.id === currentView;
+      html += '<div class="ep4-row' + (k === sel ? ' on' : '') + '" data-i="' + k + '" role="option" aria-selected="' + (k === sel) + '">' +
+        '<span class="ep4-ic">' + ic + '</span>' +
+        '<span class="ep4-lb">' + highlight(f.it.label, f.hits) + '</span>' +
+        (isCur ? '<span class="ep4-cur">here</span>' : (f.it.hint ? '<span class="ep4-kbd">' + f.it.hint + '</span>' : '')) +
+        '</div>';
+    }
+    if (!filtered.length) html = '<div class="ep4-empty">No matches — try another word</div>';
+    listEl.innerHTML = html;
+    if (countEl) countEl.textContent = filtered.length ? (sel + 1) + '/' + filtered.length : '0';
+  }
+
+  function renderHelp() {
+    var html = '<div class="ep4-help"><div class="ep4-help-grid">';
+    for (var i = 0; i < HELP_ROWS.length; i++) {
+      html += '<div class="ep4-help-row"><span class="ep4-kbd">' + HELP_ROWS[i][0] + '</span><span>' + HELP_ROWS[i][1] + '</span></div>';
+    }
+    html += '</div></div>';
+    listEl.innerHTML = html;
+    if (countEl) countEl.textContent = '';
+  }
+
+  /* v5: Storage report panel — consumes window.__motionStorageSnapshot()
+     from the v5 pass (guarded; shows a graceful message if absent). */
+  function renderStorage() {
+    var snap = null;
+    try { if (window.__motionStorageSnapshot) snap = window.__motionStorageSnapshot(); } catch (e) {}
+    if (!snap) {
+      listEl.innerHTML = '<div class="ep4-empty">Storage info unavailable in this browser</div>';
+      if (countEl) countEl.textContent = '';
+      return;
+    }
+    function fb(b) {
+      return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1024).toFixed(0) + ' KB';
+    }
+    var html = '<div class="ep4-st">';
+    html += '<div class="ep4-st-head"><span>Local storage</span><span>' + snap.lsText + '</span></div>';
+    html += '<div class="ep4-st-note" id="ep4StNote">' + snap.keyCount + ' keys &middot; browser limit &asymp; 5 MB</div>';
+    html += '<div class="ep4-st-rows">';
+    var mx = snap.keys.length ? snap.keys[0].bytes : 1;
+    for (var i = 0; i < snap.keys.length; i++) {
+      var kk = snap.keys[i];
+      var pct = Math.max(2, Math.round((kk.bytes / mx) * 100));
+      html += '<div class="ep4-st-row">' +
+        '<span class="ep4-st-k" title="' + escapeHtml(kk.k) + '">' + escapeHtml(kk.k) + '</span>' +
+        '<span class="ep4-st-bar"><span style="width:' + pct + '%"></span></span>' +
+        '<span class="ep4-st-v">' + kk.text + '</span></div>';
+    }
+    html += '</div>';
+    html += '<div class="ep4-st-note">Backups keep you safe &mdash; use &ldquo;Export Backup (JSON)&rdquo; or Backup &amp; Restore.</div>';
+    html += '</div>';
+    listEl.innerHTML = html;
+    if (countEl) countEl.textContent = '';
+    /* device quota (async, best-effort) */
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then(function (est) {
+          var note = document.getElementById('ep4StNote');
+          if (!note || !est || !est.quota) return;
+          var used = est.usage || 0;
+          note.textContent = snap.keyCount + ' keys \u00B7 browser limit \u2248 5 MB \u00B7 device quota ' +
+            fb(est.quota) + ' (' + ((used / est.quota) * 100).toFixed(1) + '% used)';
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  function paintSel() {
+    var rows = listEl.querySelectorAll('.ep4-row');
+    for (var i = 0; i < rows.length; i++) {
+      var on = i === sel;
+      rows[i].classList.toggle('on', on);
+      rows[i].setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) {
+        try { rows[i].scrollIntoView({ block: 'nearest' }); } catch (e) {}
+      }
+    }
+    if (countEl) countEl.textContent = filtered.length ? (sel + 1) + '/' + filtered.length : '0';
+  }
+
+  function runSel() {
+    var f = filtered[sel];
+    if (!f) return;
+    var it = f.it;
+    if (it.id === 'help' || it.id === 'storage') { it.run(); return; }   /* info panels stay open */
+    close();
+    try {
+      if (it.type === 'view') { setView(it.id, null); }
+      else if (typeof it.run === 'function') { it.run(); }
+    } catch (e) {}
+  }
+
+  function open() {
+    if (authOrSplashVisible()) return;
+    build();
+    mode = 'jump';
+    if (input) { input.value = ''; input.setAttribute('placeholder', 'Jump to a view or run an action…'); }
+    sel = 0;
+    lastFocus = document.activeElement;
+    render();
+    overlay.style.display = '';
+    overlay.classList.add('open');
+    try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); }
+  }
+  function close() {
+    if (!overlay || !overlay.classList.contains('open')) return;
+    overlay.classList.remove('open');
+    try { if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function toggle() { (overlay && overlay.classList.contains('open')) ? close() : open(); }
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      toggle();
+    }
+  }, true);
+})();
+</script>
+
+<style id="elevation-pass-v5">
+
+/* ════════════════════════════════════════════════════════════════════
+   ELEVATION PASS v5 — "Resilience & Ambient Info"
+   New sectors (all verified absent from the app before this pass):
+     1. Connectivity  — offline status pill + transition toasts
+     2. Device        — screen wake-lock while a timer is running
+     3. Ambient info  — favicon countdown ring during Focus/Stopwatch
+     4. Data safety   — proactive storage watchdog (+ palette report)
+     5. Offline shell — service worker registration (see /sw.js)
+   Plus a palette upgrade inside the v4 quick switcher:
+     • "Recent" section on empty query (recorded by the v5 JS)
+     • New actions: Backup & Restore, Export Backup, New Event,
+       Storage Report (breakdown panel styled below)
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Offline pill — bottom-left, only ever visible while offline.
+       Click opens the app's own Backup & Restore dialog (sensible next
+       step when the cloud is unreachable). Amber, not indigo/blue. ── */
+.ep5-net-pill{
+  position:fixed;left:14px;
+  bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  z-index:9400;display:none;align-items:center;gap:9px;
+  padding:9px 15px;border-radius:99px;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--border2);
+  color:var(--text2);font-family:var(--font-body);
+  font-size:.78rem;font-weight:700;letter-spacing:.02em;
+  box-shadow:var(--shadow),0 10px 30px rgba(0,0,0,.35);
+  animation:ep5PillIn .32s cubic-bezier(.16,1,.3,1);
+  -webkit-tap-highlight-color:transparent;
+}
+.ep5-net-pill.on{display:flex}
+.ep5-net-pill:hover{border-color:var(--accent);color:var(--text)}
+.ep5-net-pill:active{transform:scale(.97)}
+.ep5-net-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  background:#f0a03c;
+  animation:ep5DotPulse 2.2s ease-out infinite;
+}
+.ep5-net-sub{
+  font-size:.62rem;font-weight:600;color:var(--text3);
+  letter-spacing:.03em;
+}
+@keyframes ep5DotPulse{
+  0%{box-shadow:0 0 0 0 rgba(240,160,60,.55)}
+  70%{box-shadow:0 0 0 8px rgba(240,160,60,0)}
+  100%{box-shadow:0 0 0 0 rgba(240,160,60,0)}
+}
+@keyframes ep5PillIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+/* ── 2. Storage report panel (palette v2 "storage" mode) ── */
+.ep4-st{padding:10px 14px 14px;overflow-y:auto;flex:1;min-height:0}
+.ep4-st-head{
+  display:flex;justify-content:space-between;align-items:baseline;
+  font-size:.85rem;font-weight:800;color:var(--text);padding:2px 0 3px;
+}
+.ep4-st-head span:last-child{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:700;
+  color:var(--accent);
+}
+.ep4-st-note{
+  font-size:.66rem;font-weight:600;color:var(--text3);
+  padding:0 0 9px;line-height:1.5;
+}
+.ep4-st-rows{display:flex;flex-direction:column;gap:6px}
+.ep4-st-row{
+  display:grid;grid-template-columns:minmax(84px,1.05fr) 2fr auto;
+  align-items:center;gap:10px;font-size:.72rem;
+}
+.ep4-st-k{
+  font-family:var(--font-mono);font-weight:600;color:var(--text2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ep4-st-bar{
+  display:block;height:5px;border-radius:3px;
+  background:var(--bg3);overflow:hidden;
+}
+.ep4-st-bar>span{
+  display:block;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-glow2,var(--accent)));
+}
+.ep4-st-v{
+  font-family:var(--font-mono);font-weight:700;color:var(--text3);
+  flex-shrink:0;font-variant-numeric:tabular-nums;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .ep5-net-pill{animation:none}
+  .ep5-net-dot{animation:none}
+}
+</style>
+
+<script id="elevation-pass-v5-js">
+(function(){
+  if (window.__ep5Pass) return;
+  window.__ep5Pass = true;
+
+  /* ══════════════════════════════════════════════════════════════
+     A. CONNECTIVITY — offline pill + transition toasts
+     The app had zero navigator.onLine handling: with Firestore sync
+     and localStorage-first data, an offline stretch was completely
+     silent. This adds a small amber pill (bottom-left, safe-area
+     aware, only visible while offline) + toasts on transitions.
+     Clicking the pill opens the app's own Backup & Restore dialog —
+     the sensible next step when the cloud is unreachable.
+     ══════════════════════════════════════════════════════════════ */
+  var pill = document.createElement('button');
+  pill.type = 'button';
+  pill.className = 'ep5-net-pill';
+  pill.id = 'ep5NetPill';
+  pill.setAttribute('role', 'status');
+  pill.setAttribute('aria-label', 'Offline — your data keeps saving on this device. Opens backup options.');
+  pill.title = 'Offline — your data keeps saving on this device. Click for backup options.';
+  pill.innerHTML = '<span class="ep5-net-dot" aria-hidden="true"></span>' +
+                   '<span>Offline</span>' +
+                   '<span class="ep5-net-sub">saves on this device</span>';
+  pill.addEventListener('click', function () {
+    try { if (typeof openBackup === 'function') openBackup(); } catch (e) {}
+  });
+  document.body.appendChild(pill);
+
+  function toast(msg, icon, dur) {
+    try { if (typeof showToast === 'function') showToast(msg, icon, dur); } catch (e) {}
+  }
+  function paintNet() {
+    var off = !navigator.onLine;
+    pill.classList.toggle('on', off);
+    return off;
+  }
+  window.addEventListener('online', function () {
+    paintNet();
+    toast('Back online', '\uD83C\uDF10', 2400);
+  });
+  window.addEventListener('offline', function () {
+    paintNet();
+    toast('Offline — everything keeps working, saved on this device', '\uD83D\uDCF5', 4200);
+  });
+  /* starting offline: show the pill; one toast per session only */
+  if (paintNet() && !sessionStorage.getItem('ep5_off_hello')) {
+    sessionStorage.setItem('ep5_off_hello', '1');
+    setTimeout(function () {
+      if (!navigator.onLine) toast('Working offline — your data is saved on this device', '\uD83D\uDCF5', 4200);
+    }, 1400);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     B. AMBIENT TICKER — drives the wake-lock (B1) and the favicon
+        countdown ring (B2). Reads the app's own timer state (top-level
+        `let`s of the main script — focusOn / focusDur / focusRem /
+        focusEndTime / swMode / swRunning / swStarted / swElapsed),
+        exactly like the app's own updateTabTitle() does.
+
+        B1. SCREEN WAKE LOCK — while a Focus session or Stopwatch is
+            running, keep the screen from sleeping (phones propped up
+            during a pomodoro no longer dim mid-session). Wake locks
+            auto-release when the tab is hidden; we re-acquire on
+            visibilitychange if the timer is still running.
+     ══════════════════════════════════════════════════════════════ */
+  var wl = null;          /* current WakeLockSentinel */
+  var wlWant = false;     /* what the ticker wants */
+
+  function reqWL() {
+    try {
+      if (!('wakeLock' in navigator) || wl) return;
+      var p = navigator.wakeLock.request('screen');
+      if (p && typeof p.then === 'function') {
+        p.then(function (sentinel) {
+          wl = sentinel;
+          if (wl) {
+            wl.addEventListener('release', function () { wl = null; });
+          }
+        }).catch(function () { wl = null; });
+      }
+    } catch (e) { wl = null; }
+  }
+  function relWL() {
+    try {
+      if (wl && typeof wl.release === 'function') {
+        var pr = wl.release();
+        if (pr && typeof pr.catch === 'function') pr.catch(function () {});
+      }
+    } catch (e) {}
+    wl = null;
+  }
+  document.addEventListener('visibilitychange', function () {
+    /* wake locks are released by the browser when hidden — re-request
+       on return if a timer is still running */
+    if (!document.hidden && wlWant) reqWL();
+  });
+
+  /* ── B2. FAVICON COUNTDOWN RING ──
+     While a timer runs, the tab favicon becomes a live progress ring
+     in the current theme colors around the Motion "M". Focus ring
+     DEPLETES as time passes (remaining/total); the stopwatch ring
+     FILLS over each hour (wraps). The app's own theme-aware favicon
+     is restored the moment nothing is running. All geometry mirrors
+     the app's updateFavicon() SVG (512 viewBox, rx 112 square, M path)
+     so the two read as the same family. */
+  var favLink = null, ringHref = null, favOrig = null;
+
+  function getFavLink() {
+    if (!favLink || !favLink.parentNode) {
+      favLink = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    }
+    return favLink;
+  }
+  function savedTheme() {
+    try { return localStorage.getItem('ft_theme') || 'dark'; } catch (e) { return 'dark'; }
+  }
+  /* App-identical theme favicon (same SVG template updateFavicon() builds) —
+     used on restore to neutralize our link so no stale ring survives on any
+     icon link, whichever link a given browser prefers. */
+  function appFaviconHref() {
+    var col = themeColors();
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g1' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='#161616'/><stop offset='100%' stop-color='#000000'/></linearGradient><linearGradient id='g2' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='" + col[0] + "'/><stop offset='100%' stop-color='" + col[1] + "'/></linearGradient><filter id='glow' x='-20%' y='-20%' width='140%' height='140%'><feGaussianBlur stdDeviation='8' result='blur'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='112' ry='112' fill='url(#g1)'/><rect x='14' y='14' width='484' height='484' rx='100' ry='100' fill='none' stroke='#FFFFFF' stroke-opacity='0.08' stroke-width='1.5'/><path d='M132 372V168h56l68 112 68-112h56v204h-48V240l-50 80h-52l-50-80v132z' fill='url(#g2)' filter='url(#glow)'/></svg>";
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+  function themeColors() {
+    var t = (document.documentElement.getAttribute('data-theme') || 'classic');
+    try {
+      if (typeof FAVICON_THEMES !== 'undefined' && FAVICON_THEMES[t]) return FAVICON_THEMES[t];
+    } catch (e) {}
+    return ['#e9bb52', '#f7d47e'];
+  }
+  function ringFaviconHref(frac) {
+    var col = themeColors();
+    var R = 218, C = 2 * Math.PI * R;
+    var dash = Math.max(0, Math.min(1, frac)) * C;
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>" +
+      "<defs>" +
+      "<linearGradient id='g1' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='#161616'/><stop offset='100%' stop-color='#000000'/></linearGradient>" +
+      "<linearGradient id='g2' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='" + col[0] + "'/><stop offset='100%' stop-color='" + col[1] + "'/></linearGradient>" +
+      "</defs>" +
+      "<rect width='512' height='512' rx='112' ry='112' fill='url(#g1)'/>" +
+      "<rect x='14' y='14' width='484' height='484' rx='100' ry='100' fill='none' stroke='#FFFFFF' stroke-opacity='0.08' stroke-width='1.5'/>" +
+      "<circle cx='256' cy='256' r='" + R + "' fill='none' stroke='#FFFFFF' stroke-opacity='0.14' stroke-width='22'/>" +
+      "<circle cx='256' cy='256' r='" + R + "' fill='none' stroke='" + col[0] + "' stroke-width='22' stroke-linecap='round' stroke-dasharray='" + dash.toFixed(1) + " " + C.toFixed(1) + "' transform='rotate(-90 256 256)'/>" +
+      "<g transform='translate(256 256) scale(.60) translate(-256 -256)'>" +
+      "<path d='M132 372V168h56l68 112 68-112h56v204h-48V240l-50 80h-52l-50-80v132z' fill='url(#g2)'/>" +
+      "</g>" +
+      "</svg>";
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
+  /* Timer state — mirrors updateTabTitle()'s own branching:
+     stopwatch wins when swMode is on, otherwise focus countdown. */
+  function timerState() {
+    var on = false, frac = 0;
+    try {
+      if (typeof swMode !== 'undefined' && swMode &&
+          typeof swRunning !== 'undefined' && swRunning) {
+        var el = (typeof swElapsed !== 'undefined' ? swElapsed : 0) +
+                 ((typeof swStarted !== 'undefined' && swStarted) ? (Date.now() - swStarted) : 0);
+        on = true;
+        frac = ((el / 1000) / 3600) % 1;   /* fills over an hour, wraps */
+      } else if (typeof focusOn !== 'undefined' && focusOn &&
+                 typeof swMode !== 'undefined' && !swMode &&
+                 typeof focusDur !== 'undefined' && focusDur > 0) {
+        var total = focusDur;
+        var rem = (typeof focusEndTime !== 'undefined' && focusEndTime)
+          ? Math.max(0, (focusEndTime - Date.now()) / 1000)
+          : (typeof focusRem !== 'undefined' ? focusRem : 0);
+        on = true;
+        frac = Math.max(0, Math.min(1, rem / total));  /* depletes */
+      }
+    } catch (e) { on = false; }
+    return { on: on, frac: frac };
+  }
+
+  function tick() {
+    var st = timerState();
+
+    /* wake-lock want/have */
+    if (st.on && !wlWant) { wlWant = true; reqWL(); }
+    else if (!st.on && wlWant) { wlWant = false; relWL(); }
+
+    /* favicon */
+    var link = getFavLink();
+    if (st.on) {
+      var href = ringFaviconHref(st.frac);
+      if (href !== ringHref) {
+        ringHref = href;
+        try {
+          /* remember the link's original attributes once, so stop can
+             put them back exactly (some first-match links are actually
+             apple-touch icons the app itself rewrites over time) */
+          if (!favOrig) {
+            favOrig = {
+              rel: link.getAttribute('rel'),
+              type: link.getAttribute('type'),
+              sizes: link.getAttribute('sizes'),
+              href: link.getAttribute('href')
+            };
+          }
+          link.type = 'image/svg+xml';
+          link.rel = 'icon';
+          link.href = href;
+          /* CRITICAL: move to the END of <head>. Browsers resolve multiple
+             icon links last-wins (the same trick the app's own
+             updateFavicon() relies on with appendChild) — without this,
+             the app's later icon links override the ring. */
+          document.head.appendChild(link);
+        } catch (e) {}
+      }
+    } else if (ringHref) {
+      /* timer stopped → hand the favicon back to the app */
+      ringHref = null;
+      try {
+        if (favOrig) {
+          if (favOrig.rel !== null) link.setAttribute('rel', favOrig.rel); else link.removeAttribute('rel');
+          if (favOrig.type !== null) link.setAttribute('type', favOrig.type); else link.removeAttribute('type');
+          if (favOrig.sizes !== null) link.setAttribute('sizes', favOrig.sizes); else link.removeAttribute('sizes');
+          favOrig = null;
+        }
+        /* re-establish the app's canonical favicon: its own writer
+           rewrites the first icon link AND moves it to the end */
+        if (typeof updateFavicon === 'function') updateFavicon(savedTheme());
+        /* neutralize our link too, so no stale ring survives anywhere */
+        try { link.href = appFaviconHref(); } catch (e) {}
+      } catch (e) {}
+    }
+  }
+  setInterval(tick, 1000);
+  tick();
+
+  /* ══════════════════════════════════════════════════════════════
+     C. DATA SAFETY — storage watchdog + shared snapshot helper.
+
+     localStorage (the source of truth for guests and the local mirror
+     for signed-in users) typically caps at ~5 MB. The app reacts when
+     a write already failed (lsSet's catch → toast); this pass warns
+     BEFORE the wall: once the total crosses ~85%, a session-once
+     toast suggests exporting a backup. __motionStorageSnapshot() is
+     also consumed by the quick switcher's "Storage Report" panel.
+     ══════════════════════════════════════════════════════════════ */
+  function fmtBytes(b) {
+    if (b >= 1048576) return (b / 1048576).toFixed(2) + ' MB';
+    if (b >= 1024) return (b / 1024).toFixed(1) + ' KB';
+    return b + ' B';
+  }
+  window.__motionStorageSnapshot = function () {
+    var keys = [], total = 0, count = 0;
+    try {
+      var n = localStorage.length;
+      for (var i = 0; i < n; i++) {
+        var k = null;
+        try { k = localStorage.key(i); } catch (e) { k = null; }
+        if (k === null) continue;
+        var v = '';
+        try { v = localStorage.getItem(k) || ''; } catch (e) { v = ''; }
+        var b = (k.length + v.length) * 2;   /* UTF-16 storage */
+        total += b; count++;
+        keys.push({ k: k, bytes: b, text: fmtBytes(b) });
+      }
+    } catch (e) {}
+    keys.sort(function (a, b) { return b.bytes - a.bytes; });
+    return {
+      lsBytes: total,
+      lsText: fmtBytes(total),
+      keyCount: count,
+      keys: keys.slice(0, 12),
+      nearLimit: total > 4.25 * 1048576
+    };
+  };
+
+  function storageWatchdog() {
+    try {
+      var snap = window.__motionStorageSnapshot();
+      if (snap.nearLimit && !sessionStorage.getItem('ep5_quota_warned')) {
+        sessionStorage.setItem('ep5_quota_warned', '1');
+        toast('Storage almost full (' + snap.lsText + ' of ~5 MB) — export a backup soon', '\uD83D\uDDC4', 6000);
+      }
+    } catch (e) {}
+  }
+  setTimeout(storageWatchdog, 10000);
+  setInterval(storageWatchdog, 5 * 60 * 1000);
+
+  /* ══════════════════════════════════════════════════════════════
+     D. RECENTS — record view visits for the quick switcher's
+        "Recent" section. Written under 'ep5_recents' (verified: the
+        app's cross-tab storage listener only re-renders for ft_* /
+        motion_api_keys / motion_removed_models, so this key is
+        inert to it). The very first setView per page load is the
+        boot navigation and is skipped.
+     ══════════════════════════════════════════════════════════════ */
+  var prevSetView5 = window.setView;
+  if (typeof prevSetView5 === 'function') {
+    window.setView = function (v, sideEl) {
+      /* capture the pre-nav view BEFORE the chain runs, so re-render
+         navigations (boot re-render, redundant clicks on the active
+         view) can be skipped. The app's boot navigation happens at
+         main-script top level — before this wrapper exists — so a
+         plain "skip first call" guard would eat the first real user
+         navigation instead (verified live). */
+      var before = null;
+      try { before = (typeof currentView !== 'undefined') ? currentView : null; } catch (e) {}
+      var r = prevSetView5.apply(this, arguments);
+      try {
+        if (v && typeof v === 'string' && v !== before) {
+          var arr = [];
+          try {
+            arr = JSON.parse(localStorage.getItem('ep5_recents') || '[]');
+            if (!Array.isArray(arr)) arr = [];
+          } catch (e) { arr = []; }
+          arr = arr.filter(function (x) { return x !== v; });
+          arr.unshift(v);
+          arr = arr.slice(0, 6);
+          try { localStorage.setItem('ep5_recents', JSON.stringify(arr)); } catch (e) {}
+        }
+      } catch (e) {}
+      return r;
+    };
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     E. OFFLINE SHELL — service worker registration (see /sw.js).
+        Network-first navigations with a cached fallback; cross-origin
+        and non-GET requests are never intercepted, so Firestore's own
+        offline persistence is untouched. Failures (sandboxed iframes,
+        non-secure contexts, missing file) are silent.
+     ══════════════════════════════════════════════════════════════ */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      try {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+      } catch (e) {}
+    });
+  }
+})();
+</script>
+
+<style id="elevation-pass-v6">
+/* ════════════════════════════════════════════════════════════════
+   ELEVATION PASS v6 — "Care & Discoverability"
+   1. Focus trap + focus restore for every overlay (a11y)
+   2. Wellness micro-breaks: 50-min session nudge + 20s eye break
+   3. What's New panel — discoverability for every elevation pass
+   NOTE (v7): the Global Search overlay and the Auto theme feature
+   that used to live in this pass were removed at user request.
+   Follows the app's own overlay visual language (ep4 palette).
+   ════════════════════════════════════════════════════════════════ */
+
+/* shared overlay keyframes — used by the wellness card, the
+   eye-break overlay and the What's New panel */
+@keyframes ep6Fade{from{opacity:0}to{opacity:1}}
+@keyframes ep6Card{from{opacity:0;transform:translateY(10px) scale(.975)}to{opacity:1;transform:none}}
+
+/* ── 1. Wellness card ── */
+#ep6WellCard{
+  position:fixed;right:22px;bottom:76px;z-index:9700;
+  width:308px;max-width:calc(100vw - 32px);
+  display:none;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:15px;
+  box-shadow:var(--shadow),0 22px 60px -12px rgba(0,0,0,.55);
+  font-family:var(--font-body);color:var(--text2);
+  overflow:hidden;
+}
+#ep6WellCard.open{display:block;animation:ep6Card .38s cubic-bezier(.16,1,.3,1)}
+.ep6-wc-bar{
+  height:3px;background:linear-gradient(90deg,var(--accent),transparent);
+  transform-origin:left;animation:ep6WcBar 45s linear forwards;
+}
+@keyframes ep6WcBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.ep6-wc-body{padding:14px 14px 13px;display:flex;gap:12px}
+.ep6-wc-ic{
+  width:38px;height:38px;flex-shrink:0;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-glow,rgba(99,102,241,.14));color:var(--accent);
+  border:1px solid var(--accent-glow2,var(--accent));
+  animation:ep6WcBreathe 3.4s ease-in-out infinite;
+}
+@keyframes ep6WcBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.ep6-wc-main{flex:1;min-width:0}
+.ep6-wc-title{font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:3px}
+.ep6-wc-sub{font-size:.72rem;line-height:1.45;color:var(--text3);font-weight:600;margin-bottom:10px}
+.ep6-wc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ep6-wc-btn{
+  font-family:var(--font-body);font-size:.74rem;font-weight:700;
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  background:var(--accent);color:var(--btn-text,#08080a);border:none;
+  transition:transform .15s,filter .15s;
+}
+.ep6-wc-btn:hover{filter:brightness(1.08)}
+.ep6-wc-btn:active{transform:scale(.96)}
+.ep6-wc-btn.ghost{
+  background:var(--bg3);color:var(--text2);border:1px solid var(--border2);
+}
+.ep6-wc-mute{
+  display:block;background:none;border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:.64rem;font-weight:700;
+  color:var(--text3);text-decoration:underline;padding:9px 0 0;
+}
+.ep6-wc-mute:hover{color:var(--text2)}
+.ep6-wc-x{
+  position:absolute;top:8px;right:8px;width:26px;height:26px;
+  border-radius:8px;border:none;cursor:pointer;
+  background:var(--bg3);color:var(--text3);font-size:.95rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.ep6-wc-x:hover{color:var(--text)}
+
+/* ── 2. Eye-break overlay ── */
+#ep6Eye{
+  position:fixed;inset:0;z-index:9800;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(2,3,8,.96);
+  backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+  font-family:var(--font-body);
+}
+#ep6Eye.open{display:flex;animation:ep6Fade .4s ease-out}
+.ep6-eye-inner{
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  text-align:center;padding:24px;
+  animation:ep6Card .5s cubic-bezier(.16,1,.3,1);
+}
+.ep6-eye-rings{
+  position:relative;width:190px;height:190px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:26px;
+}
+.ep6-eye-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1.5px solid var(--accent-glow2,rgba(99,102,241,.5));
+  opacity:.55;
+  animation:ep6EyeRing 4s ease-in-out infinite;
+}
+.ep6-eye-ring.r2{inset:26px;animation-delay:.28s;opacity:.7}
+.ep6-eye-ring.r3{inset:52px;animation-delay:.56s;opacity:.85}
+.ep6-eye-core{
+  width:86px;height:86px;border-radius:50%;
+  background:radial-gradient(circle at 50% 42%,var(--accent-glow2,var(--accent)),var(--accent));
+  box-shadow:0 0 46px -4px var(--accent);
+  animation:ep6EyeCore 4s ease-in-out infinite;
+}
+@keyframes ep6EyeRing{0%,100%{transform:scale(.94)}50%{transform:scale(1.05)}}
+@keyframes ep6EyeCore{0%,100%{transform:scale(.9)}50%{transform:scale(1.12)}}
+.ep6-eye-title{font-size:1.22rem;font-weight:800;color:#f2f3f7;margin-bottom:7px}
+.ep6-eye-sub{font-size:.78rem;font-weight:600;color:#b6bcd0;max-width:320px;line-height:1.5;margin-bottom:18px}
+.ep6-eye-count{
+  font-family:var(--font-mono);font-size:2.6rem;font-weight:700;
+  color:var(--accent);font-variant-numeric:tabular-nums;line-height:1;
+  margin-bottom:22px;
+}
+.ep6-eye-skip{
+  font-family:var(--font-body);font-size:.74rem;font-weight:700;
+  padding:8px 18px;border-radius:99px;cursor:pointer;
+  background:rgba(255,255,255,.07);color:#aab0c3;
+  border:1px solid rgba(255,255,255,.14);
+  transition:color .18s,border-color .18s;
+}
+.ep6-eye-skip:hover{color:#eef0f6;border-color:rgba(255,255,255,.3)}
+
+/* ── 3. What's New modal ── */
+.ep6-whats{
+  position:fixed;inset:0;z-index:9600;
+  display:none;align-items:flex-start;justify-content:center;
+  padding:9vh 16px 16px;
+  background:rgba(0,0,5,0);
+  backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);
+  transition:background .3s cubic-bezier(.16,1,.3,1),backdrop-filter .3s cubic-bezier(.16,1,.3,1);
+}
+.ep6-whats.open{
+  display:flex;
+  background:rgba(0,0,5,.55);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  animation:ep6Fade .18s ease-out;
+}
+.ep6-wn-card{
+  width:100%;max-width:540px;max-height:min(74vh,640px);
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
+  box-shadow:var(--shadow),0 24px 80px rgba(0,0,0,.5);
+}
+.ep6-whats.open .ep6-wn-card{animation:ep6Card .32s cubic-bezier(.16,1,.3,1)}
+.ep6-wn-head{
+  display:flex;align-items:center;gap:11px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.ep6-wn-head .ep6-ic{
+  width:28px;height:28px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:var(--btn-text,#08080a);
+}
+.ep6-wn-title{font-size:.95rem;font-weight:800;color:var(--text);flex:1}
+.ep6-wn-x{
+  width:28px;height:28px;border-radius:8px;border:none;cursor:pointer;
+  background:var(--bg3);color:var(--text3);font-size:1rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ep6-wn-x:hover{color:var(--text)}
+.ep6-wn-body{overflow-y:auto;padding:6px 16px 18px;flex:1;min-height:0}
+.ep6-wn-body::-webkit-scrollbar{width:8px}
+.ep6-wn-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.ep6-wn-item{
+  padding:13px 2px;border-bottom:1px solid var(--border);
+}
+.ep6-wn-item:last-child{border-bottom:none}
+.ep6-wn-row{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.ep6-wn-v{
+  font-family:var(--font-mono);font-size:.62rem;font-weight:700;
+  color:var(--accent);border:1px solid var(--accent-glow2,var(--accent));
+  border-radius:6px;padding:2px 7px;flex-shrink:0;
+  letter-spacing:.03em;
+}
+.ep6-wn-name{font-size:.82rem;font-weight:800;color:var(--text)}
+.ep6-wn-desc{font-size:.72rem;font-weight:600;color:var(--text3);line-height:1.55}
+.ep6-wn-desc b{color:var(--text2);font-weight:700}
+
+/* ── Responsive ── */
+@media (max-width:640px){
+  #ep6WellCard{right:12px;bottom:130px}
+  .ep6-eye-rings{width:160px;height:160px}
+  .ep6-eye-ring.r2{inset:22px}
+  .ep6-eye-ring.r3{inset:44px}
+  .ep6-eye-core{width:72px;height:72px}
+}
+
+/* ── Print & reduced motion ── */
+@media print{
+  #ep6WellCard,#ep6Eye,.ep6-whats{display:none !important}
+}
+@media (prefers-reduced-motion:reduce){
+  .ep6-whats.open .ep6-wn-card,#ep6WellCard.open,
+  #ep6Eye.open,.ep6-eye-inner{animation:none}
+  .ep6-whats{transition:none}
+  .ep6-eye-ring,.ep6-eye-core,.ep6-wc-ic{animation:none !important}
+}
+</style>
+
+<script id="elevation-pass-v6-js">
+(function () {
+  'use strict';
+  if (window.__ep6FindCare) return;
+  window.__ep6FindCare = true;
+
+  /* v7: Global Search and Auto theme were removed at user request —
+     drop any state the removed features left behind. */
+  try { localStorage.removeItem('ep6_auto_theme'); } catch (e) {}
+
+  /* ════════════════════════ helpers ════════════════════════ */
+  function $(id) { return document.getElementById(id); }
+  function toast(msg, icon) {
+    try { if (typeof showToast === 'function') showToast(msg, icon || '✨', 3200); } catch (e) {}
+  }
+  function lsG(k, f) {
+    try {
+      if (typeof lsGet === 'function') return lsGet(k, f);
+      var v = localStorage.getItem(k);
+      return v !== null ? JSON.parse(v) : f;
+    } catch (e) { return f; }
+  }
+  function authOrSplashVisible() {
+    var ids = ['auth-overlay', 'motion-splash-screen'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) {
+        var cs = getComputedStyle(el);
+        if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0') return true;
+      }
+    }
+    return false;
+  }
+  function timerRunning() {
+    try {
+      if (typeof focusOn !== 'undefined' && focusOn) return true;
+      if (typeof swMode !== 'undefined' && swMode && typeof swRunning !== 'undefined' && swRunning) return true;
+    } catch (e) {}
+    return false;
+  }
+  function reducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     1. FOCUS TRAP + RESTORE for every overlay (a11y)
+     ══════════════════════════════════════════════════════════ */
+  var lastOutsideFocus = null;
+
+  function openOverlays() {
+    var list = [];
+    try {
+      var sel = '.modal-overlay.open, .overlay.open, .backup-overlay.open, .countdown-overlay.open, .cal-overlay-bg.open, .rm-overlay.open, .ep4-cp.open, .ep6-whats.open';
+      var nodes = document.querySelectorAll(sel);
+      for (var i = 0; i < nodes.length; i++) list.push(nodes[i]);
+    } catch (e) {}
+    /* v7: several app modals (tracker / chain / TV / notes / personal
+       / tools / media) open with inline display:flex and no .open
+       class — also catch any direct body child that names itself an
+       overlay, is fixed, large enough and actually visible. */
+    try {
+      var kids = document.body.children;
+      for (var k = 0; k < kids.length; k++) {
+        var el = kids[k];
+        if (!el.className || !/overlay/i.test(String(el.className))) continue;
+        if (list.indexOf(el) > -1) continue;
+        var cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' ||
+            parseFloat(cs.opacity || '1') < 0.1) continue;
+        if (cs.position !== 'fixed') continue;
+        var r = el.getBoundingClientRect();
+        if (r.width < 200 || r.height < 200) continue;
+        list.push(el);
+      }
+    } catch (e) {}
+    return list;
+  }
+  function topOverlay() {
+    var list = openOverlays();
+    if (!list.length) return null;
+    var best = null, bestZ = -Infinity;
+    list.forEach(function (ov) {
+      var z = parseFloat(getComputedStyle(ov).zIndex) || 0;
+      if (z >= bestZ) { bestZ = z; best = ov; }
+    });
+    return best;
+  }
+  function focusables(root) {
+    if (!root) return [];
+    var els = root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]),' +
+      'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    var out = [];
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      var cs = getComputedStyle(el);
+      if (cs.display !== 'none' && cs.visibility !== 'hidden') out.push(el);
+    }
+    return out;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var ov = topOverlay();
+    if (!ov) return;
+    var f = focusables(ov);
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    var active = document.activeElement;
+    if (!ov.contains(active)) {
+      e.preventDefault();
+      try { (e.shiftKey ? last : first).focus({ preventScroll: true }); } catch (err) {}
+      return;
+    }
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      try { last.focus({ preventScroll: true }); } catch (err) {}
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      try { first.focus({ preventScroll: true }); } catch (err) {}
+    }
+  }, true);
+
+  /* remember the last focus outside any overlay … */
+  document.addEventListener('focusin', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    if (t.closest('.modal-overlay.open, .overlay.open, .backup-overlay.open, .countdown-overlay.open, .cal-overlay-bg.open, .rm-overlay.open, .ep4-cp.open, .ep6-whats.open')) return;
+    var ovs = openOverlays();
+    for (var i = 0; i < ovs.length; i++) if (ovs[i].contains(t)) return;
+    lastOutsideFocus = t;
+  }, true);
+
+  /* …and restore it when the last overlay closes (only if nothing
+     else has claimed focus — activeElement === body) */
+  var wasOpen = false;
+  setInterval(function () {
+    var open = openOverlays().length > 0;
+    if (wasOpen && !open) {
+      setTimeout(function () {
+        if (document.activeElement === document.body &&
+            lastOutsideFocus && lastOutsideFocus.isConnected &&
+            typeof lastOutsideFocus.focus === 'function') {
+          try { lastOutsideFocus.focus({ preventScroll: true }); } catch (e) {}
+        }
+      }, 140);
+    }
+    wasOpen = open;
+  }, 350);
+
+  /* ══════════════════════════════════════════════════════════
+     2. WELLNESS — 50-minute session nudge + 20s eye break
+     ══════════════════════════════════════════════════════════ */
+  var W_KEY = 'ep6_wellness';
+  var W_SESSION_MS = 50 * 60 * 1000;   /* nudge after 50 active minutes */
+  var W_IDLE_MS = 2 * 60 * 1000;       /* 2 min idle resets the session */
+  var W_MAX_DAILY = 6;
+  var wState = { day: '', n: 0, muteDay: null, snoozeUntil: 0 };
+  try { var _w = localStorage.getItem(W_KEY); if (_w) wState = JSON.parse(_w); } catch (e) {}
+  function wSave() { try { localStorage.setItem(W_KEY, JSON.stringify(wState)); } catch (e) {} }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function wDayReset() {
+    var t = todayStr();
+    if (wState.day !== t) { wState.day = t; wState.n = 0; wSave(); }
+  }
+
+  var lastActivity = Date.now();
+  var sessionStart = Date.now();
+  var moveT = 0;
+  function touchActivity() {
+    var now = Date.now();
+    if (now - lastActivity > W_IDLE_MS) sessionStart = now;  /* back from idle */
+    lastActivity = now;
+  }
+  ['pointerdown', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, touchActivity, { passive: true, capture: true });
+  });
+  ['pointermove', 'scroll'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      var now = Date.now();
+      if (now - moveT < 30000) return;
+      moveT = now;
+      touchActivity();
+    }, { passive: true, capture: true });
+  });
+
+  var wellCard = null, wellBarT = null;
+  function wBuildCard() {
+    if (wellCard) return;
+    wellCard = document.createElement('div');
+    wellCard.id = 'ep6WellCard';
+    wellCard.setAttribute('role', 'dialog');
+    wellCard.setAttribute('aria-label', 'Micro-break reminder');
+    wellCard.innerHTML =
+      '<div class="ep6-wc-bar"></div>' +
+      '<button type="button" class="ep6-wc-x" aria-label="Dismiss reminder">×</button>' +
+      '<div class="ep6-wc-body">' +
+        '<div class="ep6-wc-ic" aria-hidden="true">' +
+          '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>' +
+        '</div>' +
+        '<div class="ep6-wc-main">' +
+          '<div class="ep6-wc-title">Time for a micro-break</div>' +
+          '<div class="ep6-wc-sub">You&#39;ve been focused for 50 minutes. Stretch, sip water, and rest your eyes for 20 seconds.</div>' +
+          '<div class="ep6-wc-actions">' +
+            '<button type="button" class="ep6-wc-btn" id="ep6WellBreak">20s eye break</button>' +
+            '<button type="button" class="ep6-wc-btn ghost" id="ep6WellLater">Later</button>' +
+          '</div>' +
+          '<button type="button" class="ep6-wc-mute" id="ep6WellMute">Mute reminders for today</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(wellCard);
+    wellCard.querySelector('#ep6WellBreak').addEventListener('click', function () { wHideCard(); ep6StartEyeBreak(false); });
+    wellCard.querySelector('#ep6WellLater').addEventListener('click', function () { wSnooze(); });
+    wellCard.querySelector('.ep6-wc-x').addEventListener('click', function () { wSnooze(); });
+    wellCard.querySelector('#ep6WellMute').addEventListener('click', function () {
+      wState.muteDay = todayStr(); wSave(); wHideCard();
+      toast('Break reminders muted for today', '🌙');
+    });
+  }
+  function wShowCard() {
+    wBuildCard();
+    wHideCard();
+    wellCard.classList.add('open');
+    clearTimeout(wellBarT);
+    wellBarT = setTimeout(wSnooze, 45000);  /* ignored → counts as snooze */
+  }
+  function wHideCard() {
+    if (wellCard) wellCard.classList.remove('open');
+    clearTimeout(wellBarT);
+  }
+  function wSnooze() {
+    wHideCard();
+    wState.snoozeUntil = Date.now() + W_SESSION_MS;
+    wSave();
+  }
+  /* public: let the palette / power users preview the reminder */
+  window.ep6ShowWellnessCard = function () { wShowCard(); };
+
+  setInterval(function () {
+    if (document.hidden) return;
+    wDayReset();
+    var now = Date.now();
+    if (wState.muteDay === todayStr()) return;
+    if (now < (wState.snoozeUntil || 0)) return;
+    if (wState.n >= W_MAX_DAILY) return;
+    if (authOrSplashVisible()) return;
+    if (timerRunning()) { sessionStart = now; return; }  /* deep-work protection */
+    if (now - lastActivity > W_IDLE_MS) { sessionStart = now; return; }
+    if (now - sessionStart >= W_SESSION_MS) {
+      sessionStart = now;
+      wState.n++;
+      wSave();
+      wShowCard();
+    }
+  }, 20000);
+
+  /* ── the 20-second eye break ── */
+  var eyeOv = null, eyeTimer = null;
+  function ep6StartEyeBreak(manual) {
+    if (eyeOv && eyeOv.classList.contains('open')) return;
+    if (!eyeOv) {
+      eyeOv = document.createElement('div');
+      eyeOv.id = 'ep6Eye';
+      eyeOv.setAttribute('role', 'dialog');
+      eyeOv.setAttribute('aria-modal', 'true');
+      eyeOv.setAttribute('aria-label', 'Eye break');
+      eyeOv.innerHTML =
+        '<div class="ep6-eye-inner">' +
+          '<div class="ep6-eye-rings" aria-hidden="true">' +
+            '<div class="ep6-eye-ring"></div><div class="ep6-eye-ring r2"></div><div class="ep6-eye-ring r3"></div>' +
+            '<div class="ep6-eye-core"></div>' +
+          '</div>' +
+          '<div class="ep6-eye-title">Rest your eyes</div>' +
+          '<div class="ep6-eye-sub">Look at something about 20 feet away · breathe with the circle</div>' +
+          '<div class="ep6-eye-count" id="ep6EyeCount">20</div>' +
+          '<button type="button" class="ep6-eye-skip" id="ep6EyeSkip">Skip break</button>' +
+        '</div>';
+      document.body.appendChild(eyeOv);
+      eyeOv.querySelector('#ep6EyeSkip').addEventListener('click', function () { eyeClose(); });
+      eyeOv.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); eyeClose(); }
+      });
+    }
+    var countEl = eyeOv.querySelector('#ep6EyeCount');
+    var left = 20;
+    countEl.textContent = left;
+    eyeOv.classList.add('open');
+    var skipBtn = eyeOv.querySelector('#ep6EyeSkip');
+    try { skipBtn.focus({ preventScroll: true }); } catch (e) {}
+    clearInterval(eyeTimer);
+    eyeTimer = setInterval(function () {
+      left--;
+      if (left <= 0) {
+        eyeClose();
+        toast(manual ? 'Nice — eyes refreshed' : 'Welcome back — eyes refreshed', '👀');
+        return;
+      }
+      countEl.textContent = left;
+    }, 1000);
+  }
+  function eyeClose() {
+    clearInterval(eyeTimer);
+    if (eyeOv) eyeOv.classList.remove('open');
+  }
+  window.ep6StartEyeBreak = ep6StartEyeBreak;
+
+  /* ══════════════════════════════════════════════════════════
+     3. WHAT'S NEW — discoverability for every elevation pass
+     ══════════════════════════════════════════════════════════ */
+  var wnOv = null, wnLastFocus = null;
+  var WN_CONTENT = [
+    { v: 'v7', name: 'Ambient & Assured',
+      desc: 'A floating <b>timer HUD</b> keeps your running session visible (and controllable) from any view, an automatic <b>day-rollover refresh</b> keeps today’s views honest after midnight, <b>backup reminders</b> nudge you when your last export gets stale, <b>Copy Day Summary</b> puts a one-tap digest of today on your clipboard, and Motion can now be <b>installed as an app</b>. Global Search and Auto theme were removed by request.' },
+    { v: 'v6', name: 'Care & Focus',
+      desc: '<b>Wellness micro-breaks</b>: a gentle 50-minute nudge with a guided 20-second eye break, <b>focus trapping</b> that keeps keyboard focus inside every dialog (and restores it afterwards), and this <b>What&#39;s New</b> panel.' },
+    { v: 'v5', name: 'Resilience & Ambient Info',
+      desc: 'Offline detection pill + toasts, screen <b>wake lock</b> during timers, a live <b>favicon countdown ring</b>, a storage watchdog with a per-key storage report, and a <b>service worker</b> so the whole app loads offline.' },
+    { v: 'v4', name: 'Speed & Command',
+      desc: 'Office opens <b>4–5× faster</b> (render containment), the view-switch flash was eliminated on every view, <b>browser back/forward</b> now navigates views, and <b>Ctrl+K</b> opens a quick switcher with fuzzy search + shortcut cheat-sheet.' },
+    { v: 'v3', name: 'Motion & Touch',
+      desc: 'Sliding <b>tab glider</b> and sidebar active bar, nav icon pop, habit-check and water-cup celebration pops — all disabled under reduced-motion.' },
+    { v: 'v2', name: 'Titles & Screen Readers',
+      desc: 'Per-view <b>tab titles</b> (countdown-aware), spoken view announcements for screen readers, and the iOS input-zoom fix.' },
+    { v: 'v1', name: 'Foundations',
+      desc: 'Tab-strip overflow fades + active-tab auto-centering, scroll reset on view switch, safe-area padding, and larger mobile tap targets.' }
+  ];
+  function wnBuild() {
+    if (wnOv) return;
+    wnOv = document.createElement('div');
+    wnOv.className = 'ep6-whats';
+    wnOv.id = 'ep6WhatsNew';
+    wnOv.setAttribute('role', 'dialog');
+    wnOv.setAttribute('aria-modal', 'true');
+    wnOv.setAttribute('aria-label', 'What is new in Motion');
+    var rows = '';
+    WN_CONTENT.forEach(function (c) {
+      rows += '<div class="ep6-wn-item"><div class="ep6-wn-row">' +
+        '<span class="ep6-wn-v">' + c.v + '</span><span class="ep6-wn-name">' + c.name + '</span></div>' +
+        '<div class="ep6-wn-desc">' + c.desc + '</div></div>';
+    });
+    wnOv.innerHTML =
+      '<div class="ep6-wn-card">' +
+        '<div class="ep6-wn-head">' +
+          '<span class="ep6-ic" aria-hidden="true">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-5 4 5 3-8 3 8 4-5 2 5v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>' +
+          '</span>' +
+          '<span class="ep6-wn-title">What&#39;s New in Motion</span>' +
+          '<button type="button" class="ep6-wn-x" aria-label="Close">×</button>' +
+        '</div>' +
+        '<div class="ep6-wn-body">' + rows + '</div>' +
+      '</div>';
+    document.body.appendChild(wnOv);
+    wnOv.querySelector('.ep6-wn-x').addEventListener('click', wnClose);
+    wnOv.addEventListener('mousedown', function (e) { if (e.target === wnOv) wnClose(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && wnOv.classList.contains('open')) {
+        e.preventDefault(); e.stopPropagation(); wnClose();
+      }
+    }, true);
+  }
+  function wnOpen() {
+    if (authOrSplashVisible()) return;
+    wnBuild();
+    wnLastFocus = document.activeElement;
+    wnOv.classList.add('open');
+    var x = wnOv.querySelector('.ep6-wn-x');
+    try { x.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function wnClose() {
+    if (!wnOv || !wnOv.classList.contains('open')) return;
+    wnOv.classList.remove('open');
+    try { if (wnLastFocus && wnLastFocus.focus) wnLastFocus.focus({ preventScroll: true }); } catch (e) {}
+  }
+  window.ep6OpenWhatsNew = wnOpen;
+
+})();
+</script>
+
+<style id="elevation-pass-v7">
+/* ════════════════════════════════════════════════════════════════
+   ELEVATION PASS v7 — "Ambient & Assured"
+   1. Timer HUD — a floating session pill, visible from any view
+      while a focus / stopwatch session runs (or sits paused)
+   2. Day-rollover refresh — proactive midnight re-render + toast
+   3. Backup freshness — export stamping + a gentle stale-backup card
+   4. Install UX — beforeinstallprompt capture + palette action
+   5. Copy Day Summary — one-tap clipboard digest of today
+   (The Global Search overlay and Auto theme from v6 were removed
+    at user request — see the note in the v6 block.)
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Timer HUD ── */
+#ep7Hud{
+  position:fixed;left:50%;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  z-index:9450;
+  display:flex;align-items:center;gap:3px;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:999px;
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.55),
+             0 0 0 1px var(--accent-glow3,transparent) inset;
+  padding:4px 5px 4px 4px;
+  font-family:var(--font-body);
+  opacity:0;visibility:hidden;
+  transform:translateX(-50%) translateY(14px) scale(.9);
+  transition:opacity .4s cubic-bezier(.16,1,.3,1),
+             transform .4s cubic-bezier(.16,1,.3,1),
+             visibility 0s linear .4s,
+             border-color .2s;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  -webkit-tap-highlight-color:transparent;
+}
+#ep7Hud.on{
+  opacity:1;visibility:visible;
+  transform:translateX(-50%) translateY(0) scale(1);
+  transition:opacity .4s cubic-bezier(.16,1,.3,1),
+             transform .4s cubic-bezier(.16,1,.3,1),
+             visibility 0s,
+             border-color .2s;
+}
+#ep7Hud:hover{border-color:var(--accent)}
+.ep7-hud-go{
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;
+  padding:8px 12px 8px 11px;border-radius:999px;
+  color:var(--text);font-family:var(--font-body);
+  transition:background .18s;
+  min-width:0;
+}
+.ep7-hud-go:hover{background:var(--bg3)}
+.ep7-hud-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent-glow2,var(--accent));
+  animation:ep7HudPulse 2.1s ease-in-out infinite;
+}
+#ep7Hud.paused .ep7-hud-dot{animation:none;background:var(--text3);box-shadow:none}
+@keyframes ep7HudPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.78)}}
+.ep7-hud-lbl{
+  font-size:.6rem;font-weight:800;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text3);flex-shrink:0;
+}
+#ep7Hud.paused .ep7-hud-lbl{color:var(--text2)}
+.ep7-hud-time{
+  font-family:var(--font-mono);font-weight:700;font-size:.86rem;
+  color:var(--text);font-variant-numeric:tabular-nums;flex-shrink:0;
+  min-width:44px;text-align:center;
+}
+.ep7-hud-bar{
+  width:46px;height:3px;border-radius:2px;overflow:hidden;
+  background:var(--bg3);flex-shrink:0;
+}
+#ep7Hud.sw .ep7-hud-bar{display:none}
+.ep7-hud-bar i{
+  display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent-glow2,var(--accent)));
+  border-radius:2px;
+  transition:width .6s linear;
+}
+#ep7Hud.paused .ep7-hud-bar i{transition:none}
+.ep7-hud-sep{width:1px;height:22px;background:var(--border2);flex-shrink:0;margin:0 2px}
+.ep7-hud-btn{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text2);cursor:pointer;
+  transition:transform .15s,background .18s,color .18s,border-color .18s;
+}
+.ep7-hud-btn:hover{color:var(--text);border-color:var(--accent)}
+.ep7-hud-btn:active{transform:scale(.92)}
+.ep7-hud-x{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;color:var(--text3);
+  transition:color .18s,background .18s;
+}
+.ep7-hud-x:hover{color:var(--text);background:var(--bg3)}
+
+/* ── 2. Backup nudge card ── */
+#ep7BkCard{
+  position:fixed;right:22px;bottom:76px;z-index:9700;
+  width:308px;max-width:calc(100vw - 32px);
+  display:none;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:15px;
+  box-shadow:var(--shadow),0 22px 60px -12px rgba(0,0,0,.55);
+  font-family:var(--font-body);color:var(--text2);
+  overflow:hidden;
+}
+#ep7BkCard.open{display:block;animation:ep7CardIn .38s cubic-bezier(.16,1,.3,1)}
+@keyframes ep7CardIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.ep7-bk-body{padding:14px 14px 13px;display:flex;gap:12px}
+.ep7-bk-ic{
+  width:38px;height:38px;flex-shrink:0;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-glow,rgba(99,102,241,.14));color:var(--accent);
+  border:1px solid var(--accent-glow2,var(--accent));
+}
+.ep7-bk-main{flex:1;min-width:0}
+.ep7-bk-title{font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:3px}
+.ep7-bk-sub{font-size:.72rem;line-height:1.45;color:var(--text3);font-weight:600;margin-bottom:10px}
+.ep7-bk-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ep7-bk-btn{
+  font-family:var(--font-body);font-size:.74rem;font-weight:700;
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  background:var(--accent);color:var(--btn-text,#08080a);border:none;
+  transition:transform .15s,filter .15s;
+}
+.ep7-bk-btn:hover{filter:brightness(1.08)}
+.ep7-bk-btn:active{transform:scale(.96)}
+.ep7-bk-btn.ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.ep7-bk-mute{
+  display:block;background:none;border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:.64rem;font-weight:700;
+  color:var(--text3);text-decoration:underline;padding:9px 0 0;
+}
+.ep7-bk-mute:hover{color:var(--text2)}
+.ep7-bk-x{
+  position:absolute;top:8px;right:8px;width:26px;height:26px;
+  border-radius:8px;border:none;cursor:pointer;
+  background:var(--bg3);color:var(--text3);font-size:.95rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.ep7-bk-x:hover{color:var(--text)}
+
+/* ── Responsive ── */
+@media (max-width:640px){
+  #ep7Hud{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  .ep7-hud-go{gap:7px;padding:7px 9px 7px 8px}
+  .ep7-hud-bar{display:none}
+  .ep7-hud-btn{width:34px;height:34px}
+  #ep7BkCard{right:12px;bottom:130px}
+}
+
+/* ── Print & reduced motion ── */
+@media print{
+  #ep7Hud,#ep7BkCard{display:none !important}
+}
+@media (prefers-reduced-motion:reduce){
+  #ep7Hud,#ep7Hud.on{transition:none}
+  #ep7BkCard.open{animation:none}
+  .ep7-hud-dot{animation:none !important}
+  .ep7-hud-bar i{transition:none}
+}
+</style>
+
+<script id="elevation-pass-v7-js">
+(function () {
+  'use strict';
+  if (window.__ep7Ambient) return;
+  window.__ep7Ambient = true;
+
+  /* ════════════════════════ helpers ════════════════════════ */
+  function toast(msg, icon, dur) {
+    try { if (typeof showToast === 'function') showToast(msg, icon || '✨', dur || 3200); } catch (e) {}
+  }
+  function lsG(k, f) {
+    try {
+      if (typeof lsGet === 'function') return lsGet(k, f);
+      var v = localStorage.getItem(k);
+      return v !== null ? JSON.parse(v) : f;
+    } catch (e) { return f; }
+  }
+  function lsS(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function authOrSplashVisible() {
+    var ids = ['auth-overlay', 'motion-splash-screen'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) {
+        var cs = getComputedStyle(el);
+        if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0') return true;
+      }
+    }
+    return false;
+  }
+  function overlayOpen() {
+    try {
+      return !!document.querySelector('.modal-overlay.open, .overlay.open, .ep4-cp.open, .ep6-whats.open');
+    } catch (e) { return false; }
+  }
+  function timerRunning() {
+    try {
+      if (typeof focusOn !== 'undefined' && focusOn) return true;
+      if (typeof swMode !== 'undefined' && swMode && typeof swRunning !== 'undefined' && swRunning) return true;
+    } catch (e) {}
+    return false;
+  }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function fmtT(s) {
+    s = Math.max(0, Math.floor(s));
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    var mm = String(m).padStart(2, '0'), ss = String(sec).padStart(2, '0');
+    return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     1. TIMER HUD — session pill visible from any view
+     ══════════════════════════════════════════════════════════ */
+  var hud = null, hudGo = null, hudLbl = null, hudTime = null, hudBarI = null, hudToggle = null;
+  var hudHiddenForSession = false;
+  var IC_PAUSE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+  var IC_PLAY = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.8v14.4c0 .9 1 1.5 1.8 1L20.5 13a1.2 1.2 0 0 0 0-2L8.8 3.8C8 3.3 7 3.9 7 4.8z"/></svg>';
+  var IC_RESET = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>';
+
+  function hudState() {
+    try {
+      if (typeof focusOn !== 'undefined' && focusOn) {
+        var rem = (typeof focusRem !== 'undefined') ? focusRem : 0;
+        if (typeof focusEndTime !== 'undefined' && focusEndTime) {
+          rem = Math.max(0, Math.round((focusEndTime - Date.now()) / 1000));
+        }
+        var dur = (typeof focusDur !== 'undefined') ? focusDur : 0;
+        return { mode: 'focus', running: true, t: rem, dur: dur };
+      }
+      if ((typeof swMode === 'undefined' || !swMode) &&
+          typeof focusRem !== 'undefined' && typeof focusDur !== 'undefined' &&
+          focusDur > 0 && focusRem > 0 && focusRem < focusDur) {
+        return { mode: 'focus', running: false, t: focusRem, dur: focusDur };
+      }
+      if (typeof swMode !== 'undefined' && swMode) {
+        if (typeof swRunning !== 'undefined' && swRunning) {
+          var el = (typeof swElapsed !== 'undefined' ? swElapsed : 0) +
+                   ((typeof swStarted !== 'undefined' && swStarted) ? Date.now() - swStarted : 0);
+          return { mode: 'sw', running: true, t: Math.floor(el / 1000) };
+        }
+        if (typeof swElapsed !== 'undefined' && swElapsed > 0) {
+          return { mode: 'sw', running: false, t: Math.floor(swElapsed / 1000) };
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function hudBuild() {
+    if (hud) return;
+    hud = document.createElement('div');
+    hud.id = 'ep7Hud';
+    hud.innerHTML =
+      '<button type="button" class="ep7-hud-go" aria-label="Open the timer view">' +
+        '<span class="ep7-hud-dot" aria-hidden="true"></span>' +
+        '<span class="ep7-hud-lbl">Focus</span>' +
+        '<span class="ep7-hud-time">00:00</span>' +
+        '<span class="ep7-hud-bar" aria-hidden="true"><i></i></span>' +
+      '</button>' +
+      '<span class="ep7-hud-sep" aria-hidden="true"></span>' +
+      '<button type="button" class="ep7-hud-btn ep7-hud-toggle" aria-label="Pause session"></button>' +
+      '<button type="button" class="ep7-hud-btn ep7-hud-reset" aria-label="Reset session">' + IC_RESET + '</button>' +
+      '<button type="button" class="ep7-hud-x" aria-label="Hide the timer pill for this session">×</button>';
+    document.body.appendChild(hud);
+    hudGo = hud.querySelector('.ep7-hud-go');
+    hudLbl = hud.querySelector('.ep7-hud-lbl');
+    hudTime = hud.querySelector('.ep7-hud-time');
+    hudBarI = hud.querySelector('.ep7-hud-bar i');
+    hudToggle = hud.querySelector('.ep7-hud-toggle');
+
+    hudGo.addEventListener('click', function () {
+      try { if (typeof setView === 'function') setView('focus', null); } catch (e) {}
+    });
+    hudToggle.addEventListener('click', function () {
+      try { if (typeof toggleFocus === 'function') { toggleFocus(); hudTick(); } } catch (e) {}
+    });
+    hud.querySelector('.ep7-hud-reset').addEventListener('click', function () {
+      try { if (typeof resetFocus === 'function') { resetFocus(); hudTick(); } } catch (e) {}
+    });
+    hud.querySelector('.ep7-hud-x').addEventListener('click', function () {
+      hudHiddenForSession = true;
+      hud.classList.remove('on');
+    });
+  }
+
+  function hudTick() {
+    var st = hudState();
+    if (!st) {
+      hudHiddenForSession = false;
+      if (hud) hud.classList.remove('on');
+      return;
+    }
+    if (hudHiddenForSession) return;
+    var cv = (typeof currentView !== 'undefined') ? currentView : '';
+    if (cv === 'focus' || authOrSplashVisible()) {
+      if (hud) hud.classList.remove('on');
+      return;
+    }
+    hudBuild();
+
+    var txt = fmtT(st.t);
+    if (hudTime.textContent !== txt) hudTime.textContent = txt;
+    var lbl = st.mode === 'sw' ? 'Stopwatch' : 'Focus';
+    if (hudLbl.textContent !== lbl) hudLbl.textContent = lbl;
+
+    hud.classList.toggle('paused', !st.running);
+    hud.classList.toggle('sw', st.mode === 'sw');
+    if (st.mode === 'focus' && st.dur > 0) {
+      var pct = Math.max(0, Math.min(100, Math.round((1 - st.t / st.dur) * 100)));
+      hudBarI.style.width = pct + '%';
+    } else {
+      hudBarI.style.width = '0%';
+    }
+
+    var wantIc = st.running ? IC_PAUSE : IC_PLAY;
+    if (hudToggle.getAttribute('data-ic') !== (st.running ? 'p' : 'r')) {
+      hudToggle.setAttribute('data-ic', st.running ? 'p' : 'r');
+      hudToggle.innerHTML = wantIc;
+      hudToggle.setAttribute('aria-label', st.running ? 'Pause session' : 'Resume session');
+    }
+    var aria = (st.mode === 'sw' ? 'Stopwatch' : 'Focus session') + ' — ' +
+      (st.mode === 'sw' ? fmtT(st.t) + ' elapsed' : (st.running ? fmtT(st.t) + ' remaining' : 'paused at ' + fmtT(st.t))) +
+      '. Open the timer view.';
+    if (hudGo.getAttribute('aria-label') !== aria) hudGo.setAttribute('aria-label', aria);
+
+    hud.classList.add('on');
+  }
+  setInterval(hudTick, 500);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) hudTick(); });
+
+  /* ══════════════════════════════════════════════════════════
+     2. DAY ROLLOVER — proactive midnight refresh
+     ══════════════════════════════════════════════════════════ */
+  var dayNow = todayStr();
+  var rollPending = false;
+  var RENDER_MAP = {
+    dashboard: ['renderDashboard'],
+    home: ['renderHome'],
+    blocks: ['renderBlocks'],
+    tasks: ['renderTasks', 'renderDailyTasks'],
+    focus: ['renderSessionLog'],
+    rules: ['renderRules'],
+    tracker: ['renderTracker'],
+    notes: ['renderThoughts'],
+    calendar: ['renderCalendar']
+  };
+  function refreshToday() {
+    var cv = (typeof currentView !== 'undefined') ? currentView : '';
+    var fns = RENDER_MAP[cv];
+    if (fns) {
+      for (var i = 0; i < fns.length; i++) {
+        try { if (typeof window[fns[i]] === 'function') window[fns[i]](); } catch (e) {}
+      }
+      if (cv === 'tasks') {
+        /* keep the date label honest, same as setView does */
+        try {
+          var el = document.getElementById('taskDateLabel');
+          if (el) el.textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+        } catch (e) {}
+      }
+    }
+  }
+  function rollCheck(manual) {
+    var t = todayStr();
+    var changed = t !== dayNow;
+    if (changed) dayNow = t;
+    if (!changed && !manual && !rollPending) return;
+    if (authOrSplashVisible()) { if (changed) rollPending = true; return; }
+    if (timerRunning() || overlayOpen()) { rollPending = true; return; }
+    rollPending = false;
+    refreshToday();
+    if (changed) toast('A new day started — today\u2019s views are refreshed', '🌅');
+    else if (manual) toast('Refreshed today\u2019s views', '🔄');
+  }
+  setInterval(function () { rollCheck(false); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) rollCheck(false); });
+  window.addEventListener('focus', function () { rollCheck(false); });
+  window.ep7RefreshToday = function () { rollCheck(true); };
+
+  /* ══════════════════════════════════════════════════════════
+     3. BACKUP FRESHNESS — stamp exports, nudge when stale
+     ══════════════════════════════════════════════════════════ */
+  var BK_KEY = 'ep7_last_backup', BK_NUDGE = 'ep7_bk_nudge_last', BK_OFF = 'ep7_bk_off';
+  var bkCard = null, bkTries = 0, bkAutoTimer = null;
+
+  (function wrapExport() {
+    if (typeof window.doExport !== 'function') return;
+    var orig = window.doExport;
+    window.doExport = function () {
+      var out;
+      try { out = orig.apply(this, arguments); }
+      finally { lsS(BK_KEY, String(Date.now())); }
+      return out;
+    };
+  })();
+
+  function userContentSize() {
+    var total = 0;
+    try {
+      var want = function (k) {
+        return k.indexOf('ft_blocks_v1_') === 0 || k === 'ft_global_tasks_v1' ||
+               k === 'ft_daily_tasks_permanent_v1' || k === 'ft_notebooks_v2' ||
+               k.indexOf('ft_nb_notes_v2_') === 0 || k === 'ft_journal_v1' || k === 'motion_office_v1';
+      };
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && want(k)) total += (localStorage.getItem(k) || '').length;
+      }
+    } catch (e) {}
+    return total;
+  }
+  function cloudCovered() {
+    try {
+      if (localStorage.getItem('ft_cloud_autosync') === 'true') return true;
+      var ls = localStorage.getItem('ft_cloud_lastsync');
+      if (ls && (Date.now() - new Date(ls).getTime()) < 10 * 24 * 3600 * 1000) return true;
+    } catch (e) {}
+    return false;
+  }
+  function bkDaysSince() {
+    var last = Number(localStorage.getItem(BK_KEY) || 0);
+    if (!last) return null;
+    return Math.floor((Date.now() - last) / 86400000);
+  }
+  function bkShouldNudge() {
+    try {
+      if (localStorage.getItem(BK_OFF)) return false;
+      if (cloudCovered()) return false;
+      if (userContentSize() < 4000) return false;
+      var d = bkDaysSince();
+      if (d !== null && d < 10) return false;
+      var nudged = Number(localStorage.getItem(BK_NUDGE) || 0);
+      if (nudged && (Date.now() - nudged) < 3 * 86400000) return false;
+      return true;
+    } catch (e) { return false; }
+  }
+  function bkHide(snooze, never) {
+    if (bkCard) bkCard.classList.remove('open');
+    if (bkAutoTimer) { clearTimeout(bkAutoTimer); bkAutoTimer = null; }
+    if (never) lsS(BK_OFF, '1');
+    else if (snooze) lsS(BK_NUDGE, String(Date.now()));
+  }
+  function bkShowCard() {
+    if (bkCard) { bkCard.classList.add('open'); return; }
+    var days = bkDaysSince();
+    var when = (days === null || days >= 3650) ? 'never' : days + ' day' + (days === 1 ? '' : 's');
+    bkCard = document.createElement('div');
+    bkCard.id = 'ep7BkCard';
+    bkCard.setAttribute('role', 'dialog');
+    bkCard.setAttribute('aria-label', 'Backup reminder');
+    bkCard.innerHTML =
+      '<button type="button" class="ep7-bk-x" aria-label="Dismiss reminder">×</button>' +
+      '<div class="ep7-bk-body">' +
+        '<div class="ep7-bk-ic" aria-hidden="true">' +
+          '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
+        '</div>' +
+        '<div class="ep7-bk-main">' +
+          '<div class="ep7-bk-title">Time for a backup?</div>' +
+          '<div class="ep7-bk-sub">Your last export was ' + when + '. Keep a copy of your tasks, blocks, notes and habits safe outside the browser.</div>' +
+          '<div class="ep7-bk-actions">' +
+            '<button type="button" class="ep7-bk-btn" id="ep7BkGo">Export now</button>' +
+            '<button type="button" class="ep7-bk-btn ghost" id="ep7BkLater">Later</button>' +
+          '</div>' +
+          '<button type="button" class="ep7-bk-mute" id="ep7BkNever">Don\u2019t remind me again</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(bkCard);
+    bkCard.querySelector('.ep7-bk-x').addEventListener('click', function () { bkHide(true, false); });
+    bkCard.querySelector('#ep7BkLater').addEventListener('click', function () { bkHide(true, false); });
+    bkCard.querySelector('#ep7BkNever').addEventListener('click', function () { bkHide(false, true); toast('Backup reminders off — you can still export from the palette anytime', '📴', 3600); });
+    bkCard.querySelector('#ep7BkGo').addEventListener('click', function () {
+      bkHide(false, false);
+      try { if (typeof window.doExport === 'function') window.doExport(); } catch (e) {}
+    });
+    bkCard.classList.add('open');
+    bkAutoTimer = setTimeout(function () { bkHide(true, false); }, 75000);
+  }
+  function bkTryShow() {
+    if (!bkShouldNudge()) return;
+    var wc = document.getElementById('ep6WellCard');
+    if ((wc && wc.classList.contains('open')) || overlayOpen()) {
+      if (bkTries++ < 6) setTimeout(bkTryShow, 60000);
+      return;
+    }
+    bkShowCard();
+  }
+  setTimeout(bkTryShow, 25000);
+  setInterval(function () {
+    if (!bkCard || !bkCard.classList.contains('open')) { bkTries = 0; bkTryShow(); }
+  }, 5 * 60000);
+
+  /* ══════════════════════════════════════════════════════════
+     4. INSTALL UX — beforeinstallprompt + palette action
+     ══════════════════════════════════════════════════════════ */
+  var insPrompt = null, insToastShown = false;
+  function standalone() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+             window.navigator.standalone === true ||
+             localStorage.getItem('ep7_installed') === '1';
+    } catch (e) { return false; }
+  }
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    insPrompt = e;
+    try { localStorage.removeItem('ep7_install_dismissed'); } catch (err) {}
+    setTimeout(function () {
+      if (!insPrompt || insToastShown) return;
+      if (standalone()) return;
+      try { if (localStorage.getItem('ep7_install_dismissed')) return; } catch (err) {}
+      if (authOrSplashVisible()) return;
+      insToastShown = true;
+      toast('Motion can be installed as an app — press Ctrl/\u2318 K and pick \u201CInstall Motion as an App\u201D', '📲', 5600);
+    }, 8000);
+  });
+  window.addEventListener('appinstalled', function () {
+    insPrompt = null;
+    lsS('ep7_installed', '1');
+    toast('Motion installed — launch it from your home screen or desktop', '🎉', 4200);
+  });
+  window.ep7Install = function () {
+    if (standalone()) { toast('Motion is already installed', '✓'); return; }
+    if (!insPrompt) {
+      toast('Install isn\u2019t available in this browser — use the browser menu: \u201CInstall app\u201D / \u201CAdd to Home Screen\u201D', 'ℹ️', 4600);
+      return;
+    }
+    var p = insPrompt; insPrompt = null;
+    try {
+      var pr = p.prompt();
+      if (pr && typeof pr.catch === 'function') {
+        /* prompt() can reject when invoked without a user gesture —
+           keep the event so a real click can retry */
+        pr.catch(function () { if (!insPrompt) insPrompt = p; });
+      }
+      if (p.userChoice && typeof p.userChoice.then === 'function') {
+        p.userChoice.then(function (c) {
+          if (c && c.outcome && c.outcome !== 'accepted') lsS('ep7_install_dismissed', '1');
+        }).catch(function () {});
+      }
+    } catch (e) { insPrompt = p; }
+  };
+
+  /* ══════════════════════════════════════════════════════════
+     5. COPY DAY SUMMARY — one-tap clipboard digest
+     ══════════════════════════════════════════════════════════ */
+  function copyText(text, cb) {
+    var done = false;
+    function ok() { if (!done) { done = true; cb(true); } }
+    function fail() { if (!done) { done = true; cb(false); } }
+    function legacy() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok2 = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok2) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok, function () { legacy(); });
+        return;
+      }
+    } catch (e) {}
+    legacy();
+  }
+  function fmtMins(m) {
+    if (!m) return '0m';
+    if (m < 60) return m + 'm';
+    var h = Math.floor(m / 60), r = m % 60;
+    return h + 'h' + (r ? ' ' + r + 'm' : '');
+  }
+  window.ep7CopyDaySummary = function () {
+    try {
+      var d = new Date();
+      var today = (typeof dateKey === 'function') ? dateKey(0) : todayStr();
+      var L = ['Motion — Day Summary · ' + d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }), ''];
+
+      var gt = lsG('ft_global_tasks_v1', []);
+      var dt = lsG('ft_daily_tasks_permanent_v1', []);
+      var cnt = function (a) { var n = 0; for (var i = 0; i < a.length; i++) if (a[i] && a[i].done) n++; return n; };
+      var tAll = gt.length + dt.length, tDone = cnt(gt) + cnt(dt);
+      L.push('\u2705 Tasks: ' + tDone + '/' + tAll + ' done' + (tAll ? ' (' + Math.round(tDone / tAll * 100) + '%)' : ''));
+
+      var bl = lsG('ft_blocks_v1_' + today, []);
+      L.push(bl.length ? '\uD83E\uDDF1 Time blocks: ' + cnt(bl) + '/' + bl.length + ' done' : '\uD83E\uDDF1 Time blocks: none planned');
+
+      var fm = 0, stk = 0;
+      if (typeof homeGetFocusMinutesToday === 'function') { try { fm = homeGetFocusMinutesToday() || 0; } catch (e) {} }
+      if (typeof homeGetFocusStreak === 'function') { try { stk = homeGetFocusStreak() || 0; } catch (e) {} }
+      L.push('\u23F1 Focus: ' + fmtMins(fm) + (stk ? ' \u00B7 ' + stk + '-day streak' : ''));
+
+      var hab = (typeof loadHabits === 'function') ? loadHabits() : [];
+      if (hab.length) {
+        var hlog = (typeof loadHabitLog === 'function') ? loadHabitLog() : {};
+        var e0 = hlog[today] || {};
+        var hDone = 0;
+        for (var i = 0; i < hab.length; i++) if (hab[i] && e0[hab[i].id]) hDone++;
+        L.push('\uD83C\uDF31 Habits: ' + hDone + '/' + hab.length + ' done');
+      }
+
+      var water = (typeof dbWaterLoad === 'function') ? (dbWaterLoad() || 0) : 0;
+      L.push('\uD83D\uDCA7 Water: ' + water + ' cup' + (water === 1 ? '' : 's'));
+
+      L.push('', '— via Motion');
+      var text = L.join('\n');
+      copyText(text, function (ok) {
+        if (ok) toast('Day summary copied to the clipboard', '\uD83D\uDCCB');
+        else {
+          toast('Couldn\u2019t reach the clipboard — the summary is in the console instead', '\u26A0\uFE0F', 4200);
+          try { console.log(text); } catch (e) {}
+        }
+      });
+    } catch (e) { toast('Couldn\u2019t build the day summary', '\u26A0\uFE0F'); }
+  };
 
 })();
 </script>
