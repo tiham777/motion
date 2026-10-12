@@ -21898,7 +21898,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           </div>
           <div class="habit-add-row">
             <input class="habit-emoji-inp" id="habitEmoji" type="text" placeholder="◆" maxlength="4" value=""/>
-            <input class="habit-name-inp" id="habitName" type="text" placeholder="New habit (e.g. Namaz, Gym, Read 30min…)" maxlength="40" onkeydown="if(event.key==='Enter')addHabit()"/>
+            <input class="habit-name-inp" id="habitName" type="text" placeholder="New habit (e.g. Meditation, Gym, Read 30min…)" maxlength="40" onkeydown="if(event.key==='Enter')addHabit()"/>
             <button class="habit-add-btn" onclick="addHabit()">+ Add Habit</button>
           </div>
           <div class="habit-table-wrap">
@@ -29355,10 +29355,10 @@ let habitWeekOffset = 0;
 const K_JOURNAL = 'ft_journal_v1';
 
 const DEFAULT_HABITS = [
-  {id:'namaz',   emoji:'☽', name:'Namaz (5 prayers)'},
+  {id:'meditate', emoji:'☾', name:'Meditation'},
   {id:'study',   emoji:'◈', name:'Skill Development'},
   {id:'gym',     emoji:'⬡', name:'Gym / Exercise'},
-  {id:'read',    emoji:'▣', name:'Reading'},
+  {id:'read',    emoji:'▣', name:'Reading book'},
   {id:'sleep',   emoji:'◐', name:'Sleep before midnight'},
 ];
 
@@ -29468,7 +29468,7 @@ function renderHabits(){
     tbody.innerHTML=habits.map(h=>{
       const streak=getHabitStreak(h.id);
       const HABIT_ICONS={
-        'namaz': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/><path d="M12 22V12"/><path d="M7 10c0-2.2 2.2-4 5-4s5 1.8 5 4"/><path d="M5 22l2-6h10l2 6"/></svg>`,
+        'meditate': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>`,
         'study': `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
         'gym':   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16"/><path d="M3 8h4M17 8h4"/><path d="M3 16h4M17 16h4"/><path d="M7 12h10"/></svg>`,
         'read':  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
