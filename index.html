@@ -26631,7 +26631,11 @@ function toggleSidebar(){
 }
 
 /* ═══ VIEW SWITCHING ═══ */
-function setView(v,sideEl){
+// opts.silent = true → re-render data ONLY: do not restart the .view-enter
+// page-entrance animation. Used by fbRefreshUI() after cloud data is applied,
+// where replaying the entrance made the visible page "flash / reload again".
+function setView(v,sideEl,opts){
+  const _silent = !!(opts && opts.silent);
   // Close any open overlays / trash panel when switching views. Without this,
   // the trash overlay (z-index 99999) or a stale modal-overlay stays on top
   // of the new view and blocks pointer events.
@@ -26654,7 +26658,11 @@ function setView(v,sideEl){
     const el=document.getElementById('view-'+n);
     if(!el)return;
     if(n===v){
-      el.style.display=n==='focus'||n==='notes'||n==='calendar'||n==='assistant'||n==='office'?'flex':'block';
+      // Silent re-render: don't touch display if it's already correct —
+      // rewriting style.display can re-trigger observers that replay view
+      // entrance fades (alive-view-enter / finishTouchFade).
+      const _wantDisp=n==='focus'||n==='notes'||n==='calendar'||n==='assistant'||n==='office'?'flex':'block';
+      if(!_silent || el.style.display!==_wantDisp) el.style.display=_wantDisp;
       el.classList.remove('anim-paused');
       // Premium re-trigger: use viewEnter animation on every switch.
       // NOTE: We deliberately do NOT remove the .view-enter class after the
@@ -26668,19 +26676,25 @@ function setView(v,sideEl){
       // eliminates the spurious second animation. Subsequent setView() calls
       // remove the class before re-adding it, which is enough to retrigger
       // the animation cleanly.
-      el.classList.remove('view-enter');
-      requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('view-enter')));
-      // Clear will-change after the view-enter animation ends to prevent
-      // blurry text from lingering GPU compositing layers. Guard: only
-      // apply if this view is STILL the current view (user may have
-      // switched away during the delay). 700ms aligns with the .6s
-      // view-enter duration set in the pc-perf-motion style block.
-      if(el._vwTimer) clearTimeout(el._vwTimer);
-      el._vwTimer = setTimeout(function(){
-        if(currentView === v){
-          el.style.willChange = 'auto';
-        }
-      }, 700);
+      // Quiet re-render (opts.silent): keep .view-enter as-is so the
+      // page-entrance animation does NOT restart — a restart here is what
+      // made the screen flash / the dashboard appear to reload when cloud
+      // data was applied after load. Normal switches still re-trigger.
+      if(!_silent){
+        el.classList.remove('view-enter');
+        requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('view-enter')));
+        // Clear will-change after the view-enter animation ends to prevent
+        // blurry text from lingering GPU compositing layers. Guard: only
+        // apply if this view is STILL the current view (user may have
+        // switched away during the delay). 700ms aligns with the .6s
+        // view-enter duration set in the pc-perf-motion style block.
+        if(el._vwTimer) clearTimeout(el._vwTimer);
+        el._vwTimer = setTimeout(function(){
+          if(currentView === v){
+            el.style.willChange = 'auto';
+          }
+        }, 700);
+      }
     } else {
       el.style.display='none';
       el.classList.remove('view-enter');
@@ -26749,6 +26763,29 @@ function setView(v,sideEl){
   if(v==='tools'){toolsAnimateIn=true;renderTools();}
   if(v==='office')renderOffice();
   if(v==='assistant')initAssistant();
+  // ── Silent re-render (opts.silent): data was refreshed (e.g. cloud sync
+  // applied after load). The render functions above rebuilt the DOM, which
+  // re-starts every card's entrance animation (.db-reveal stagger up to
+  // 1.6s, .task-item slideUp, …) — that cascade is what made the dashboard
+  // look like it "reloaded again". Flush style so those animations exist,
+  // then jump them to their END state (fill:both/forwards keeps it), so
+  // content is painted in place with zero replay. Infinite loops (clock
+  // pulses, spinners) are left running.
+  if(_silent){
+    const _se=document.getElementById('view-'+v);
+    if(_se){
+      void _se.offsetHeight; // force style/layout flush → animations created
+      if(typeof _se.getAnimations === 'function'){
+        _se.getAnimations({subtree:true}).forEach(a=>{
+          try{
+            const tm=a.effect ? a.effect.getTiming() : null;
+            if(tm && tm.iterationCount === Infinity) return;
+            a.finish();
+          }catch(e){}
+        });
+      }
+    }
+  }
   // Exit focus landscape mode when navigating away from the focus view
   if(v!=='focus'){
     const fv=document.getElementById('view-focus');
@@ -52064,7 +52101,10 @@ function fbRefreshUI(){
     // AI assistant is the active view — re-init with skipDirtyMark to avoid echo push
     if(typeof initAssistant === 'function') initAssistant(true);
   } else if(typeof setView === 'function' && typeof currentView !== 'undefined'){
-    setView(currentView, null);
+    // opts.silent → re-render data only, WITHOUT replaying the page/card
+    // entrance animations. Replaying them here is what made the screen
+    // flash / the dashboard look like it reloaded after cloud data arrived.
+    setView(currentView, null, {silent:true});
   }
   
   // ALWAYS refresh AI assistant sidebar/conversation rendering if the view exists in DOM
