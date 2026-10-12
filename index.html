@@ -54,8 +54,14 @@ window.__TIMER_FONTS=_TIMER_FONTS;
 </script>
 <style id="motion-splash">
 /* ═══════════════════════════════════════════════════════════
-   PREMIUM LOADING SPLASH v20 — CLEAN & MINIMAL
-   Removed: circle, nebula, vignette, glow — stars only
+   PREMIUM LOADING SPLASH v21 — WHATSAPP-STYLE BRAND LOADER
+   The "Motion" word is on screen from the very first frame;
+   an accent line underneath fills 0→100% (~2s) like WhatsApp
+   Web's app loader, on a plain themed background — no
+   particles, no shockwave rings (removed in v21). Silk
+   fade-out reveals the app. Base states = final states so
+   the brand stays visible even when animations are disabled
+   (reduced-motion / "animations off" setting).
    ═══════════════════════════════════════════════════════════ */
 body>:not(#motion-splash-screen){visibility:hidden}
 /* CRITICAL FIX (C2.1): if JS is disabled, the splash would hide the app
@@ -81,82 +87,94 @@ body>:not(#motion-splash-screen){visibility:hidden}
      opacity fade. */
   filter:blur(4px);
 }
-#motion-splash-canvas{
-  position:absolute;inset:0;width:100%;height:100%;
-  pointer-events:none;
-  contain:strict;
-  will-change:contents;
-  image-rendering:auto;
-}
-/* ── Brand name ── */
+/* ── Canvas starfield — REMOVED (v21) ──
+   The particle field + arrival shockwave rings are gone; the
+   splash is now a clean WhatsApp-style brand loader only. */
+/* ── Brand name — on screen from the very first frame ──
+   (WhatsApp-style loading: no delayed reveal. Base state =
+   final state so the word stays visible even when animations
+   are disabled; the entrance animation uses `both` fill so
+   it still plays from opacity 0 on load.) */
 #motion-splash-name{
   position:relative;z-index:2;
   margin-top:0px;
   font-family:'Outfit',sans-serif;font-size:36px;font-weight:800;
   letter-spacing:16px;text-transform:uppercase;
   color:transparent;
-  opacity:0;
+  opacity:1;
   will-change:transform,opacity,filter;
   -webkit-background-clip:text;background-clip:text;
   background-image:linear-gradient(180deg,#ffffff 0%,var(--accent,#f0c042) 100%);
-  /* Premium: slightly stronger drop-shadow so the name "floats" with
-     a soft halo above the tagline. Was .25 alpha — bumped to .32 with
-     a wider blur radius for a more luminous feel. */
+  /* Premium: soft halo so the name floats over the starfield
+     from frame one. */
   filter:drop-shadow(0 0 24px rgba(240,192,66,.32));
-}
-#motion-splash-name.visible{
-  animation:splashNameV20 .28s cubic-bezier(.16,1,.3,1) forwards;
-}@keyframes splashNameV20{
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
+}@keyframes splashNameIn{
   0%{opacity:0;transform:scale(1.02);letter-spacing:17px}
   100%{opacity:1;transform:scale(1);letter-spacing:16px}
 }
-/* ── Tagline ── */
+/* ── Loading line — fills 0→100% like WhatsApp Web ── */
+#motion-splash-bar{
+  position:relative;z-index:2;
+  width:240px;height:3px;border-radius:99px;
+  background:var(--border,#1c1c26);
+  /* -16px: "Motion" has 16px trailing letter-spacing, so the word's
+     optical center sits 8px left of the box center. This margin puts
+     the line's center on the same optical axis as the word. */
+  margin-top:22px;margin-left:-16px;overflow:hidden;
+  opacity:1;
+  will-change:transform,opacity;
+  /* Subtle accent-tinted glow under the line. */
+  box-shadow:0 0 12px rgba(240,192,66,.08);
+  animation:splashBarIn .5s cubic-bezier(.16,1,.3,1) .26s both;
+}
+/* The fill itself — GPU-friendly scaleX from the left edge,
+   silk deceleration, ~2s. Base transform = full so the line
+   reads as "loaded" if animations are disabled. */
+#motion-splash-bar::after{
+  content:'';display:block;height:100%;width:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent,#f0c042) 0%,var(--accent2,#fcdc8c) 100%);
+  transform:scaleX(1);transform-origin:left center;
+  box-shadow:0 0 10px var(--accent,#f0c042);
+  will-change:transform;
+  animation:splashFill 2s cubic-bezier(.22,1,.36,1) .32s both;
+}
+/* One soft light sweep across the line while it fills. */
+#motion-splash-bar::before{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:38%;
+  border-radius:99px;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.4) 50%,transparent 100%);
+  transform:translateX(-160%);
+  will-change:transform;
+  animation:splashSheen 2.1s cubic-bezier(.4,0,.2,1) .34s both;
+}
+@keyframes splashBarIn{
+  from{opacity:0}
+  to{opacity:1}
+}@keyframes splashFill{
+  from{transform:scaleX(0)}
+  to{transform:scaleX(1)}
+}@keyframes splashSheen{
+  from{transform:translateX(-160%)}
+  to{transform:translateX(420%)}
+}
+/* ── Tagline — settles in under the loading line ── */
 #motion-splash-tagline{
   position:relative;z-index:2;
-  margin-top:10px;
+  margin-top:16px;
+  /* -10px: same optical-centering correction as the line above —
+     6px trailing letter-spacing minus the shared 8px offset. */
+  margin-left:-10px;
   font-family:'Outfit',sans-serif;font-size:11px;font-weight:400;
   letter-spacing:6px;text-transform:uppercase;
   color:var(--text2,#8a87a6);
-  opacity:0;
-  /* Premium: soft letter-spacing animation paired with the fade-in.
-     The tagline drifts in from slightly tighter tracking to its
-     final 6px spacing — reads as a gentle "settling into place". */
+  /* Base = final so the caption survives with animations off. */
+  opacity:.5;
   will-change:opacity,transform,letter-spacing;
-}
-#motion-splash-tagline.visible{
-  animation:splashTagIn20 .4s cubic-bezier(.16,1,.3,1) .08s forwards;
-}@keyframes splashTagIn20{
+  animation:splashTagIn .45s cubic-bezier(.16,1,.3,1) .55s both;
+}@keyframes splashTagIn{
   0%{opacity:0;transform:translateY(4px);letter-spacing:5px}
   100%{opacity:.5;transform:translateY(0);letter-spacing:6px}
-}
-/* ── Progress bar — thin, elegant shimmer ── */
-#motion-splash-bar{
-  width:260px;height:4px;border-radius:99px;
-  background:var(--border,#1c1c26);
-  margin-top:42px;margin-left:-12px;overflow:hidden;
-  opacity:0;
-  will-change:transform,opacity;
-  /* Premium: subtle accent-tinted glow under the bar that pulses
-     softly while the shimmer travels — adds depth without flash. */
-  box-shadow:0 0 12px rgba(240,192,66,.08);
-}
-#motion-splash-bar.visible{
-  animation:splashBarIn .6s cubic-bezier(.16,1,.3,1) forwards;
-}
-#motion-splash-bar.visible::after{
-  content:'';display:block;width:35%;height:100%;border-radius:99px;
-  background:linear-gradient(90deg,transparent 0%,var(--accent,#f0c042) 50%,transparent 100%);
-  animation:splashShimmer 1.8s cubic-bezier(.4,0,.2,1) infinite;
-  will-change:transform;
-  /* Premium: soft glow follows the shimmer head — reads as light
-     traveling along the bar instead of a flat color wipe. */
-  filter:drop-shadow(0 0 4px rgba(240,192,66,.4));
-}@keyframes splashShimmer{
-  0%{transform:translateX(-120%)}
-  100%{transform:translateX(300%)}
-}@keyframes splashBarIn{
-  from{opacity:0;transform:scaleX(.3)}
-  to{opacity:1;transform:scaleX(1)}
 }
 
 /* ── Splash content wrapper ──
@@ -196,6 +214,11 @@ body>:not(#motion-splash-screen){visibility:visible!important}
      a PDF. Preloading it cost ~350KB on every visit for a feature most sessions
      never touch, and Chrome logged a "preloaded but not used" warning. -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<!-- PERF (v21): Outfit is served as a single variable woff2 covering every
+     weight the app and the splash brand word use. Preloading it closes the
+     stylesheet→font discover gap, so first text paint (the "Motion" splash
+     word, the whole UI) uses the real font instead of swapping mid-load. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2">
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -402,14 +425,9 @@ window.addEventListener('unhandledrejection', function(e){
   -webkit-backface-visibility:hidden;
 }
 
-/* ── 11. Canvas splash screen compositing ──
-   The splash canvas draws 100 particles per frame. Promote it
-   so the browser doesn't need to composite it with the DOM
-   on every animation frame. */
-#motion-splash-canvas{
-  will-change:contents;
-  contain:layout style paint;
-}
+/* ── 11. Canvas splash screen compositing — REMOVED (v21) ──
+   The splash canvas (100 particles/frame) no longer exists;
+   the loader is pure CSS now. */
 
 /* ── Butter-smooth scrolling & render optimizations ── */
 html{scroll-behavior:smooth}
@@ -5250,6 +5268,41 @@ select.form-input option{background:var(--bg2);color:var(--text);padding:8px 12p
   animation:viewIn 1.15s cubic-bezier(.16,1,.3,1);
 }
 .view-enter{animation:viewEnter .7s cubic-bezier(.16,1,.3,1) both}
+/* ── v21 unified view entrance + splash handoff ──
+   The base #view-* rules below (viewIn / finishTouchFade) have ID
+   specificity, so they silently beat the plain .view-enter rule — the
+   class that setView maintains did nothing on almost every view, and the
+   landing view (never toggled by setView) stayed static behind the
+   splash. This enumerated (1,1,0) list makes .view-enter authoritative
+   for all views: one signature entrance everywhere, and adding the class
+   at splash dismissal (with the inline animation restart in dismissSplash)
+   replays it as the curtain lifts. NORMAL declaration on purpose — the
+   reduced-motion .001s override and the anims-off universal kill are
+   !important and must still win. */
+#view-home.view-enter,#view-blocks.view-enter,#view-tasks.view-enter,
+#view-focus.view-enter,#view-dashboard.view-enter,#view-rules.view-enter,
+#view-tracker.view-enter,#view-notes.view-enter,#view-calendar.view-enter,
+#view-sound.view-enter,#view-settings.view-enter,#view-aihub.view-enter,
+#view-assistant.view-enter,#view-tools.view-enter,#view-office.view-enter{
+  /* .4s matches the tuned nav snappiness of the later "View switches:
+     1.15s/0.85s → 0.4s" pass (which also pins duration !important) —
+     declared here too so this rule stands on its own. */
+  animation:viewEnter .4s var(--prem-silk) both;
+}
+/* The .4s !important view-switch pass further below outranks the original
+   reduced-motion block's .view-enter entry by specificity, silently
+   restoring real motion for reduced-motion users. Re-state the override
+   at (1,1,0)+important — later position doesn't even matter, specificity
+   settles it — so prefers-reduced-motion wins for every view again. */
+@media (prefers-reduced-motion:reduce){
+  #view-home.view-enter,#view-blocks.view-enter,#view-tasks.view-enter,
+  #view-focus.view-enter,#view-dashboard.view-enter,#view-rules.view-enter,
+  #view-tracker.view-enter,#view-notes.view-enter,#view-calendar.view-enter,
+  #view-sound.view-enter,#view-settings.view-enter,#view-aihub.view-enter,
+  #view-assistant.view-enter,#view-tools.view-enter,#view-office.view-enter{
+    animation-duration:.001s !important;
+  }
+}
 /* Performance: pause animations on hidden views */
 .anim-paused,.anim-paused *{animation-play-state:paused!important}@keyframes slideUp{
   from{opacity:0;transform:translateY(26px) scale(.99)}
@@ -6033,8 +6086,14 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]) #overlay .close-bt
 
 /* ── Premium: View switch transition ── */
 #view-blocks-progress{animation:premiumReveal .6s cubic-bezier(.16,1,.3,1) both}
-#view-blocks-cal.visible{}
-#view-blocks-month.visible{animation:premiumReveal .5s cubic-bezier(.16,1,.3,1) both}
+/* v21: Week/Day and Month sub-pages open with a SIZE animation (grow-in
+   from .88), not a plain show. paired with the sync hide-flush in
+   setBlocksView (which replaced the animation:none + double-rAF
+   re-trigger that painted the sub-page at FULL size for a frame before
+   snapping back to the from-state), the first painted frame after the
+   click is already this from-state: size already changed on click. */
+#view-blocks-cal.visible{animation:premiumScaleIn .5s cubic-bezier(.16,1,.3,1) both}
+#view-blocks-month.visible{animation:premiumScaleIn .5s cubic-bezier(.16,1,.3,1) both}
 
 /* ── Premium: Block cards enhanced hover ── */
 .block-card{animation:premiumCardIn .7s cubic-bezier(.16,1,.3,1) both}
@@ -6062,7 +6121,7 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]) #overlay .close-bt
   .block-card,.da-pva-bar,.da-heatmap-cell,.da-rank-fill,.da-rank-row,.da-alloc-seg,
   .bcal-event,.bcal-cols.week-mode .bcal-day-col,.bcal-cols.day-mode .bcal-day-col,
   #view-blocks-month .cal-day,.bcal-now-dot,.bcal-now-line,#calDetail.open,
-  #motion-splash-canvas,#motion-splash-bar,#motion-splash-bar::after,
+  #motion-splash-bar,#motion-splash-bar::after,#motion-splash-bar::before,
   #motion-splash-name,#motion-splash-tagline,
   #motion-splash-screen::before,#motion-splash-screen::after,
   #theme-transition-overlay{
@@ -12158,6 +12217,10 @@ html[data-theme="aot"] .fn-balance-value.savings{color:#d4af37}
 .tool-card:hover .tool-icon{transform:scale(1.06) rotate(-4deg);background:var(--accent-glow2,rgba(99,102,241,.22));color:var(--accent)}
 .tool-icon svg{width:21px;height:21px}
 .tool-name{font-family:var(--font-head);font-size:.92rem;font-weight:700;color:var(--text);letter-spacing:-.005em}
+/* Long tool names step down a size so every title reads at a similar
+   visual weight (classes assigned by name length in renderTools). */
+.tool-name.tool-name-sm{font-size:.84rem}
+.tool-name.tool-name-xs{font-size:.77rem}
 .tool-desc{font-size:.73rem;color:var(--text3);line-height:1.45}
 /* Empty state */
 .tool-empty{grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--text3);display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -20833,317 +20896,15 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   </div>
 </div>
 
-<!-- PREMIUM LOADING SPLASH v20 — CLEAN & MINIMAL -->
+<!-- PREMIUM LOADING SPLASH v21 — WHATSAPP-STYLE BRAND LOADER -->
 <div id="motion-splash-screen">
-  <canvas id="motion-splash-canvas"></canvas>
   <div id="motion-splash-content">
     <div id="motion-splash-name">Motion</div>
-    <div id="motion-splash-tagline">Own your time</div>
     <div id="motion-splash-bar"></div>
+    <div id="motion-splash-tagline">Own your time</div>
   </div>
 </div>
-<script id="motion-splash-js">
-(function(){
-var canvas=document.getElementById('motion-splash-canvas');
-if(!canvas)return;
-var ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
-var W,H,cx,cy,dpr;
-var lastTheme='';
-
-var resizeTimer=0;
-function resize(){
-  dpr=Math.min(window.devicePixelRatio||1,2);
-  W=window.innerWidth;H=window.innerHeight;
-  canvas.width=W*dpr;canvas.height=H*dpr;
-  canvas.style.width=W+'px';canvas.style.height=H+'px';
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  cx=W/2;cy=H/2;
-  /* v15: scale fov with viewport width so the phone splash shows the
-     same star density as PC. PC reference is 1920px wide with fov=400.
-     On a phone at ~412px, fov scales down proportionally so the same
-     proportion of stars fall within the visible viewport. This makes
-     the phone splash canvas look like a uniformly scaled-down version
-     of the PC canvas — matching the user's request that the phone
-     opening animation look "exact same as PC, just sized for phone". */
-  fov = 400 * (W / 1920);
-  if(fov < 80) fov = 80;   /* clamp to a sane minimum */
-  if(fov > 400) fov = 400; /* clamp to PC value (no expansion on bigger screens) */
-}
-resize();
-/* HIGH FIX (H5.1): wrap the resize handler in a named function so it
-   can be removed once the splash is dismissed. The previous anonymous
-   listener leaked permanently, keeping the IIFE closure (canvas, typed
-   arrays sX/sY/sZ/sB/sSz/sC, cs color cache) alive for the entire session. */
-function onResize(){clearTimeout(resizeTimer);resizeTimer=setTimeout(resize,80);}
-window.addEventListener('resize',onResize);
-
-/* THEME COLORS */
-var TC={
-  /* a=accent, a2=accent2(lighter), s=star streak, g=glow/shockwave, c=star center dots, L=light mode */
-  classic:    {a:[240,192,66],  a2:[255,225,130], s:[255,235,160], g:[240,192,66],  c:[255,255,255], L:0},
-  deep:       {a:[79,128,240],  a2:[140,180,255], s:[170,200,255], g:[100,150,255], c:[220,235,255], L:0},
-  light:      {a:[79,70,229],   a2:[99,102,241],  s:[129,140,248], g:[79,70,229],   c:[24,24,27],    L:1},
-  turquoise:  {a:[24,212,188],  a2:[120,240,220], s:[150,245,230], g:[40,220,195],  c:[210,252,245], L:0},
-  matcha:     {a:[78,194,96],   a2:[140,220,155], s:[170,235,180], g:[90,200,108],  c:[220,250,225], L:0},
-  dark:       {a:[200,200,200], a2:[255,255,255], s:[255,255,255], g:[180,180,180], c:[255,255,255], L:0},
-  'pure-light':{a:[194,102,45], a2:[230,145,85],  s:[210,130,70],  g:[194,102,45],  c:[26,20,16],    L:1},
-  bleach:     {a:[186,178,242], a2:[225,218,255], s:[210,200,255], g:[196,188,250], c:[235,230,255], L:0},
-  aot:        {a:[62,150,128],  a2:[110,195,170], s:[140,210,185], g:[75,160,135],  c:[232,220,200], L:0}
-};
-
-/* Timing — fast & clean */
-var T_THRUST=80,T_WARP=300,T_TUNNEL=900,T_DECEL=1500,T_ARRIVE=2200;
-var T_NAME=2600,T_TAG=2600,T_BAR=3000; /* v12: T_TAG synced to T_NAME — tagline appears WITH name */
-
-function clamp(v,a,b){return v<a?a:v>b?b:v}
-var PI2=Math.PI*2;
-
-/* Cached color strings — pre-built to avoid per-frame string concat */
-var cs={gS:'',gRgb:'',a2S:'',a2Rgb:'',sS:'',sRgb:'',cS:'',cRgb:'',isLight:false};
-function rebuildCS(tc){
-  cs.gS=tc.g[0]+','+tc.g[1]+','+tc.g[2];
-  cs.gRgb='rgb('+cs.gS+')';
-  cs.a2S=tc.a2[0]+','+tc.a2[1]+','+tc.a2[2];
-  cs.a2Rgb='rgb('+cs.a2S+')';
-  cs.sS=tc.s[0]+','+tc.s[1]+','+tc.s[2];
-  cs.sRgb='rgb('+cs.sS+')';
-  cs.cS=tc.c[0]+','+tc.c[1]+','+tc.c[2];
-  cs.cRgb='rgb('+cs.cS+')';
-  cs.isLight=!!tc.L;
-}
-
-/* ── Only stars are needed for the clean animation ── */
-/* Stars - adaptive count. 100 on normal hardware (full quality);
-   fewer on weak machines (<=4 cores or <=4GB device memory) so the
-   splash stays smooth. Density is already viewport-scaled in resize(). */
-var SC=((navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4))?60:100;
-var sX=new Float32Array(SC),sY=new Float32Array(SC);
-var sZ=new Float32Array(SC),sB=new Float32Array(SC);
-var sSz=new Float32Array(SC),sC=new Uint8Array(SC);
-function _initStars(){
-  for(var i=0;i<SC;i++){
-    sX[i]=(Math.random()-.5)*2000;sY[i]=(Math.random()-.5)*2000;
-    sZ[i]=Math.random()*2000+100;sB[i]=.2+Math.random()*.8;
-    sSz[i]=.5+Math.random()*1.6;var r=Math.random();
-    sC[i]=r<.55?0:r<.8?1:2;
-  }
-}
-_initStars();
-
-var fov=400,maxWH=0;
-var startTime=null,nameShown=false,tagShown=false,barShown=false,animDone=false;
-
-/* PERF (prefers-reduced-motion): if the OS asks for reduced motion,
-   skip the canvas starfield entirely (CSS alone can't stop a rAF loop)
-   and reveal the brand immediately. No quality impact for everyone
-   else — the full animation still plays when not reduced. */
-if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-  animDone=true;nameShown=true;tagShown=true;barShown=true;
-  var _ne=document.getElementById('motion-splash-name');if(_ne)_ne.classList.add('visible');
-  var _te=document.getElementById('motion-splash-tagline');if(_te)_te.classList.add('visible');
-  var _be=document.getElementById('motion-splash-bar');if(_be)_be.classList.add('visible');
-}
-
-/* Pre-cached star stroke style array — rebuilt only on theme change */
-var starStrokeStyles=[];
-function rebuildStarStyles(){
-  starStrokeStyles=[cs.sRgb,cs.a2Rgb,cs.cRgb];
-}
-rebuildStarStyles();
-var _origRebuildCS=rebuildCS;
-rebuildCS=function(tc){_origRebuildCS(tc);rebuildStarStyles();};
-
-/* ── Offscreen renderers removed — clean animation uses stars only ── */
-
-
-
-/* Easing helpers */
-function easeOut3(t){return 1-Math.pow(1-t,3)}
-function easeInOut3(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
-
-/* Pre-computed half-dims for edge distance */
-var hW=0,hH=0;
-
-/* MAIN DRAW LOOP v20 — Clean & minimal: glow + stars + one shockwave */
-function draw(ts){
-  if(animDone)return;
-  if(!startTime)startTime=ts;
-  var el=ts-startTime;
-
-  var theme=document.documentElement.getAttribute('data-theme')||'classic';
-  if(theme!==lastTheme){lastTheme=theme;rebuildCS(TC[theme]||TC.classic);}
-
-  /* Warp speed curve - smoother */
-  var ws=0;
-  if(el<T_THRUST){ws=easeOut3(el/T_THRUST)*3;}
-  else if(el<T_WARP){var t2=(el-T_THRUST)/(T_WARP-T_THRUST);ws=3+t2*t2*t2*15;}
-  else if(el<T_TUNNEL){var t3=(el-T_WARP)/(T_TUNNEL-T_WARP);ws=18+t3*t3*t3*10;}
-  else if(el<T_DECEL){ws=28+(.5+.5*Math.sin(el*.003))*4;}
-  else if(el<T_ARRIVE){ws=30*(1-easeInOut3((el-T_DECEL)/(T_ARRIVE-T_DECEL)));}
-
-  /* Early exit: after arrival + fade, skip all rendering */
-  var postArrive=el>T_ARRIVE+800;
-  if(postArrive&&ws<.01){
-    /* Only brand reveal left */
-    if(!nameShown){nameShown=true;var ne=document.getElementById('motion-splash-name');if(ne)ne.classList.add('visible');}
-    if(!tagShown){tagShown=true;var te=document.getElementById('motion-splash-tagline');if(te)te.classList.add('visible');}
-    if(!barShown){barShown=true;var be=document.getElementById('motion-splash-bar');if(be)be.classList.add('visible');}
-    var splashEl=document.getElementById('motion-splash-screen');
-    if(!splashEl||splashEl.classList.contains('fade-out')){
-      /* HIGH FIX (H5.1): remove the resize listener so the splash's closure
-         (canvas, typed arrays, cs color cache) can be GC'd after dismissal.
-         Previously this listener leaked permanently for the entire session. */
-      try{window.removeEventListener('resize',onResize);}catch(e){}
-      if(resizeTimer){clearTimeout(resizeTimer);resizeTimer=0;}
-      animDone=true;return;
-    }
-    requestAnimationFrame(draw);return;
-  }
-
-  ctx.clearRect(0,0,W,H);
-  hW=W*.5;hH=H*.5;cx=hW;cy=hH;maxWH=W>H?W:H;
-
-  /* L0 & L1: Nebula and center glow removed for cleaner look */
-
-  /* L2: Star field — clean streaks + dots */
-  var sFI=easeOut3(clamp(el/200,0,1));
-  var sFO=el>T_ARRIVE?1-easeOut3(clamp((el-T_ARRIVE)/600,0,1)):1;
-  var sM=sFI*sFO;
-  if(sM>.003){
-    for(var i=0;i<SC;i++){
-      sZ[i]-=ws*(.5+sB[i]*.5);
-      if(sZ[i]<1){sZ[i]=2000+Math.random()*500;sX[i]=(Math.random()-.5)*2000;sY[i]=(Math.random()-.5)*2000;}
-    }
-    ctx.lineCap='round';
-    if(ws>1){
-      for(var ci=0;ci<3;ci++){
-        ctx.strokeStyle=starStrokeStyles[ci];ctx.beginPath();
-        var anyDrawn=false;
-        for(var i=0;i<SC;i++){
-          if(sC[i]!==ci||sZ[i]<=1)continue;
-          var sc2=fov/sZ[i],px=cx+sX[i]*sc2,py=cy+sY[i]*sc2;
-          if(px<-60||px>W+60||py<-60||py>H+60)continue;
-          var sa=sB[i]*sM;
-          var ed=px<hW?px:W-px;if(ed>(py<hH?py:H-py))ed=py<hH?py:H-py;
-          if(ed<80)sa*=ed/80;if(sa<.01)continue;
-          var sLen=ws*sB[i]*1.2;if(sLen<2)continue;
-          var pz=sZ[i]+ws*(.5+sB[i]*.5);if(pz<=1)continue;
-          var ps=fov/pz,ppx=cx+sX[i]*ps,ppy=cy+sY[i]*ps;
-          ctx.globalAlpha=sa*.8;ctx.lineWidth=sSz[i]*sc2<.5?.5:sSz[i]*sc2;
-          ctx.moveTo(ppx,ppy);ctx.lineTo(px,py);anyDrawn=true;
-        }
-        if(anyDrawn)ctx.stroke();
-      }
-    }
-    /* Star dots — single batched fill */
-    ctx.fillStyle=cs.cRgb;ctx.beginPath();
-    var anyDrawn=false;
-    for(var i=0;i<SC;i++){
-      if(sZ[i]<=1)continue;
-      var sc2=fov/sZ[i],px=cx+sX[i]*sc2,py=cy+sY[i]*sc2;
-      if(px<-60||px>W+60||py<-60||py>H+60)continue;
-      var sa=sB[i]*sM;
-      var ed=px<hW?px:W-px;if(ed>(py<hH?py:H-py))ed=py<hH?py:H-py;
-      if(ed<80)sa*=ed/80;
-      var sLen=ws*sB[i]*1.2;
-      if(sLen>=2){
-        if(sa>.15){ctx.globalAlpha=sa;var cr=sSz[i]*sc2*1.2;if(cr<.8)cr=.8;ctx.moveTo(px+cr,py);ctx.arc(px,py,cr,0,PI2);anyDrawn=true;}
-      }else{
-        if(sa<.01)continue;
-        var dr=sSz[i]*sc2*.6;if(dr<.3)dr=.3;
-        ctx.globalAlpha=sa*.5;ctx.moveTo(px+dr,py);ctx.arc(px,py,dr,0,PI2);
-        anyDrawn=true;
-      }
-    }
-    if(anyDrawn)ctx.fill();
-    ctx.globalAlpha=1;ctx.lineCap='butt';
-  }
-
-  /* L3: Arrival — soft flash + premium layered shockwave */
-  if(el>T_ARRIVE){
-    var flT=clamp((el-T_ARRIVE)/400,0,1);
-    var flA=0;
-    var flPeak=cs.isLight?.35:.2;
-    if(flT<.06)flA=flT/.06*flPeak;
-    else{flA=flPeak-easeOut3((flT-.06)/.94)*flPeak;}
-    if(flA>.003){
-      ctx.globalAlpha=cs.isLight?flA*.15:flA*.08;ctx.fillStyle=cs.gRgb;ctx.fillRect(0,0,W,H);
-    }
-    /* ── Primary ring: glow bloom + sharp stroke ── */
-    var swT=clamp((el-T_ARRIVE-60)/900,0,1);
-    if(swT>0){
-      var swE=easeOut3(swT),swR=swE*maxWH*.34;
-      var swFade=(1-swT);var swA=swFade*swFade*(cs.isLight?.35:.26);
-      if(swA>.003){
-        /* Layer 1: Soft outer glow bloom */
-        ctx.globalAlpha=swA*.35;ctx.strokeStyle=cs.gRgb;
-        ctx.lineWidth=12+(1-swT)*18;
-        ctx.beginPath();ctx.arc(cx,cy,swR,0,PI2);ctx.stroke();
-        /* Layer 2: Medium glow halo */
-        ctx.globalAlpha=swA*.55;ctx.strokeStyle=cs.a2Rgb;
-        ctx.lineWidth=5+(1-swT)*6;
-        ctx.beginPath();ctx.arc(cx,cy,swR,0,PI2);ctx.stroke();
-        /* Layer 3: Sharp bright core ring */
-        ctx.globalAlpha=swA;ctx.strokeStyle=cs.gRgb;
-        ctx.lineWidth=cs.isLight?2.2+(1-swT)*1.5:1.5+(1-swT)*1.5;
-        ctx.beginPath();ctx.arc(cx,cy,swR,0,PI2);ctx.stroke();
-      }
-    }
-    /* ── Echo ring: thinner, delayed, faster ── */
-    var eT=clamp((el-T_ARRIVE-160)/650,0,1);
-    if(eT>0){
-      var eE=easeOut3(eT),eR=eE*maxWH*.26;
-      var eFade=(1-eT);var eA=eFade*eFade*eFade*(cs.isLight?.18:.12);
-      if(eA>.003){
-        /* Soft glow */
-        ctx.globalAlpha=eA*.4;ctx.strokeStyle=cs.a2Rgb;
-        ctx.lineWidth=6+(1-eT)*8;
-        ctx.beginPath();ctx.arc(cx,cy,eR,0,PI2);ctx.stroke();
-        /* Sharp echo */
-        ctx.globalAlpha=eA;ctx.strokeStyle=cs.a2Rgb;
-        ctx.lineWidth=1+(1-eT)*1;
-        ctx.beginPath();ctx.arc(cx,cy,eR,0,PI2);ctx.stroke();
-      }
-    }
-    /* ── Center bloom: brief radial glow at origin ── */
-    var cbT=clamp((el-T_ARRIVE)/300,0,1);
-    if(cbT<.5){
-      var cbA=cbT<.15?(cbT/.15)*.25:(.25-easeOut3((cbT-.15)/.35)*.25);
-      if(cbA>.005){
-        var cbR=Math.min(W,H)*.08;
-        var cbGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,cbR);
-        cbGrad.addColorStop(0,'rgba('+cs.gS+','+cbA+')');
-        cbGrad.addColorStop(.5,'rgba('+cs.gS+','+(cbA*.3)+')');
-        cbGrad.addColorStop(1,'rgba('+cs.gS+',0)');
-        ctx.globalAlpha=1;ctx.fillStyle=cbGrad;
-        ctx.beginPath();ctx.arc(cx,cy,cbR,0,PI2);ctx.fill();
-      }
-    }
-    ctx.globalAlpha=1;
-  }
-
-  /* L4: Vignette removed for cleaner look */
-  ctx.globalAlpha=1;
-
-  /* Brand reveal */
-  if(el>T_NAME&&!nameShown){nameShown=true;var ne=document.getElementById('motion-splash-name');if(ne)ne.classList.add('visible');}
-  if(el>T_TAG&&!tagShown){tagShown=true;var te=document.getElementById('motion-splash-tagline');if(te)te.classList.add('visible');}
-  if(el>(T_BAR-200)&&!barShown){barShown=true;var be=document.getElementById('motion-splash-bar');if(be)be.classList.add('visible');}
-
-  var splashEl=document.getElementById('motion-splash-screen');
-  if(splashEl&&!splashEl.classList.contains('fade-out'))requestAnimationFrame(draw);
-  else{
-    /* HIGH FIX (H5.1): remove the resize listener so the splash's closure
-       (canvas, typed arrays, cs color cache) can be GC'd after dismissal.
-       Previously this listener leaked permanently for the entire session. */
-    try{window.removeEventListener('resize',onResize);}catch(e){}
-    if(resizeTimer){clearTimeout(resizeTimer);resizeTimer=0;}
-    animDone=true;
-  }
-}
-requestAnimationFrame(draw);
-})();
-</script><!-- SIDEBAR -->
+<!-- SIDEBAR -->
 <div class="sidebar">
   <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
@@ -24952,7 +24713,7 @@ function renderRules(){
           ${hits.length===0?`<div style="padding:8px 6px;font-size:13px;color:var(--text3)">No entries yet — add one below</div>`:''}
           ${hits.map(ei=>{const e=cat.entries[ei];return `
             <div class="rule-entry">
-              <span class="rule-entry-num">${ei+1}.</span>
+              <span class="rule-entry-num">${ei+1}</span>
               <div class="rule-entry-text">${ruleHl(String(e),q)}</div>
               <button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>
             </div>`;}).join('')}
@@ -25018,7 +24779,7 @@ function addEntry(ci){
     const ei=rules[ci].entries.length-1;
     const div=document.createElement('div');
     div.className='rule-entry';
-    div.innerHTML=`<span class="rule-entry-num">${ei+1}.</span><div class="rule-entry-text">${esc(text)}</div><button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>`;
+    div.innerHTML=`<span class="rule-entry-num">${ei+1}</span><div class="rule-entry-text">${esc(text)}</div><button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>`;
     // NOTE: no direct addEventListener here — a document-level delegated handler
     // at .rule-entry-del already routes clicks to delEntry. Adding a direct
     // listener would cause delEntry to fire twice per click and delete two
@@ -25048,7 +24809,7 @@ function delEntry(ci,ei){
     /* Re-number remaining AND fix data-ei indices on delete buttons */
     list.querySelectorAll('.rule-entry').forEach((row,i)=>{
       const numEl=row.querySelector('.rule-entry-num');
-      if(numEl)numEl.textContent=(i+1)+'.';
+      if(numEl)numEl.textContent=(i+1);
       const delBtn=row.querySelector('.rule-entry-del');
       if(delBtn){
         delBtn.dataset.ci=ci;
@@ -32842,6 +32603,14 @@ const TOOLS_LIST=[
   {id:'mindmap',cat:'Thinking',name:'Mindmap',desc:'Visualize plans, roadmaps, ideas & thoughts',icon:'<circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="9.5" y1="9.5" x2="6.5" y2="6.5"/><line x1="14.5" y1="9.5" x2="17.5" y2="6.5"/><line x1="9.5" y1="14.5" x2="6.5" y2="17.5"/><line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/>'},
 ];
 
+/* The longer a tool's name, the smaller it renders — a 25-char name
+   shouldn't dwarf "Mindmap" beside it (user request). Tiers are
+   mirrored by .tool-name-sm / .tool-name-xs in the stylesheet. */
+function toolNameCls(name){
+  var n=(name||'').length;
+  return n>=25?' tool-name-xs':(n>=19?' tool-name-sm':'');
+}
+
 function renderTools(){
   const page=document.getElementById('toolsPage');
   if(!page)return;
@@ -32882,7 +32651,7 @@ function renderTools(){
       _cardIdx++;
       html+='<div class="tool-card'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation-delay:'+_delay2+'ms;position:relative"':' style="position:relative"')+' data-external="1" onclick="window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\')}">'+
         '<div class="tool-icon"><span style="font-family:var(--font-head);font-weight:800;font-size:1.05rem">'+esc(initial)+'</span></div>'+
-        '<div class="tool-name">'+esc(t.name)+'</div>'+
+        '<div class="tool-name'+toolNameCls(t.name)+'">'+esc(t.name)+'</div>'+
         '<div class="tool-desc">'+esc(host)+'</div>'+
         '<button class="trk-icon-btn custom-tool-del" onclick="event.stopPropagation();customToolDelete(\''+t.id+'\')" title="Delete" aria-label="Delete link" style="position:absolute;top:8px;right:8px;opacity:0;transition:opacity .25s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'+
       '</div>';
@@ -32902,7 +32671,7 @@ function renderTools(){
         _cardIdx++;
         html+='<div class="tool-card'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation-delay:'+_delay+'ms"':'')+' onclick="toolOpen(\''+t.id+'\')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toolOpen(\''+t.id+'\')}">'+
           '<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+t.icon+'</svg></div>'+
-          '<div class="tool-name">'+esc(t.name)+'</div>'+
+          '<div class="tool-name'+toolNameCls(t.name)+'">'+esc(t.name)+'</div>'+
           '<div class="tool-desc">'+esc(t.desc)+'</div>'+
         '</div>';
       });
@@ -37519,45 +37288,61 @@ function secretThemeToggle(){
  setTheme(themes[(i+1)%themes.length]);
 }
 
-function setTheme(t, origin){
+function setTheme(t, origin, silent){
   const html=document.documentElement;
   // ── Premium circular-reveal transition ──
   // Capture the OLD theme's bg color BEFORE changing, then reveal the new
   // theme by shrinking a circular clip-path overlay from the click point.
-  const oldBg=getComputedStyle(html).getPropertyValue('--bg').trim() || '#0b0b0b';
-  // Reveal origin (defaults to center of viewport)
-  let rx=50, ry=50;
-  if(origin && typeof origin.x==='number' && typeof origin.y==='number'){
-    rx=(origin.x/window.innerWidth)*100;
-    ry=(origin.y/window.innerHeight)*100;
-  } else if(window._lastThemeOrigin){
-    rx=(window._lastThemeOrigin.x/window.innerWidth)*100;
-    ry=(window._lastThemeOrigin.y/window.innerHeight)*100;
+  // PERF (v21): the boot call passes silent=true — nothing has painted yet
+  // (the splash covers the screen), so the overlay, its forced style reads
+  // and its 650ms cleanup timer are pure waste. User-initiated switches
+  // keep the full reveal.
+  let revealOverlay=null;
+  if(!silent){
+    const oldBg=getComputedStyle(html).getPropertyValue('--bg').trim() || '#0b0b0b';
+    // Reveal origin (defaults to center of viewport)
+    let rx=50, ry=50;
+    if(origin && typeof origin.x==='number' && typeof origin.y==='number'){
+      rx=(origin.x/window.innerWidth)*100;
+      ry=(origin.y/window.innerHeight)*100;
+    } else if(window._lastThemeOrigin){
+      rx=(window._lastThemeOrigin.x/window.innerWidth)*100;
+      ry=(window._lastThemeOrigin.y/window.innerHeight)*100;
+    }
+    revealOverlay=document.createElement('div');
+    revealOverlay.id='theme-reveal-overlay';
+    revealOverlay.style.background=oldBg;
+    revealOverlay.style.setProperty('--reveal-x',rx+'%');
+    revealOverlay.style.setProperty('--reveal-y',ry+'%');
+    // Start fully covering (so the old bg is visible)
+    revealOverlay.style.clipPath='circle(150% at '+rx+'% '+ry+'%)';
+    revealOverlay.style.webkitClipPath='circle(150% at '+rx+'% '+ry+'%)';
+    document.body.appendChild(revealOverlay);
   }
-  const revealOverlay=document.createElement('div');
-  revealOverlay.id='theme-reveal-overlay';
-  revealOverlay.style.background=oldBg;
-  revealOverlay.style.setProperty('--reveal-x',rx+'%');
-  revealOverlay.style.setProperty('--reveal-y',ry+'%');
-  // Start fully covering (so the old bg is visible)
-  revealOverlay.style.clipPath='circle(150% at '+rx+'% '+ry+'%)';
-  revealOverlay.style.webkitClipPath='circle(150% at '+rx+'% '+ry+'%)';
-  document.body.appendChild(revealOverlay);
-  // Instantly swap the theme underneath the overlay
-  if(t==='classic') html.removeAttribute('data-theme');
-  else html.setAttribute('data-theme',t);
-  lsSetRaw('ft_theme',t); if(typeof fbMarkDirty==='function')fbMarkDirty(); /* lsSetRaw survives quota; fbMarkDirty kept explicit to preserve "always mark dirty" behavior */
+  // Instantly swap the theme underneath the overlay.
+  // PERF: skip redundant writes — setAttribute fires mutation records (and
+  // the theme/glow observers) even when the value is identical, and
+  // lsSetRaw would churn storage on every call with an unchanged value.
+  if(t==='classic'){
+    if(html.hasAttribute('data-theme')) html.removeAttribute('data-theme');
+  } else if(html.getAttribute('data-theme')!==t){
+    html.setAttribute('data-theme',t);
+  }
+  try{ if((localStorage.getItem('ft_theme')||'dark')!==t) lsSetRaw('ft_theme',t); }catch(e){ lsSetRaw('ft_theme',t); }
+  if(typeof fbMarkDirty==='function')fbMarkDirty(); /* lsSetRaw survives quota; fbMarkDirty kept explicit to preserve "always mark dirty" behavior */
   // Sync the theme <select> in Settings
   const sel=document.getElementById('set-theme-sel');
   if(sel && sel.value!==t){ sel.value=t; }
-  // Trigger the circular reveal on the next frame
-  requestAnimationFrame(function(){
-    revealOverlay.classList.add('is-revealing');
-  });
-  // Clean up after the transition
-  setTimeout(function(){
-    if(revealOverlay && revealOverlay.parentNode) revealOverlay.parentNode.removeChild(revealOverlay);
-  },650);
+  if(revealOverlay){
+    // Trigger the circular reveal on the next frame
+    requestAnimationFrame(function(){
+      revealOverlay.classList.add('is-revealing');
+    });
+    // Clean up after the transition
+    setTimeout(function(){
+      if(revealOverlay && revealOverlay.parentNode) revealOverlay.parentNode.removeChild(revealOverlay);
+    },650);
+  }
   // Update ring gradient after a microtask so CSS vars have settled
   requestAnimationFrame(()=>{
     const stop1=getComputedStyle(html).getPropertyValue('--ring-stop1').trim();
@@ -37578,7 +37363,7 @@ function setTheme(t, origin){
 }
 (function(){
   const saved=(function(){var s=localStorage.getItem('ft_theme')||'dark';if(s==='pure-light'){localStorage.setItem('ft_theme','light');return 'light';}return s;})();
-  setTheme(saved);
+  setTheme(saved, null, /* silent boot */ true);
 })();
 
 /* ════════════════════════════════════════════════════════════════
@@ -40684,6 +40469,15 @@ function setBlocksView(mode) {
   navEl.style.display = 'none';
   monthNavEl.style.display = 'none';
   if (dayClockEl) dayClockEl.style.display = 'none';
+  // v21: flush the hide synchronously BEFORE showing the target. When the
+  // engine recomputes with every sub-page hidden, re-showing one creates
+  // its entrance animation fresh from t=0 — so the first painted frame is
+  // already the from-state (size already changed at click). This replaces
+  // the old `style.animation='none'` + double-rAF re-trigger, which left
+  // the animation DISABLED for 1-2 frames while the sub-page was visible:
+  // it flashed at full size first, then snapped back and animated in.
+  // Also rAF-free, so it behaves the same in background tabs.
+  void listEl.offsetWidth;
 
   // Manage content layout for cal/month views.
   // NOTE: `blocks-list-active` is applied to BOTH the Today (list) view AND
@@ -40707,17 +40501,14 @@ function setBlocksView(mode) {
     if (dayClockEl) dayClockEl.style.display = 'flex';
   } else if (mode === 'month') {
     monthEl.classList.add('visible');
-    // Re-trigger entrance animation (use rAF instead of forced reflow)
-    monthEl.style.animation = 'none';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ monthEl.style.animation = ''; }));
+    // Entrance restarts automatically: the sync flush above destroyed the
+    // old instance while hidden, so .visible recreates it from t=0.
     monthNavEl.style.display = 'flex';
     renderCalendar();
   } else if (mode === 'progress') {
     daRange = 'today';
     progressEl.style.display = 'flex';
-    // Re-trigger entrance animation (use rAF instead of forced reflow)
-    progressEl.style.animation = 'none';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ progressEl.style.animation = ''; }));
+    // Same restart logic as month — no rAF re-trigger needed.
     renderProgressPanel();
   } else {
     calEl.classList.add('visible');
@@ -50748,6 +50539,33 @@ function initApiKeyList(){
     if(splashEl){
       // Fade out splash overlay — app content is behind it and becomes visible
       splashEl.classList.add('fade-out');
+      // PREMIUM HANDOFF (v21): the initial .view-enter cascade played out
+      // behind the splash (it runs at boot). Re-trigger it as the curtain
+      // lifts so the first view glides up exactly while the splash fades —
+      // same remove + double-rAF pattern setView() uses on view switches
+      // (proven non-flickering; see the setView note at ~26610).
+      try{
+        var _cv = (typeof currentView === 'string') ? currentView : '';
+        var _ve = _cv ? document.getElementById('view-' + _cv) : null;
+        if(_ve){
+          /* Mirror setView's active-view state (boot never calls setView). */
+          _ve.classList.remove('anim-paused');
+          _ve.classList.add('view-enter');
+          /* Deterministic entrance restart — deliberately rAF-free: this
+             dismiss is timer-driven, so it can land while the tab is
+             backgrounded, where rAF callbacks are deferred (observed in
+             testing) and the cascade would silently never start. Inline
+             animation:none → reflow → clear destroys the boot-time base
+             instance synchronously; the cascade then resolves to the
+             v21 #view-*.view-enter rule and viewEnter .85s starts fresh
+             as the splash curtain lifts. No cleanup needed: view-enter
+             is only ever removed inside setView's same-task display
+             toggle (suppressed while hidden → no restart flash). */
+          _ve.style.animation = 'none';
+          void _ve.offsetHeight;
+          _ve.style.animation = '';
+        }
+      }catch(_e){}
       // Make all app content visible (splash CSS hides it while loading)
       var appEls = document.querySelectorAll('body > *');
       for(var i=0;i<appEls.length;i++){
@@ -50764,14 +50582,13 @@ function initApiKeyList(){
     }
   }
   // Dismiss when DOM is ready + a minimum branded display time.
-  // PERF: 7500ms → 4400ms — the intro animation (name/tagline at 2600ms,
-  // progress bar at 3000ms + shimmer) has fully played by ~3.6s, so the
-  // extra 3.1s was pure dead wait. 4400ms + 1.15s fade keeps the full
-  // branded moment while cutting time-to-app by ~3 seconds.
+  // v21: WhatsApp-style loading — the brand word + filling line
+  // play from the first frame; the line completes at ~2.3s, so the
+  // splash lifts at 2600ms (+ ~0.85s silk fade) for a ~3.4s intro.
   var ready = false;
   var minTime = Date.now();
   function tryDismiss(){
-    if(ready && Date.now() - minTime > 4400){
+    if(ready && Date.now() - minTime > 2600){
       dismissSplash();
     }
   }
@@ -50784,7 +50601,7 @@ function initApiKeyList(){
   // Also try dismiss on load (fonts, etc.)
   window.addEventListener('load', function(){ ready = true; tryDismiss(); });
   // Fallback: dismiss after max time no matter what
-  setTimeout(function(){ ready = true; tryDismiss(); }, 6000);
+  setTimeout(function(){ ready = true; tryDismiss(); }, 4200);
   // Check periodically if ready — handle is cleared in dismissSplash() so this
   // doesn't fire every 100ms for the entire session as a no-op after dismiss.
   pollId = setInterval(function(){ if(ready) tryDismiss(); }, 100);
@@ -53502,28 +53319,10 @@ window.addEventListener('pagehide', function(){
     }
   }
 
-  /* ── 3. Pause splash canvas when tab is hidden ──
-     The splash code at line ~11973 already short-circuits on
-     `splashEl.classList.contains('fade-out')` and on `animDone`. But
-     if the user opens the app in a background tab, the rAF loop keeps
-     running (browsers throttle rAF to ~1Hz in background, but it still
-     fires). Setting the canvas's `hidden` attribute when the tab is
-     hidden gives the browser an explicit signal to skip compositing. */
-  var splashCanvas = document.getElementById('motion-splash-canvas');
-  if(splashCanvas){
-    document.addEventListener('visibilitychange', function(){
-      if(document.hidden){
-        splashCanvas.style.visibility = 'hidden';
-      } else {
-        /* Only restore if the splash is still showing — once it's
-           faded out, the canvas is removed entirely, so this is a no-op. */
-        var splash = document.getElementById('motion-splash-screen');
-        if(splash && !splash.classList.contains('fade-out')){
-          splashCanvas.style.visibility = '';
-        }
-      }
-    }, { passive:true });
-  }
+  /* ── 3. Pause splash canvas when tab is hidden — REMOVED (v21) ──
+      The splash canvas (starfield + shockwave rings) was removed in
+      v21; there is no rAF loop left to pause, so this whole block is
+      gone. Kept as a note to preserve section numbering. */
 
   /* ── 4. Yield to pending input during long tasks (where supported) ──
      navigator.scheduling.isInputPending() is a Chromium-only API that
@@ -59577,13 +59376,12 @@ html[data-theme="aot"] #view-blocks-cal .bcal-now-dot{
   box-shadow:0 0 0 1.5px var(--bg),
              0 0 0 2.5px rgba(255,82,82,.25),
              0 0 10px rgba(62,150,128,.35) !important;
-}@keyframes bcalWeekViewIn{
-  from{opacity:0;transform:translateY(2px)}
-  to  {opacity:1;transform:translateY(0)}
 }
-html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-blocks-cal.visible{
-  animation:bcalWeekViewIn .18s ease-out both;
-}@media (prefers-reduced-motion:reduce){
+/* v21: the old bcalWeekViewIn .18s micro-bounce (dark themes only) is
+   replaced by the unified sub-page size entrance —
+   #view-blocks-cal.visible{premiumScaleIn .5s} in the "Premium: View
+   switch transition" block — so every theme gets the same grow-in. */
+@media (prefers-reduced-motion:reduce){
   html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-blocks-cal.visible{
     animation:none !important;
   }
@@ -64248,7 +64046,7 @@ html[data-theme="pure-light"] #motion-splash-name{
 
 html[data-theme="light"] #motion-splash-name.visible,
 html[data-theme="pure-light"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 
 html[data-theme="light"] #motion-splash-tagline,
@@ -64256,7 +64054,7 @@ html[data-theme="pure-light"] #motion-splash-tagline{color:var(--text2,#52525b)}
 
 html[data-theme="light"] #motion-splash-tagline.visible,
 html[data-theme="pure-light"] #motion-splash-tagline.visible{
-  animation:splashTagIn20 .25s cubic-bezier(.16,1,.3,1) .04s forwards;
+  animation:splashTagIn .45s cubic-bezier(.16,1,.3,1) .55s both;
 }
 
 html[data-theme="light"] #motion-splash-bar,
@@ -68380,7 +68178,7 @@ html[data-theme="deep"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(91,142,255,.25));
 }
 html[data-theme="deep"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="deep"] #motion-splash-tagline{color:var(--text2,#9aa5cc)}
 html[data-theme="deep"] #motion-splash-bar{background:var(--border,#262d45)}
@@ -68392,7 +68190,7 @@ html[data-theme="turquoise"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(30,192,168,.25));
 }
 html[data-theme="turquoise"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="turquoise"] #motion-splash-tagline{color:var(--text2,#8ec5c0)}
 html[data-theme="turquoise"] #motion-splash-bar{background:var(--border,#1f3833)}
@@ -68404,7 +68202,7 @@ html[data-theme="matcha"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(95,185,100,.25));
 }
 html[data-theme="matcha"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="matcha"] #motion-splash-tagline{color:var(--text2,#8fc097)}
 html[data-theme="matcha"] #motion-splash-bar{background:var(--border,#244029)}
@@ -68416,7 +68214,7 @@ html[data-theme="dark"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(255,255,255,.12));
 }
 html[data-theme="dark"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="dark"] #motion-splash-tagline{color:var(--text2,#a3a3a3)}
 html[data-theme="dark"] #motion-splash-bar{background:var(--border,#2e2e2e)}
@@ -68428,7 +68226,7 @@ html[data-theme="bleach"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(196,184,255,.25));
 }
 html[data-theme="bleach"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="bleach"] #motion-splash-tagline{color:var(--text2,#9890c4)}
 html[data-theme="bleach"] #motion-splash-bar{background:var(--border,#2a2a3f)}
@@ -68440,7 +68238,7 @@ html[data-theme="aot"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(78,168,144,.28));
 }
 html[data-theme="aot"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="aot"] #motion-splash-tagline{color:var(--text2,#a8957e)}
 html[data-theme="aot"] #motion-splash-bar{background:var(--border,#322a1f)}
@@ -81579,7 +81377,7 @@ html[data-theme="deep"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(255,255,255,.12));
 }
 html[data-theme="deep"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="deep"] #motion-splash-tagline{color:var(--text2,#a3a3a3)}
 html[data-theme="deep"] #motion-splash-bar{background:var(--border,#2e2e2e)}
@@ -82907,7 +82705,7 @@ html[data-theme="turquoise"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(255,255,255,.12));
 }
 html[data-theme="turquoise"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="turquoise"] #motion-splash-tagline{color:var(--text2,#a3a3a3)}
 html[data-theme="turquoise"] #motion-splash-bar{background:var(--border,#2e2e2e)}
@@ -84235,7 +84033,7 @@ html[data-theme="bleach"] #motion-splash-name{
   filter:drop-shadow(0 0 20px rgba(255,255,255,.12));
 }
 html[data-theme="bleach"] #motion-splash-name.visible{
-  animation:splashNameV20 .2s cubic-bezier(.16,1,.3,1) forwards;
+  animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 html[data-theme="bleach"] #motion-splash-tagline{color:var(--text2,#a3a3a3)}
 html[data-theme="bleach"] #motion-splash-bar{background:var(--border,#2e2e2e)}
@@ -90969,6 +90767,74 @@ html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) 
   color:var(--accent2) !important;
   border-radius:3px;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   POLISH PASS — card + sub-card definition (visual tweak request)
+   Keeps the flat single-accent rules above; adds structure only:
+   rounder contained card with restrained depth, the count as a pill
+   on the title line, and each rule as a bordered sub-card with a
+   tinted number chip and a quiet hover lift. Same selectors as the
+   sheet, declared later (tie-break) with !important → every theme.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Card — rounder corners, clipped children, one soft depth layer */
+html[data-theme] #view-rules .rules-list .rule-accordion,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion{
+  border-radius:14px !important;
+  overflow:hidden !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.16),0 14px 30px -18px rgba(0,0,0,.55) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion:hover{
+  box-shadow:0 2px 4px rgba(0,0,0,.18),0 18px 36px -18px rgba(0,0,0,.6) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion.open,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-accordion.open{
+  box-shadow:0 2px 4px rgba(0,0,0,.18),0 24px 48px -22px rgba(0,0,0,.65) !important;
+}
+
+/* Header — title only: the rule-count label ("5 rules") beside the
+   name is hidden per user request. The JS still patches its text
+   harmlessly (element stays in the DOM, just not rendered). */
+html[data-theme] #view-rules .rules-list .rule-acc-count,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-acc-count{
+  display:none !important;
+}
+
+/* Sub-cards — hairline border, softer radius, quiet hover lift */
+html[data-theme] #view-rules .rules-list .rule-entry,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry{
+  border-radius:10px !important;
+  border:1px solid color-mix(in srgb,var(--border) 75%,transparent) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.10) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry:hover,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry:hover{
+  background:var(--surface) !important;
+  border-color:var(--accent-glow5) !important;
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.45) !important;
+  transform:translateY(-1px) !important;
+}
+
+/* Number chip — mirrors the header badge language */
+html[data-theme] #view-rules .rules-list .rule-entry-num,
+html:not([data-theme="light"]):not([data-theme="pure-light"]):not([data-theme]) #view-rules .rules-list .rule-entry-num{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:24px !important;
+  height:24px !important;
+  padding:0 4px !important;
+  margin-top:1px !important;
+  border-radius:8px !important;
+  background:var(--accent-glow) !important;
+  border:1px solid var(--accent-glow5) !important;
+  box-shadow:none !important;
+  color:var(--accent2) !important;
+  font-size:11px !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+}
 </style>
 
 <script>
@@ -94267,12 +94133,23 @@ function renderOffice(){
     glider.setAttribute('aria-hidden','true');
     tabs.appendChild(glider);
 
+    var lastLeft=null,lastW=null;
     function position(instant){
       var active = tabs.querySelector('.tab-btn.active');
-      if(!active){ glider.style.width = '0px'; return; }
+      if(!active){ if(glider.style.width !== '0px') glider.style.width = '0px'; lastLeft=lastW=null; return; }
+      var nl=active.offsetLeft, nw=active.offsetWidth;
+      /* PERF (v21): skip the DOM writes when nothing moved. The ResizeObserver
+         below watches the container this glider lives in; blindly re-writing
+         identical left/width values re-invalidates layout and can feed an
+         RO→position feedback loop while the strip re-flows during startup
+         and font load (this function was the #1 JS hotspot in the boot
+         profile). Reads stay correct — offsetLeft/offsetWidth are measured
+         before every comparison. */
+      if(!instant && nl===lastLeft && nw===lastW) return;
       if(instant) glider.style.transition = 'none';
-      glider.style.left  = active.offsetLeft + 'px';
-      glider.style.width = active.offsetWidth + 'px';
+      glider.style.left  = nl + 'px';
+      glider.style.width = nw + 'px';
+      lastLeft=nl; lastW=nw;
       if(instant){
         /* flush, then restore the CSS glide transition */
         void glider.offsetWidth;
@@ -94295,10 +94172,17 @@ function renderOffice(){
       setTimeout(function(){ position(false); }, ms);
     });
 
-    /* re-align when the strip itself re-layouts (theme height, etc.) */
+    /* re-align when the strip itself re-layouts (theme height, etc.).
+       PERF: rAF-coalesce the callback — a ResizeObserver fires synchronously
+       after layout, so reading offsetLeft inside it forces a nested sync
+       layout; deferring to the next frame turns N fires into 1 measure. */
     if(typeof ResizeObserver !== 'undefined'){
       try{
-        new ResizeObserver(function(){ position(false); }).observe(tabs);
+        var roRaf=null;
+        new ResizeObserver(function(){
+          if(roRaf) return;
+          roRaf=requestAnimationFrame(function(){ roRaf=null; position(false); });
+        }).observe(tabs);
       }catch(e){}
     }
     return position;
@@ -94321,28 +94205,51 @@ function renderOffice(){
     glider.setAttribute('aria-hidden','true');
     sb.appendChild(glider);
 
+    var lastV=null,lastL=null,lastT=null,lastW=null,lastH=null;
     function position(instant){
       var active = sb.querySelector('.nav-item.active');
-      if(!active){ glider.style.height = '0px'; return; }
+      if(!active){
+        if(glider.style.height !== '0px') glider.style.height = '0px';
+        lastV=lastL=lastT=lastW=lastH=null;
+        return;
+      }
       var items = sb.querySelectorAll('.nav-item');
       var vertical = true;
       if(items.length > 1){
         vertical = Math.abs(items[1].offsetTop - items[0].offsetTop) > 4;
       }
+      /* PERF (v21): compute the target geometry first, then bail out before
+         any DOM write if it matches what's already painted. Same RO feedback
+         reasoning as the tab glider above. borderRadius follows `vertical`,
+         so the orientation flag covers it in the comparison. */
+      var nL,nT,nW,nH;
+      if(vertical){
+        nL = active.offsetLeft;
+        nT = active.offsetTop + active.offsetHeight * 0.2;
+        nW = 2;
+        nH = active.offsetHeight * 0.6;
+      }else{
+        nT = active.offsetTop + active.offsetHeight - 2;
+        nH = 2;
+        nL = active.offsetLeft + active.offsetWidth * 0.2;
+        nW = active.offsetWidth * 0.6;
+      }
+      if(!instant && vertical===lastV && nL===lastL && nT===lastT && nW===lastW && nH===lastH) return;
       if(instant) glider.style.transition = 'none';
       if(vertical){
-        glider.style.left = active.offsetLeft + 'px';
-        glider.style.width = '2px';
-        glider.style.top = (active.offsetTop + active.offsetHeight * 0.2) + 'px';
-        glider.style.height = (active.offsetHeight * 0.6) + 'px';
+        glider.style.left = nL + 'px';
+        glider.style.width = nW + 'px';
+        glider.style.top = nT + 'px';
+        glider.style.height = nH + 'px';
         glider.style.borderRadius = '0 3px 3px 0';
       }else{
-        glider.style.top = (active.offsetTop + active.offsetHeight - 2) + 'px';
-        glider.style.height = '2px';
-        glider.style.left = (active.offsetLeft + active.offsetWidth * 0.2) + 'px';
-        glider.style.width = (active.offsetWidth * 0.6) + 'px';
+        glider.style.top = nT + 'px';
+        glider.style.height = nH + 'px';
+        glider.style.left = nL + 'px';
+        glider.style.width = nW + 'px';
         glider.style.borderRadius = '3px 3px 0 0';
       }
+      lastV=vertical; lastL=nL; lastT=nT; lastW=nW; lastH=nH;
       if(instant){
         void glider.offsetWidth;
         glider.style.transition = '';
@@ -94362,9 +94269,14 @@ function renderOffice(){
       setTimeout(function(){ position(false); }, ms);
     });
 
+    /* PERF (v21): rAF-coalesce — see the tab glider's RO comment. */
     if(typeof ResizeObserver !== 'undefined'){
       try{
-        new ResizeObserver(function(){ position(false); }).observe(sb);
+        var roRaf=null;
+        new ResizeObserver(function(){
+          if(roRaf) return;
+          roRaf=requestAnimationFrame(function(){ roRaf=null; position(false); });
+        }).observe(sb);
       }catch(e){}
     }
     return position;
@@ -96193,6 +96105,111 @@ function renderOffice(){
   .ep7-hud-dot{animation:none !important}
   .ep7-hud-bar i{transition:none}
 }
+</style>
+
+<style id="dark-neutral-polish">
+/* ════════════════════════════════════════════════════════════════
+   DARK MODE — NEUTRAL REFRESH (all pages)
+   Token-level polish on the "dark" (neutral graphite) theme; every
+   surface built on var() inherits it. This sheet sits last, so equal
+   specificity ties inside the earlier dark passes resolve here.
+   1. Canvas neutralized to match the neutral cards, and the surface
+      ladder evened: bg #0a0a0a → bg2 #181818 (+14) → bg3 #262626
+      (+14). The old #08090a carried a cool hair (B+2) while every
+      card above it was pure neutral — mixed temperature, and a
+      "#08090a too dark — pure black void" finding already logged in
+      the Sound Studio audit at ~88238.
+   2. --text3 #7a7a7a → #8c8c8c: metadata, captions and placeholders
+      clear 4.5:1 on bg2 AND bg3 (measured 4.14 / 3.83 before) while
+      staying a clear step below --text2 #aeaeae.
+   3. Placeholder unification: one color for every input (including
+      ones that never declared a color) and the opacity:.6 stragglers
+      brought to full strength so none sits under the contrast floor.
+   Deliberately untouched (prior user-approved passes): the crisper
+   #333 hairlines, the 0.075 selection rung, quiet input focus, the
+   hidden scrollbars, and the crisp white glows. */
+html[data-theme="dark"]{
+  --bg:#0a0a0a;
+  --btn-text:#0a0a0a;
+  --text3:#8c8c8c;
+}
+
+html[data-theme="dark"] ::placeholder{
+  color:var(--text3);
+  opacity:1;
+}
+/* ID-scoped rules that outrank the generic placeholder rule — the
+   same selectors, declared later (and with matching importance for
+   the note input), so the tie resolves here. The tasks/aihub pair
+   carried a rgba(255,255,255,.35) fill from the hero-refinement pass
+   (~3.1:1 on bg3); unified to text3 (4.5:1). */
+html[data-theme="dark"] #nbNoteInput::placeholder{color:var(--text3) !important}
+html[data-theme="dark"] #view-tasks .task-input::placeholder{color:var(--text3) !important;font-style:normal;opacity:1}
+html[data-theme="dark"] #view-aihub .aihub-search::placeholder{color:var(--text3) !important}
+/* Inputs on lighter fills need the next rung up: the dashboard
+   quick-add (~#303030) gets the same 60/40 text3/text2 mix the overlay
+   inputs already use at ~5873; the category emoji field sits on an
+   even lighter chip (~#3b3b3b) so it goes straight to text2. */
+html[data-theme="dark"] .db-inline-add-input::placeholder{color:color-mix(in srgb, var(--text3) 60%, var(--text2) 40%)}
+html[data-theme="dark"] .cat-emoji-inp::placeholder{color:var(--text2)}
+/* Addendum (found during the light-mode audit): the timeline hour marks
+   carry an INLINE opacity:.5 (~36646) that lands at 2.25:1 on dark
+   cards — needs !important to beat the inline style. Full opacity puts
+   them at 5.9:1. */
+html[data-theme="dark"] .timeline-hour-marks span{opacity:1 !important}
+/* Same element as the light fix: at its base opacity .8 the "min/custom"
+   label measured 4.12:1 in dark — full opacity lands at ~5.4:1. */
+html[data-theme="dark"] .preset-custom-label{opacity:1}
+</style>
+
+<style id="light-neutral-polish">
+/* ════════════════════════════════════════════════════════════════
+   LIGHT MODE — NEUTRAL REFRESH (all pages)
+   The light tokens themselves are healthy — text3 #55555f measures
+   7.4:1 on the canvas and 6.7:1 on cards, the cool tint is consistent
+   across bg/border/text (no temperature mismatch like dark had), the
+   canvas was deliberately brightened at 86448, and card shadows were
+   already lifted at 86123. So this pass changes NO tokens; it fixes
+   the measured contrast leaks sitting on top of them:
+   1. Placeholders — the global .6/.62/.7/.75 opacity stragglers (the
+      same rules the dark pass found) drag light placeholders to
+      1.7–3.5:1. Unified: one color (text3 — 4.6:1 minimum on the
+      lightest light rung) at full strength. The tasks input is re-
+      declared because its ID-scoped rule outranks the generic one.
+   2. The slate-500 label family from 88740 — #64748b reads 4.6:1 only
+      at full opacity; measured 3.38:1 at the .72 stack the labels
+      actually render with (element fade × card fade). Retargeted to
+      --text2 on the same selector list with importance matched:
+      4.6:1 even at the worst observed stack, 7.4:1 fully revealed.
+   3. preset-custom-label — 4.44:1 measured; text2 + full opacity.
+   4. Timeline hour marks — inline-styled opacity:.5 = 2.3:1. Needs
+      !important to beat the inline style (twin rule added to the dark
+      sheet; dark measured 2.25:1 the same way).
+   Deliberately untouched: the brightened canvas, the cool-tinted
+   family, lifted card shadows, selection/focus/hidden-scrollbar
+   passes, pure-light (warm theme), and all 7 other themes. */
+html[data-theme="light"] ::placeholder{
+  color:var(--text3);
+  opacity:1;
+}
+html[data-theme="light"] #view-tasks .task-input::placeholder{font-style:normal;opacity:1}
+
+/* Slate label family — exact selector list of the 88740 pass */
+html[data-theme="light"] .db-kpi-label,
+html[data-theme="light"] .db-hero-stat-label,
+html[data-theme="light"] .sc-label,
+html[data-theme="light"] .hds-label,
+html[data-theme="light"] .hdrc-label,
+html[data-theme="light"] .ms-label,
+html[data-theme="light"] .hic-label,
+html[data-theme="light"] .db-day-nav-date,
+html[data-theme="light"] .db-day-nav-rel{
+  color:var(--text2) !important;
+}
+
+html[data-theme="light"] .preset-custom-label{color:var(--text2);opacity:1}
+
+html[data-theme="light"] .timeline-hour-marks span{opacity:1 !important}
 </style>
 
 <script id="elevation-pass-v7-js">
