@@ -96211,6 +96211,110 @@ html[data-theme="light"] .preset-custom-label{color:var(--text2);opacity:1}
 html[data-theme="light"] .timeline-hour-marks span{opacity:1 !important}
 </style>
 
+<style id="rules-light-mode-refresh">
+/* ═══════════════════════════════════════════════════════════════════
+   GUIDELINES PAGE — LIGHT MODE REFRESH
+   Scoped to light + pure-light only; dark themes untouched.
+   The de-sloped sheet (<style id="rules-category-color">) applies one
+   set of card shadows to every theme, and those shadows are tuned for
+   dark cards (rgba(0,0,0,.16/.55)) — on the light canvas they read as
+   a muddy grey puddle around each accordion and a dirty smudge under
+   hovered rule sub-cards. This pass re-tints those depths with the
+   light theme's own soft tokens (--card-depth / --card-depth-hover /
+   --shadow-xs / --shadow-sm), gives the search field a recessed fill
+   so it actually reads as an input on the near-white canvas, and lets
+   the add-category composer borrow the same soft depth as the cards so
+   the page shares one elevation language. Declared last → wins every
+   !important tie; the doubled class on the card selectors also beats
+   the higher-specificity no-theme catch-all. Remove this <style> to
+   revert.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Accordion cards — soft neutral depth, not dark-tuned black ── */
+html[data-theme="light"] #view-rules .rules-list .rule-accordion.rule-accordion,
+html[data-theme="pure-light"] #view-rules .rules-list .rule-accordion.rule-accordion{
+  box-shadow:var(--card-depth) !important;
+}
+html[data-theme="light"] #view-rules .rules-list .rule-accordion.rule-accordion:hover,
+html[data-theme="pure-light"] #view-rules .rules-list .rule-accordion.rule-accordion:hover,
+html[data-theme="light"] #view-rules .rules-list .rule-accordion.rule-accordion.open,
+html[data-theme="pure-light"] #view-rules .rules-list .rule-accordion.rule-accordion.open{
+  box-shadow:var(--card-depth-hover) !important;
+}
+
+/* ── Rule sub-cards — whisper-soft rest, gentle lift on hover ── */
+html[data-theme="light"] #view-rules .rules-list .rule-entry.rule-entry,
+html[data-theme="pure-light"] #view-rules .rules-list .rule-entry.rule-entry{
+  box-shadow:var(--shadow-xs) !important;
+}
+html[data-theme="light"] #view-rules .rules-list .rule-entry.rule-entry:hover,
+html[data-theme="pure-light"] #view-rules .rules-list .rule-entry.rule-entry:hover{
+  box-shadow:var(--shadow-sm) !important;
+}
+
+/* ── Search field — recessed fill so it reads as an input on white ── */
+html[data-theme="light"] #view-rules .rules-search-box.rules-search-box,
+html[data-theme="pure-light"] #view-rules .rules-search-box.rules-search-box{
+  background:var(--bg3) !important;
+  border-color:var(--border) !important;
+}
+html[data-theme="light"] #view-rules .rules-search-box.rules-search-box:focus-within,
+html[data-theme="pure-light"] #view-rules .rules-search-box.rules-search-box:focus-within{
+  background:var(--bg2) !important;
+  border-color:var(--accent-glow6) !important;
+  color:var(--accent2) !important;
+}
+
+/* ── Add-category composer — same soft depth as the cards ── */
+html[data-theme="light"] #view-rules .add-cat-row.add-cat-row,
+html[data-theme="pure-light"] #view-rules .add-cat-row.add-cat-row{
+  background:var(--bg2) !important;
+  border:1px solid var(--border) !important;
+  box-shadow:var(--card-depth) !important;
+}
+</style>
+
+<style id="eisen-dark-refresh">
+/* ═══════════════════════════════════════════════════════════════════
+   EISENHOWER MATRIX — NEUTRAL DARK MODE REFRESH
+   Scoped to the "Dark Mode" theme (html[data-theme="dark"], the
+   pure-neutral platinum theme) only — every other theme untouched.
+   The dashboard matrix (Task Pool + 2×2 quadrants) was styled for
+   the warmer default themes; in the neutral theme three details
+   sit wrong against its "crisper, less glowy, almost borderless"
+   design language:
+   1. The 3px quadrant top-stripe renders as a 60%-opacity
+      near-white gradient — the single brightest element on the
+      matrix, a glare bar on the #08090a canvas. Dimmed to 30%.
+   2. Cell hover was a 4.5%-white hairline (accent-glow2) —
+      perceptually invisible. Bumped to accent-glow4 (13%, the
+      theme's own "premium lit-edge" rung) + a 4% cell tint so
+      the whole quadrant responds, not just the hairline.
+   3. The drag-over drop target rang at 4% white — barely visible
+      while dragging. Ring lifted to accent-glow4.
+   Declared last → wins every !important tie at equal specificity.
+   Remove this <style> to revert.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Quadrant top-stripe — glare bar → soft accent hint ── */
+html[data-theme="dark"] #view-dashboard .db-eisen-cell::before{
+  opacity:.3 !important;
+}
+
+/* ── Quadrant hover — invisible hairline → perceptible lift ── */
+html[data-theme="dark"] #view-dashboard .db-eisen-cell:hover{
+  border-color:var(--accent-glow4) !important;
+  background:var(--accent-glow3) !important;
+}
+
+/* ── Drag-over drop target — readable ring ── */
+html[data-theme="dark"] #view-dashboard .db-eisen-cell.drop-target,
+html[data-theme="dark"] #view-dashboard .db-eisen-pool.drop-target{
+  box-shadow:0 0 0 2px var(--accent-glow4) !important;
+  background:var(--accent-glow3) !important;
+}
+</style>
+
 <script id="elevation-pass-v7-js">
 (function () {
   'use strict';
