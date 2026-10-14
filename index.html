@@ -24174,18 +24174,6 @@ function saveRules(r){lsSet(K_RULES,r);}
   if(changed) lsSet(K_RULES,existing);
 })();
 
-/* ── Guidelines: one accent hue per rules box ──
-   Picked from a fixed palette by hashing the category id, so a box keeps its
-   colour when categories are added, deleted or reordered. The colour is only
-   ever used through colour-mix() in CSS, so it stays legible on every theme. */
-const RULE_PALETTE=['#6366f1','#f59e0b','#34d399','#f472b6','#22d3ee','#a78bfa','#fb923c','#34a853','#60a5fa','#eab308'];
-function ruleCatColor(id){
-  const s=String(id||'');
-  let h=5381;
-  for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
-  return RULE_PALETTE[h%RULE_PALETTE.length];
-}
-
 /* ── Guidelines: live search across categories, entries and quotes ── */
 var rulesQuery='';
 function rulesResetFilter(){
@@ -24214,6 +24202,32 @@ function ruleHl(text,q){
   }
   return out+esc(text.slice(i));
 }
+/* Content-aware entry markup for the Guidelines ledger.
+   "Lead — rest" entries render the lead phrase semibold (they read as the
+   rule itself); entries that open with a quotation mark render italic
+   (they read as quotes). Search highlighting is applied per part so the
+   <mark> spans stay intact and escaped. */
+function ruleEntryRich(text,q){
+  const t=String(text||'');
+  const mt=t.match(/^(.{2,64}?)\s+[—–]\s+(.{3,})$/);
+  if(mt){
+    return '<span class="rule-lead">'+ruleHl(mt[1],q)+'</span>'+
+           '<span class="rule-rest"> '+ruleHl('— '+mt[2],q)+'</span>';
+  }
+  const isQuote=/^\s*["“«']/.test(t);
+  return '<span class="rule-rest'+(isQuote?' is-quote':'')+'">'+ruleHl(t,q)+'</span>';
+}
+/* One ledger row — shared by renderRules() and the inline append in
+   addEntry() so a freshly added rule renders identically to the rest of
+   the list (number is zero-padded for the mono ledger gutter). */
+function ruleRowHtml(ci,ei,text,q){
+  return '<div class="rule-entry">'+
+    '<span class="rule-entry-num" aria-hidden="true">'+String(ei+1).padStart(2,'0')+'</span>'+
+    '<div class="rule-entry-text">'+ruleEntryRich(text,q)+'</div>'+
+    '<button class="rule-entry-del" data-ci="'+ci+'" data-ei="'+ei+'" title="Remove" aria-label="Remove entry">'+
+    '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'+
+    '</button></div>';
+}
 function renderRules(){
   const rules=loadRules();
   const grid=document.getElementById('rulesGrid');
@@ -24237,9 +24251,6 @@ function renderRules(){
     if(q&&!nameHit&&!hits.length)return '';
     shownCats++;shownEntries+=hits.length;
     const open=q?true:!!cat._open;
-    const countLbl=(q&&!nameHit)
-      ? hits.length+' of '+cat.entries.length+' '+(cat.entries.length===1?'rule':'rules')
-      : cat.entries.length+' '+(cat.entries.length===1?'rule':'rules');
     return `
     <div class="rule-accordion${open?' open':''}" id="acc-${ci}" style="animation:ruleAccIn .65s cubic-bezier(.16,1,.3,1) ${(ci*0.1).toFixed(2)}s both">
       <div class="rule-acc-head" onclick="toggleAccordion(${ci})">
@@ -24255,7 +24266,6 @@ function renderRules(){
         })()}</span></span>
         <div class="rule-acc-info">
           <div class="rule-acc-name">${esc(cat.name)}</div>
-          <div class="rule-acc-count">${countLbl}</div>
         </div>
         <div class="rule-acc-actions" onclick="event.stopPropagation()">
           <button class="rule-icon-btn del" onclick="delCategory(${ci})" title="Delete category">
@@ -24266,13 +24276,8 @@ function renderRules(){
       </div>
       <div class="rule-acc-body">
         <div class="rule-entries-list">
-          ${hits.length===0?`<div style="padding:8px 6px;font-size:13px;color:var(--text3)">No entries yet — add one below</div>`:''}
-          ${hits.map(ei=>{const e=cat.entries[ei];return `
-            <div class="rule-entry">
-              <span class="rule-entry-num">${ei+1}</span>
-              <div class="rule-entry-text">${ruleHl(String(e),q)}</div>
-              <button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>
-            </div>`;}).join('')}
+          ${hits.length===0?`<div class="rule-empty-hint">No entries yet — add the first one below.</div>`:''}
+          ${hits.map(ei=>ruleRowHtml(ci,ei,cat.entries[ei],q)).join('')}
         </div>
         <div class="rule-acc-footer">
           <input class="rule-entry-input" id="einp-${ci}" type="text" placeholder="Add a rule, quote or advice…" maxlength="220"
@@ -24330,20 +24335,13 @@ function addEntry(ci){
   /* Append inline — no full re-render which would collapse the accordion */
   const list=document.querySelector('#acc-'+ci+' .rule-entries-list');
   if(list){
-    const emptyMsg=list.querySelector('div[style]');
+    const emptyMsg=list.querySelector('.rule-empty-hint');
     if(emptyMsg)emptyMsg.remove();
     const ei=rules[ci].entries.length-1;
-    const div=document.createElement('div');
-    div.className='rule-entry';
-    div.innerHTML=`<span class="rule-entry-num">${ei+1}</span><div class="rule-entry-text">${esc(text)}</div><button class="rule-entry-del" data-ci="${ci}" data-ei="${ei}" title="Remove">×</button>`;
-    // NOTE: no direct addEventListener here — a document-level delegated handler
-    // at .rule-entry-del already routes clicks to delEntry. Adding a direct
-    // listener would cause delEntry to fire twice per click and delete two
-    // entries (the clicked one + the one that took its slot after renumbering).
-    list.appendChild(div);
-    /* Update count badge */
-    const countEl=document.querySelector('#acc-'+ci+' .rule-acc-count');
-    if(countEl){const n=rules[ci].entries.length;countEl.textContent=n+' '+(n===1?'rule':'rules');}
+    /* Shared builder keeps the appended row identical to renderRules() output
+       (zero-padded number, lead/rest typography, SVG × button). */
+    list.insertAdjacentHTML('beforeend',ruleRowHtml(ci,ei,text,''));
+    list.scrollTop=list.scrollHeight;
     /* Expand max-height to fit new content */
     const body=document.querySelector('#acc-'+ci+' .rule-acc-body');
     if(body&&body.style.maxHeight&&body.style.maxHeight!=='none'){
@@ -24365,7 +24363,7 @@ function delEntry(ci,ei){
     /* Re-number remaining AND fix data-ei indices on delete buttons */
     list.querySelectorAll('.rule-entry').forEach((row,i)=>{
       const numEl=row.querySelector('.rule-entry-num');
-      if(numEl)numEl.textContent=(i+1);
+      if(numEl)numEl.textContent=String(i+1).padStart(2,'0');
       const delBtn=row.querySelector('.rule-entry-del');
       if(delBtn){
         delBtn.dataset.ci=ci;
@@ -24378,12 +24376,10 @@ function delEntry(ci,ei){
     });
     if(rules[ci].entries.length===0){
       const empty=document.createElement('div');
-      empty.style.cssText='padding:8px 6px;font-size:13px;color:var(--text3)';
-      empty.textContent='No entries yet — add one below';
+      empty.className='rule-empty-hint';
+      empty.textContent='No entries yet — add the first one below.';
       list.insertBefore(empty,list.firstChild);
     }
-    const countEl=document.querySelector('#acc-'+ci+' .rule-acc-count');
-    if(countEl){const n=rules[ci].entries.length;countEl.textContent=n+' '+(n===1?'rule':'rules');}
   }
 }
 
@@ -88758,8 +88754,7 @@ html[data-theme] #view-rules .rules-list .rule-accordion.open {
 }
 
 /* Header — title only: the rule-count label ("5 rules") beside the
-   name is hidden per user request. The JS still patches its text
-   harmlessly (element stays in the DOM, just not rendered). */
+   name is removed per user request; the markup no longer renders it. */
 html[data-theme] #view-rules .rules-list .rule-acc-count {
   display:none !important;
 }
@@ -88794,6 +88789,177 @@ html[data-theme] #view-rules .rules-list .rule-entry-num {
   font-size:11px !important;
   font-weight:700 !important;
   line-height:1 !important;
+}
+</style>
+
+<style id="rules-ledger-v2">
+/* ════════════════════════════════════════════════════════════════════
+   GUIDELINES — LEDGER LIST v2 (list redesign)
+   Replaces the boxed sub-card entries with an editorial ledger:
+   · rows sit on hairline dividers instead of nested boxes
+   · zero-padded mono numbers hang in a left gutter, baseline-aligned
+   · content-aware text: "Lead — rest" renders a semibold lead phrase,
+     entries that open with a quote mark render italic
+   · a single global accent colour is used across every category
+     (per-box hues and count chips were removed per user request)
+   · long lists scroll inside a capped container with a styled scrollbar
+     (the add-entry composer stays pinned below in the footer)
+   · the per-entry delete × is always visible on touch (hover:none)
+   Selectors match the sheets being superseded; this block sits after
+   them, so equal-specificity !important ties resolve in its favour.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Card: the global accent tints the open/hover border ── */
+html[data-theme] #view-rules .rules-list .rule-accordion{
+  border-radius:14px !important;
+  overflow:hidden !important;
+  border:1px solid var(--border) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.12),0 12px 28px -20px rgba(0,0,0,.5) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion:hover{
+  border-color:color-mix(in srgb,var(--accent) 22%,var(--border)) !important;
+  box-shadow:0 2px 4px rgba(0,0,0,.14),0 16px 34px -20px rgba(0,0,0,.55) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion.open{
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
+  box-shadow:0 2px 4px rgba(0,0,0,.14),0 18px 40px -22px rgba(0,0,0,.55) !important;
+}
+
+/* ── Emoji badge: global accent tint ── */
+html[data-theme] #view-rules .rules-list .rule-acc-emoji-badge{
+  background:color-mix(in srgb,var(--accent) 13%,transparent) !important;
+  border-color:color-mix(in srgb,var(--accent) 30%,transparent) !important;
+  color:color-mix(in srgb,var(--accent) 70%,var(--text)) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-accordion.open .rule-acc-emoji-badge{
+  background:color-mix(in srgb,var(--accent) 20%,transparent) !important;
+  border-color:color-mix(in srgb,var(--accent) 38%,transparent) !important;
+}
+
+/* ── Entries list: capped height + custom scrollbar for long lists ── */
+html[data-theme] #view-rules .rules-list .rule-entries-list{
+  padding:10px 14px 2px !important;
+  max-height:min(52vh,430px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:color-mix(in srgb,var(--border) 85%,transparent) transparent;
+}
+html[data-theme] #view-rules .rules-list .rule-entries-list::-webkit-scrollbar{width:9px}
+html[data-theme] #view-rules .rules-list .rule-entries-list::-webkit-scrollbar-thumb{
+  background:color-mix(in srgb,var(--border) 95%,transparent);
+  border-radius:99px;
+  border:2.5px solid transparent;
+  background-clip:padding-box;
+}
+html[data-theme] #view-rules .rules-list .rule-entries-list::-webkit-scrollbar-track{background:transparent}
+
+/* ── Ledger rows: hairline dividers, no nested boxes ── */
+html[data-theme] #view-rules .rules-list .rule-entry{
+  display:flex;align-items:baseline;gap:12px;
+  padding:12px 10px !important;
+  background:transparent !important;
+  border:none !important;
+  border-bottom:1px solid color-mix(in srgb,var(--border) 55%,transparent) !important;
+  border-radius:8px 8px 0 0 !important;
+  box-shadow:none !important;
+  transform:none !important;
+  transition:background .18s ease,border-color .18s ease !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry:last-child{
+  border-bottom-color:transparent !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry:hover{
+  background:color-mix(in srgb,var(--accent) 6%,transparent) !important;
+  border-bottom-color:color-mix(in srgb,var(--accent) 24%,transparent) !important;
+}
+
+/* ── Number: zero-padded mono, hanging in the gutter ── */
+html[data-theme] #view-rules .rules-list .rule-entry-num{
+  display:inline !important;
+  min-width:22px !important;
+  height:auto !important;
+  padding:0 !important;
+  margin:0 !important;
+  background:transparent !important;
+  border:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  font-family:var(--font-mono) !important;
+  font-size:11px !important;
+  font-weight:500 !important;
+  line-height:1.65 !important;
+  text-align:right !important;
+  color:color-mix(in srgb,var(--accent) 62%,var(--text3)) !important;
+  transition:color .18s ease !important;
+}
+#view-rules .rules-list .rule-entry:hover .rule-entry-num{
+  color:color-mix(in srgb,var(--accent) 78%,var(--text)) !important;
+}
+
+/* ── Text: content-aware hierarchy ── */
+html[data-theme] #view-rules .rules-list .rule-entry-text{
+  font-size:14px !important;
+  line-height:1.65 !important;
+  letter-spacing:-.005em !important;
+  padding-bottom:1px;
+}
+#view-rules .rules-list .rule-lead{
+  font-weight:600;color:var(--text);letter-spacing:-.012em;
+}
+#view-rules .rules-list .rule-rest{
+  font-weight:400;color:var(--text2);
+}
+#view-rules .rules-list .rule-rest.is-quote{font-style:italic}
+
+/* ── Delete: quiet × on hover/focus, always visible on touch ── */
+html[data-theme] #view-rules .rules-list .rule-entry-del{
+  align-self:center;
+  width:26px !important;height:26px !important;
+  opacity:0;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:7px;cursor:pointer;
+  color:var(--text3);
+  transition:opacity .18s ease,background .15s ease,color .15s ease !important;
+}
+#view-rules .rules-list .rule-entry:hover .rule-entry-del,
+#view-rules .rules-list .rule-entry-del:focus-visible{opacity:1}
+#view-rules .rules-list .rule-entry-del:hover{background:rgba(240,82,82,.12);color:var(--red)}
+@media (hover:none){
+  #view-rules .rules-list .rule-entry-del{opacity:.55}
+  #view-rules .rules-list .rule-entry:hover .rule-entry-del{opacity:1}
+}
+
+/* ── Empty hint: quiet, centered ── */
+#view-rules .rules-list .rule-empty-hint{
+  padding:16px 6px 18px;font-size:13px;line-height:1.5;
+  color:var(--text3);text-align:center;letter-spacing:-.005em;
+}
+
+/* ── Footer composer: pinned under the ledger, accent focus ── */
+html[data-theme] #view-rules .rules-list .rule-acc-footer{
+  padding:12px 14px 14px !important;
+  background:transparent !important;
+  border-top:1px solid var(--border) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry-input{
+  background:var(--bg3) !important;
+  border:1px solid var(--border) !important;
+  border-radius:9px !important;
+  padding:10px 13px !important;
+  min-width:0;
+}
+html[data-theme] #view-rules .rules-list .rule-entry-input:focus{
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border)) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent) !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry-add-btn{
+  background:var(--accent) !important;
+  border-radius:9px !important;
+  padding:10px 16px !important;
+}
+html[data-theme] #view-rules .rules-list .rule-entry-add-btn:hover{
+  background:var(--accent2) !important;
 }
 </style>
 
