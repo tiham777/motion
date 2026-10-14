@@ -13,16 +13,10 @@
 <meta name="twitter:title" content="Motion — Focus & Productivity Timer"/>
 <meta name="twitter:description" content="Own your time. Time blocks, tasks, habits, notes, and an AI assistant in one premium productivity app."/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-<!-- ── Content Security Policy ──
-   NOTE (engineering audit): there is currently NO CSP meta tag on this page.
-   A stricter policy was drafted (frame-src allowlisting accounts.google.com /
-   *.firebaseapp.com, script-src 'unsafe-inline' since all JS here is inline
-   <script> blocks + on* handlers, connect-src https:/wss: for user-supplied
-   "Custom" AI API base URLs) but it broke the Firebase Auth popup sign-in
-   flow, so it was reverted. The old draft-policy comment stayed in the file
-   even after the tag itself was removed — that contradiction is cleaned up
-   here. Do not reintroduce a CSP without testing the full Google/Firebase
-   sign-in flow end-to-end first. -->
+<!-- CSP: intentionally none. This page is one self-contained document
+     (all JS inline, inline on* handlers, Firebase/GSI popup sign-in);
+     a meta CSP breaks that flow. Revisit only with full end-to-end auth
+     testing if the app is ever split into buildable assets. -->
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -39,8 +33,43 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%%27%20stop-color%3D%27%231f1f1f%27%2F%3E%3Cstop%20offset%3D%2755%%27%20stop-color%3D%27%230a0a0a%27%2F%3E%3Cstop%20offset%3D%27100%%27%20stop-color%3D%27%23000000%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%27letter%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%%27%20stop-color%3D%27%23ffffff%27%2F%3E%3Cstop%20offset%3D%27100%%27%20stop-color%3D%27%23c8cede%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20ry%3D%2796%27%20fill%3D%27url(%23bg)%27%2F%3E%3Cpath%20d%3D%27M104%20392V120h80l64%20128%2064-128h80v272h-64V218l-64%20120h-32l-64-120v174z%27%20fill%3D%27url(%23letter)%27%2F%3E%3C%2Fsvg%3E"/>
 <meta name="theme-color" content="#08090a"/>
 <script>
-// Apply saved theme IMMEDIATELY to prevent FOUC
-(function(){try{var t=localStorage.getItem('ft_theme');if(t==='pure-light'){t='light';localStorage.setItem('ft_theme','light');}if(t==='classic'||t==='obsidian'||t==='turquoise'){t='dark';localStorage.setItem('ft_theme','dark');}if(!t)t='dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+// Apply saved theme IMMEDIATELY to prevent FOUC.
+// Resolution: an explicit choice made in Settings always wins. When the user
+// has never chosen, follow the OS colour scheme (prefers-color-scheme) rather
+// than forcing dark — a light-mode OS previously got a dark app on first visit.
+// `ft_theme_auto` marks the stored value as OS-derived so later boots keep
+// tracking the system; setTheme() drops the flag once the user chooses.
+(function(){try{
+  var t=localStorage.getItem('ft_theme');
+  if(t==='pure-light'){t='light';localStorage.setItem('ft_theme','light');}
+  if(t==='classic'||t==='obsidian'||t==='turquoise'){t='dark';localStorage.setItem('ft_theme','dark');}
+  var auto=localStorage.getItem('ft_theme_auto')==='1';
+  if(!t||auto){
+    var mq=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)');
+    t=(mq&&mq.matches)?'light':'dark';
+    try{localStorage.setItem('ft_theme_auto','1');}catch(_e){}
+    try{localStorage.setItem('ft_theme',t);}catch(_e){}
+  }
+  document.documentElement.setAttribute('data-theme',t);
+}catch(e){}})();
+// Keep following the OS while the theme is still OS-derived. Registered here,
+// beside the bootstrap, so it is live before first paint; the callbacks it
+// reaches for are optional and typeof-guarded because they are defined later.
+(function(){try{
+  if(!window.matchMedia)return;
+  var mq=window.matchMedia('(prefers-color-scheme: light)');
+  var apply=function(){try{
+    if(localStorage.getItem('ft_theme_auto')!=='1')return; /* user chose — never override */
+    var t=mq.matches?'light':'dark';
+    document.documentElement.setAttribute('data-theme',t);
+    try{localStorage.setItem('ft_theme',t);}catch(_e){}
+    if(typeof dbUpdateThemeIcon==='function')dbUpdateThemeIcon(t);
+    if(typeof updateFavicon==='function')updateFavicon(t);
+    if(typeof window.motionSyncThemeColor==='function')window.motionSyncThemeColor();
+  }catch(e){}};
+  if(mq.addEventListener)mq.addEventListener('change',apply);
+  else if(mq.addListener)mq.addListener(apply); /* Safari < 14 */
+}catch(e){}})();
 // Apply animation preference
 (function(){try{var s=JSON.parse(localStorage.getItem('ft_settings_v1')||'{}');if(s.anims===false){var st=document.createElement('style');st.id='anims-style';st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}';document.head.appendChild(st);}
 /* Apply saved Focus timer font before first paint to avoid FOUC.
@@ -16480,13 +16509,14 @@ a:not(.btn):not(.btn-save):not(.nav-item):not(.tab-btn):not(.phone-nav-item):not
   .focus-btn-reset:hover { transform: none !important; }
   .countdown-strip:hover { transform: none !important; }
 }
+</style>
 
-/* ════════════════════════════════════════════════════════════════
-   MICRO-IMPROVEMENTS PACK (theme-aware)
-   - Circular reveal theme transition
-   - Confetti burst on task completion
-   - Undo toast styling
-   ════════════════════════════════════════════════════════════════ */
+<!-- ════════════════════════════════════════════════════════════════
+     MICRO-IMPROVEMENTS PACK (theme-aware)
+     - Circular reveal theme transition
+     - Confetti burst on task completion
+     - Undo toast styling
+     ════════════════════════════════════════════════════════════════ -->
 <style id="motion-micro-improvements">
 
 /* ── Circular reveal theme transition ── */
@@ -20664,8 +20694,19 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
             <div class="home-greet-sub" id="homeGreetSub">Welcome back</div>
           </div>
           <div class="home-hero-clock-wrap">
+            <svg class="home-day-arc" id="homeDayArc" viewBox="0 0 120 48" width="112" height="44" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="hdaGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" class="hda-g1"/>
+                  <stop offset=".5" class="hda-g2"/>
+                  <stop offset="1" class="hda-g3"/>
+                </linearGradient>
+              </defs>
+              <line class="hda-horizon" x1="6" y1="40" x2="114" y2="40"/>
+              <path class="hda-arc" d="M 28 40 A 32 32 0 0 1 92 40"/>
+              <circle class="hda-dot" id="homeDayArcDot" cx="28" cy="40" r="4.5"/>
+            </svg>
             <div class="home-hero-clock" id="homeHeroClock">--:--</div>
-            <div class="home-hero-date" id="homeHeroDate">—</div>
           </div>
         </div>
         <!-- Progress hero card -->
@@ -22766,7 +22807,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
 
   </div>
 </main>
-<div id="toast-container"></div>
+<div id="toast-container" role="status" aria-live="polite" aria-label="Notifications"></div>
 
 <!-- CALENDAR DETAIL OVERLAY BG -->
 <div class="cal-overlay-bg" id="calOverlayBg" onclick="closeCalDetail()"></div>
@@ -28449,12 +28490,14 @@ function renderHome(){
   const titleEl=document.getElementById('homeGreetTitle');
   const subEl=document.getElementById('homeGreetSub');
   const clockEl=document.getElementById('homeHeroClock');
-  const dateEl=document.getElementById('homeHeroDate');
-  if(eyeEl)eyeEl.textContent=homeFormatDate();
-  if(titleEl)titleEl.textContent=g.title;
-  if(subEl)subEl.textContent=g.sub;
-  if(clockEl)clockEl.textContent=homeFormatClock();
-  if(dateEl)dateEl.textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  if(eyeEl)eyeEl.textContent=(typeof homeFormatEyebrow==='function')?homeFormatEyebrow():homeFormatDate();
+  let _greetName='';
+  try{ if(typeof homeGreetName==='function')_greetName=homeGreetName(); }catch(err){}
+  if(titleEl)titleEl.textContent=g.title+(_greetName?', '+_greetName:'');
+  // Sub line is replaced below, once today's data is loaded.
+  if(subEl)subEl.textContent='…';
+  if(clockEl)clockEl.innerHTML=(typeof homeRenderClock==='function')?homeRenderClock():homeFormatClock();
+  if(typeof homeDayArcUpdate==='function')homeDayArcUpdate();
 
   // Stats
   const blocks=loadBlocks();
@@ -28481,6 +28524,44 @@ function renderHome(){
   setStat('homeStatFocus',focusMins>0?(focusMins>=60?Math.floor(focusMins/60)+'h '+(focusMins%60)+'m':focusMins+'m'):'0m');
   setStat('homeStatHabits',habitsDone+'/'+habits.length);
   setStat('homeDayPct',pct+'%');
+
+  // Greeting sub-line: one useful piece of context instead of an echo of
+  // the title. Priority: running block → next block → open tasks → wrap-up.
+  if(subEl){
+    const _now=new Date();
+    const _nowMin=_now.getHours()*60+_now.getMinutes();
+    const _toMin=s=>{const p=String(s).split(':');return (parseInt(p[0],10)||0)*60+(parseInt(p[1],10)||0);};
+    let line='';
+    try{
+      const _curIdx=(typeof getCurrentBlockIndex==='function')?getCurrentBlockIndex(blocks):-1;
+      if(_curIdx>=0&&blocks[_curIdx]){
+        const b=blocks[_curIdx];
+        line='Right now — <span class="hgs-strong">'+esc(b.title)+'</span> · until '+esc(fmtTime(b.end));
+      } else {
+        const _next=blocks
+          .filter(b=>!b.done&&_toMin(b.start)>=_nowMin)
+          .sort((a,b)=>a.start.localeCompare(b.start))[0];
+        if(_next){
+          let _wait=_toMin(_next.start)-_nowMin;
+          if(_wait<0)_wait=0;
+          const _wl=_wait<60?_wait+'m':Math.floor(_wait/60)+'h '+(_wait%60)+'m';
+          line='Up next — <span class="hgs-strong">'+esc(_next.title)+'</span> · '+esc(fmtTime(_next.start))+' · in '+_wl;
+        } else {
+          const _open=tasks.filter(t=>!t.done);
+          if(_open.length){
+            let _t0=String(_open[0].text||'');
+            if(_t0.length>34)_t0=_t0.slice(0,33).trim()+'…';
+            line=_open.length+' open — first up: <span class="hgs-strong">'+esc(_t0)+'</span>';
+          } else if(blocks.length){
+            line='All blocks done — clean sweep today';
+          } else {
+            line='Nothing scheduled — a clear canvas';
+          }
+        }
+      }
+    }catch(err){ line=''; }
+    if(line)subEl.innerHTML=line;
+  }
 
   // Ring progress
   const ringEl=document.getElementById('homeDayRing');
@@ -28627,17 +28708,17 @@ function renderHome(){
     }
   }
 
-  // Start clock interval if not running
+  // Start clock interval if not running — 1s tick keeps the hero clock's
+  // colon breathing and the sun-arc dial moving; skipped entirely when the
+  // Home view is not visible.
   if(!_homeClockIv){
+    _homeLastTick=0;
     _homeClockIv=setInterval(function(){
-      // Only update if home is the current view (avoid wasted work)
       if(currentView!=='home')return;
-      const now=Date.now();
-      if(now-_homeLastTick<15000)return;
-      _homeLastTick=now;
       const cEl=document.getElementById('homeHeroClock');
-      if(cEl)cEl.textContent=homeFormatClock();
-    },20000);
+      if(cEl)cEl.innerHTML=(typeof homeRenderClock==='function')?homeRenderClock():homeFormatClock();
+      if(typeof homeDayArcUpdate==='function')homeDayArcUpdate();
+    },1000);
   }
 }
 
@@ -28739,9 +28820,12 @@ function sourceHref(url, label){
 function escAndLink(s){const e=esc(s);return e.replace(/(https?:\/\/[^\s]+)/g,function(m,url){var u=url.replace(/[.,;:!?)\]}>]+$/,'');return '<a href="'+safeUrl(u)+'" target="_blank" rel="noopener noreferrer">'+u+'</a>';});}
 
 /* ═══ KEYBOARD ═══ */
-// TAB_ORDER must match the actual left-to-right nav order:
-// blocks(1) tasks(2) focus(3) habits(4) notes(5) assistant(6) rules(7) sound(8) aihub(9) settings(10)
-const TAB_ORDER = ['blocks','tasks','focus','habits','notes','assistant','rules','sound','aihub','settings'];
+// TAB_ORDER must match the actual left-to-right order of the top tab strip
+// (dashboard → … → settings). It drives PageUp/PageDown view cycling only;
+// digit shortcuts are mapped separately below. 'habits' deliberately
+// absent — it has no view of its own (it lives in Tracker) and cycling
+// into it blank-screened the app.
+const TAB_ORDER = ['dashboard','blocks','tasks','focus','tracker','notes','office','assistant','rules','tools','aihub','sound','settings'];
 
 function _syncImmersiveZoom(){
   const sidebarHidden = (_cachedSidebar||document.querySelector('.sidebar')).classList.contains('hidden');
@@ -28947,6 +29031,12 @@ function renderHabits(){
   const days=getWeekDates(habitWeekOffset);
   const todayKey=habitDateKey(new Date());
   const shortDays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  /* Accessible names for the per-day toggle buttons in BOTH the table and the
+     card layout below. Those buttons hold no text of their own (only a ✓ once
+     done), so without this a screen reader announces a grid of nameless
+     buttons and the user cannot tell which habit or which day each one acts
+     on. Built once per render rather than once per cell. */
+  const dayLbls=days.map(d=>d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}));
 
   // week label
   const first=days[0],last=days[6];
@@ -29004,18 +29094,19 @@ function renderHabits(){
             <span>${esc(h.name)}</span>
           </div>
         </td>
-        ${days.map(d=>{
+        ${days.map((d,di)=>{
           const k=habitDateKey(d);
           const done=!!(log[k]&&log[k][h.id]);
           const isToday=k===todayKey;
+          const lbl=esc(h.name+' — '+dayLbls[di]);
           return`<td class="habit-check-cell">
-            <button class="habit-check${done?' done':''}${isToday?' today-col':''}" onclick="toggleHabitDay('${esc(h.id)}','${esc(k)}')">${done?'✓':''}</button>
+            <button class="habit-check${done?' done':''}${isToday?' today-col':''}" aria-pressed="${done?'true':'false'}" aria-label="${lbl}" title="${lbl}" onclick="toggleHabitDay('${esc(h.id)}','${esc(k)}')">${done?'✓':''}</button>
           </td>`;
         }).join('')}
         <td style="text-align:center">
           ${streak>0?`<span class="habit-streak"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3 1.7-5.6 4.1-7-.3 1.2-.1 2.5.7 3.5C10 9.9 11.4 7.6 11 5c2.4 1.8 4 4.7 4 7.8 0 .5 0 1-.1 1.5.5-.5.9-1.2 1.1-1.9C18 13.6 18 14.8 18 16c0 3.9-2.7 7-6 7z"/></svg> ${streak}</span>`:`<span style="font-size:12px;color:var(--text3)">—</span>`}
         </td>
-        <td><button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">×</button></td>
+        <td><button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete" aria-label="Delete habit ${esc(h.name)}">×</button></td>
       </tr>`;
     }).join('');
   }
@@ -29035,15 +29126,16 @@ function renderHabits(){
             <div class="habit-card-name">${esc(h.name)}</div>
             <div class="habit-card-actions">
               ${streak>0?`<span class="habit-streak"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="opacity:.8"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3 1.7-5.6 4.1-7-.3 1.2-.1 2.5.7 3.5C10 9.9 11.4 7.6 11 5c2.4 1.8 4 4.7 4 7.8 0 .5 0 1-.1 1.5.5-.5.9-1.2 1.1-1.9C18 13.6 18 14.8 18 16c0 3.9-2.7 7-6 7z"/></svg> ${streak}d</span>`:''}
-              <button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete">×</button>
+              <button class="habit-del-btn" onclick="delHabit('${esc(h.id)}')" title="Delete" aria-label="Delete habit ${esc(h.name)}">×</button>
             </div>
           </div>
           <div class="habit-card-days">
-            ${days.map(d=>{
+            ${days.map((d,di)=>{
               const k=habitDateKey(d);
               const done=!!(log[k]&&log[k][h.id]);
               const isToday=k===todayKey;
-              return`<button class="habit-day-btn${done?' done':''}${isToday?' today':''}" onclick="toggleHabitDay('${esc(h.id)}','${esc(k)}')">
+              const lbl=esc(h.name+' — '+dayLbls[di]);
+              return`<button class="habit-day-btn${done?' done':''}${isToday?' today':''}" aria-pressed="${done?'true':'false'}" aria-label="${lbl}" onclick="toggleHabitDay('${esc(h.id)}','${esc(k)}')">
                 <span class="hday-label">${shortDays[d.getDay()]}</span>
                 <span class="hday-check">${done?'✓':''}</span>
               </button>`;
@@ -35448,30 +35540,9 @@ function cpRGBtoHSL(r,g,b){
 function cpCopy(v){navigator.clipboard.writeText(v).then(function(){showToast('Copied '+v,'✓',1200);});}
 
 // ── UUID generator ──
-TOOL_RENDERERS.uuid=function(){
-  toolBody(
-    '<div class="tool-field"><label>Count</label><input type="number" id="uuCount" value="5" min="1" max="50"/></div>'+
-    '<div class="tool-actions"><button class="tool-btn" onclick="uuGen()">Generate</button><button class="tool-btn-ghost tool-btn" onclick="uuCopy()">Copy all</button></div>'+
-    '<div class="tool-output tool-mono" id="uuOut" style="font-size:.82rem;line-height:1.7"><span class="tool-output-empty">Click Generate…</span></div>'
-  );
-};
-function uuGen(){
-  const count=parseInt(document.getElementById('uuCount').value)||1;
-  let out=[];
-  for(let i=0;i<count;i++){
-    // RFC4122 v4 UUID
-    out.push('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
-      const r=Math.random()*16|0;
-      const v=c==='x'?r:(r&0x3|0x8);
-      return v.toString(16);
-    }));
-  }
-  document.getElementById('uuOut').textContent=out.join('\n');
-}
-function uuCopy(){
-  const t=document.getElementById('uuOut').innerText;
-  if(t&&t.indexOf('Click Generate')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
-}
+// Single consolidated renderer (crypto.randomUUID + uppercase option)
+// lives with the dev-utilities tools further down. An older duplicate
+// registration here was dead code — removed.
 
 // ── Time zone converter ──
 TOOL_RENDERERS.timezone=function(){
@@ -37034,7 +37105,13 @@ function setTheme(t, origin, silent){
   if(html.getAttribute('data-theme')!==t){
     html.setAttribute('data-theme',t);
   }
-  try{ if((localStorage.getItem('ft_theme')||'dark')!==t) lsSetRaw('ft_theme',t); }catch(e){ lsSetRaw('ft_theme',t); }
+  try{
+    if((localStorage.getItem('ft_theme')||'dark')!==t) lsSetRaw('ft_theme',t);
+    /* A user-initiated switch (silent !== true) is an explicit choice, so stop
+       following the OS scheme from here on. The silent boot call must leave
+       the flag alone or the app would forget it was tracking the system. */
+    if(!silent) localStorage.removeItem('ft_theme_auto');
+  }catch(e){ lsSetRaw('ft_theme',t); }
   if(typeof fbMarkDirty==='function')fbMarkDirty(); /* lsSetRaw survives quota; fbMarkDirty kept explicit to preserve "always mark dirty" behavior */
   // Sync the theme <select> in Settings
   const sel=document.getElementById('set-theme-sel');
@@ -37070,6 +37147,30 @@ function setTheme(t, origin, silent){
 (function(){
   const saved=(function(){var s=localStorage.getItem('ft_theme')||'dark';if(s==='pure-light'){localStorage.setItem('ft_theme','light');return 'light';}if(s==='classic'||s==='obsidian'||s==='turquoise'){localStorage.setItem('ft_theme','dark');return 'dark';}return s;})();
   setTheme(saved, null, /* silent boot */ true);
+})();
+/* setTheme() writes the theme-colour meta from the CURRENT computed --bg. That
+   is correct for a user-initiated switch, but the boot call above runs before
+   the per-theme custom-property blocks (html[data-theme="light"]{--bg:…} and
+   friends, declared much further down the document) have been parsed — so it
+   read the dark fallback and left the browser chrome dark on a light theme.
+   Previously invisible because the app always booted dark; now that a fresh
+   install can boot light, re-sync once the document is parsed. */
+(function(){
+  function motionSyncThemeColor(){
+    try{
+      const m=document.querySelector('meta[name="theme-color"]');
+      if(!m) return;
+      const bg=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      if(bg && m.getAttribute('content')!==bg) m.setAttribute('content',bg);
+    }catch(e){}
+  }
+  window.motionSyncThemeColor=motionSyncThemeColor;
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',motionSyncThemeColor);
+    window.addEventListener('load',motionSyncThemeColor);
+  } else {
+    motionSyncThemeColor();
+  }
 })();
 
 /* ════════════════════════════════════════════════════════════════
@@ -52094,21 +52195,11 @@ function fbSignOut(){
 }
 
 // ── Mark local data as dirty (call this whenever user changes something) ──
-// This triggers a debounced push to cloud after 3 seconds of inactivity
-function fbMarkDirty(){
-  if(fbIsApplyingCloudData) return;
-  fbLocalDirtyTime = Date.now();
-  if(fbDebouncedPushTimer) clearTimeout(fbDebouncedPushTimer);
-  if(fbDb && fbCurrentUser && !fbCurrentUser.isGuest && !fbIsPullingOnSignIn){
-    fbDebouncedPushTimer = setTimeout(function(){
-      fbDebouncedPushTimer = null;
-      fbPushToCloud();
-    }, FB_DEBOUNCED_PUSH_DELAY);
-  }
-}
-
-// ── Apply cloud data to localStorage (carbon copy) ──// ── Mark local data as dirty (call this whenever user changes something) ──
-// This triggers a debounced push to cloud after 3 seconds of inactivity
+// Triggers a debounced push to cloud after 3s of inactivity.
+// Guest mode: data stays local-only, never pushed. Race guard: if a
+// sign-in pull is in flight we still record the local dirty time (so the
+// change isn't lost) but delay scheduling — fbPullOnSignIn's finally
+// block schedules the push once the pull completes.
 function fbMarkDirty(){
   if(fbIsApplyingCloudData) return; // Don't mark dirty when applying cloud data
   fbLocalDirtyTime = Date.now();
@@ -94699,6 +94790,840 @@ html[data-theme="dark"] #view-dashboard .db-eisen-pool.drop-target{
     } catch (e) { toast('Couldn\u2019t build the day summary', '\u26A0\uFE0F'); }
   };
 
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     MOTION DESIGN SYSTEM + UX SHELL  ·  layer id: motion-ds
+     ────────────────────────────────────────────────────────────────────────
+     This is deliberately the LAST layer in the file. It adds three things
+     and nothing else:
+
+       1. TOKENS    — one documented `--ds-*` scale (space / radius / type /
+                      motion / elevation / z / accent). Value is mostly in
+                      what it makes possible: new work reads a token instead
+                      of inventing an eighth corner radius.
+
+       2. RESTRAINT — the anti-slop pass. The interactive primitives were
+                      tuned to 550–850 ms "cinematic" transitions; that is
+                      the single strongest tell that a UI was generated
+                      rather than designed, because real tools answer in
+                      under ~150 ms. Also: tabular numerals, quieter toast
+                      elevation, and a real reduced-motion contract.
+
+       3. TWO FIXES — both reproduced in a live browser before being written:
+                      (a) `.auth-hidden` never resolved to `visibility:hidden`
+                          (a transition artifact), so the invisible sign-in
+                          overlay stayed keyboard-focusable and exposed to
+                          assistive tech. Verified: `.auth-btn-google` still
+                          took focus with the overlay at opacity:0.
+                      (b) `font-variant-numeric` was `normal` on every metric,
+                          clock and timer, so digits re-flowed on each tick.
+
+     Deliberately NOT added, because the app already ships them: the ⌘K quick
+     switcher / command palette, the offline pill, the modal focus trap,
+     `aria-current` on nav, and scroll-reset on navigation.
+
+     Every rule is additive. Nothing existing is deleted. Overrides state
+     their reason. New surfaces should use the --ds-* tokens.
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="motion-ds">
+
+/* ── 1. TOKENS ─────────────────────────────────────────────────────────
+   One scale each. If a value you need is not here, the answer is usually
+   to reuse the nearest step rather than add a tenth radius. */
+:root{
+  /* Space — 4px base grid */
+  --ds-1:4px;  --ds-2:8px;  --ds-3:12px; --ds-4:16px;
+  --ds-5:24px; --ds-6:32px; --ds-7:48px; --ds-8:64px;
+
+  /* Radius — three steps plus pill. The legacy file mixes 4,5,6,7,8,9,10,
+     11,12,14,16 and 99px. */
+  --ds-r-sm:6px;         /* chips, inputs, inner tiles     */
+  --ds-r-md:10px;        /* buttons, menu rows, sub-panels */
+  --ds-r-lg:14px;        /* cards, modals, popovers        */
+  --ds-r-pill:999px;
+
+  /* Type — fixed scale. This is a dense tool, not editorial. */
+  --ds-t-2xs:10px; --ds-t-xs:11px; --ds-t-sm:12px; --ds-t-md:13px;
+  --ds-t-lg:15px;  --ds-t-xl:18px; --ds-t-2xl:22px; --ds-t-3xl:30px;
+
+  /* Motion — short and purposeful, and one easing curve app-wide so
+     unrelated surfaces stop each having their own personality. */
+  --ds-dur-1:90ms;    /* state feedback: hover, press, focus  */
+  --ds-dur-2:150ms;   /* small entrances: menus, toasts, rows */
+  --ds-dur-3:240ms;   /* overlays, view changes               */
+  --ds-ease:cubic-bezier(.2,0,.2,1);
+  --ds-ease-out:cubic-bezier(0,0,.2,1);
+
+  /* Elevation — neutral, never tinted. A shadow that borrows the accent
+     hue is the most reliable single "generated UI" tell there is. */
+  --ds-e1:0 1px 2px rgba(0,0,0,.24);
+  --ds-e2:0 2px 6px rgba(0,0,0,.26), 0 1px 2px rgba(0,0,0,.18);
+  --ds-e3:0 12px 32px -6px rgba(0,0,0,.46), 0 4px 10px -4px rgba(0,0,0,.30);
+  --ds-e4:0 24px 64px -12px rgba(0,0,0,.58), 0 8px 20px -8px rgba(0,0,0,.36);
+
+  /* Accent ramp — derived from whichever --accent the active theme sets,
+     so all six built-in themes (and any future custom theme) inherit a
+     consistent ramp without a per-theme override block. */
+  --ds-accent-wash:color-mix(in oklab, var(--accent) 12%, transparent);
+  --ds-accent-edge:color-mix(in oklab, var(--accent) 34%, transparent);
+
+  /* Z-index — documented ladder for NEW surfaces. The legacy file uses
+     ad-hoc values up to 999999; nothing here retro-fits those. */
+  --ds-z-sticky:9000;
+  --ds-z-overlay:9500;
+  --ds-z-palette:9600;
+  --ds-z-toast:9800;
+}
+
+/* Light themes get lighter, tighter shadows — the dark ramp above reads as
+   soot on a white surface. */
+html[data-theme="light"], html[data-theme="pure-light"]{
+  --ds-e1:0 1px 2px rgba(16,16,24,.06);
+  --ds-e2:0 2px 8px rgba(16,16,24,.09), 0 1px 2px rgba(16,16,24,.05);
+  --ds-e3:0 14px 36px -8px rgba(16,16,24,.16), 0 4px 10px -4px rgba(16,16,24,.08);
+  --ds-e4:0 28px 68px -14px rgba(16,16,24,.22), 0 8px 20px -8px rgba(16,16,24,.10);
+}
+
+/* Re-pin the three legacy radius tokens onto that scale. They are already
+   referenced 67+26+30 times, so this one declaration unifies most of the
+   app's corners. --radius was 16px (a fraction soft for a dense tool),
+   --radius-sm 11px (a value that exists nowhere on a human scale) and
+   --radius-xs 8px. */
+:root{
+  --radius:14px;
+  --radius-sm:10px;
+  --radius-xs:6px;
+}
+
+/* ── 2. TYPOGRAPHY ─────────────────────────────────────────────────────
+   Numbers must not move when they change. Timers, counters, KPI tiles and
+   the day ring all re-flowed on every tick because nothing set
+   `font-variant-numeric` (verified: computed value was `normal` on both
+   .stat-card and #homeHeroClock). Outfit and Inter both ship `tnum`. */
+.sc-value, .ms-val, .badge, .tab-count,
+.db-kpi-val, .da-kpi-val, .sc-meta,
+.home-hero-clock, .home-hero-date, .home-day-ring-center .hdrc-pct,
+.focus-time, .focus-timer, .focus-clock, .countdown-time,
+[id$="Clock"], [id$="Timer"], [id$="Pct"], [id$="Count"],
+[class*="timer"], [class*="clock"], .ds-tnum{
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1,"zero" 1;
+}
+
+/* Large display figures need negative tracking to read as deliberately set
+   rather than merely scaled up. */
+.home-hero-clock, .db-kpi-val, .da-kpi-val, [class*="timer"]{
+  letter-spacing:-.02em;
+}
+
+/* Headings should not leave a single orphaned word on the last line. */
+h1, h2, h3, h4,
+.db-hero-title, .view-title, .section-title, .modal-title, .home-greet-title{
+  text-wrap:balance;
+  letter-spacing:-.011em;
+}
+p, .db-sub, .muted, .home-greet-sub{
+  text-wrap:pretty;
+}
+
+/* ── 3. MOTION RESTRAINT ───────────────────────────────────────────────
+   Scope note, so this does not overclaim. Two groups of surfaces were
+   measured before and after:
+
+     · The navigation primitives and the toast DID take the shorter
+       durations below (verified in-browser: .nav-item / .tab-btn
+       0.18s -> 0.09s, toast entrance 0.55s -> 0.15s). These are the
+       interactions a user triggers hundreds of times a session, so they
+       are where the wholesale speed-up pays.
+
+     · The card hover set (.block-card, .stat-card, ...) is deliberately
+       NOT restyled here. Those are already tuned to ~0.3s by the app's
+       own perf layer, and a theme- and view-scoped override exists for
+       them (`html[data-theme="dark"] #view-blocks-list .summary-strip
+       .stat-card`, specificity 1-3-1). Matching it would mean duplicating
+       that theme x view matrix in a third place, which costs more than
+       the ~150 ms it buys. Left alone rather than replaced with a claim
+       that does not hold.
+
+   A single duration value applies to every transitioned property, so
+   these stay correct even if another layer changes the property list. */
+html[data-theme] :is(.nav-item, .tab-btn){
+  transition-duration:var(--ds-dur-1) !important;
+  transition-timing-function:var(--ds-ease) !important;
+}
+.toast{ animation-duration:var(--ds-dur-2) !important; }
+.toast.out{ animation-duration:var(--ds-dur-1) !important; }
+
+/* The toast carried a 20px accent halo plus a grey inset ring, which reads
+   as glow-for-glow's-sake. It is a transient acknowledgement; plain
+   neutral elevation is enough, and it stops competing with the content
+   behind it. */
+.toast{
+  box-shadow:var(--ds-e3) !important;
+  border-radius:var(--ds-r-lg) !important;
+}
+
+/* ── 3b. Reduced motion — a real contract, not a gesture ───────────────
+   Looping ambient animation (halos, pulses, floating logos) is the part
+   that actually causes discomfort, so stop it at the source: one
+   iteration, effectively-zero duration. Entrance animations still land on
+   their final frame because they keep fill-mode. */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-iteration-count:1 !important;
+    animation-duration:.001s !important;
+    transition-duration:.001s !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* ── 4. FOCUS — a floor, not a replacement ─────────────────────────────
+   :where() contributes zero specificity, so this only ever fills gaps that
+   the app's existing focus rules do not already cover. */
+:where(a[href], button:not([disabled]), [role="button"], input, select,
+       textarea, summary):focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+/* Visually hidden, still announced. Used by the route-announcement region
+   (the app has an .sr-only helper too, but this layer should not depend on
+   a class it does not own). */
+.ds-visually-hidden{
+  position:absolute !important;
+  width:1px; height:1px;
+  margin:-1px; padding:0; border:0;
+  overflow:hidden; white-space:nowrap;
+  clip:rect(0 0 0 0); clip-path:inset(50%);
+}
+
+/* ── 5. FIX — the dismissed sign-in overlay stayed reachable ───────────
+   `hideAuthOverlay()` adds `.auth-hidden`, which sets opacity:0 and
+   visibility:hidden. But a later layer adds
+   `transition:opacity .3s, visibility .3s` to #auth-overlay, and because
+   `visibility` interpolates discretely (it stays at its start value for
+   the whole transition) the computed value never resolved to `hidden`.
+   Reproduced in-browser: with the overlay at opacity:0 and the class
+   applied, `.auth-btn-google` still received focus, so a signed-in user
+   could Tab onto an invisible "Sign in with Google" and a screen reader
+   still announced it.
+
+   Root cause, narrowed by elimination in the browser: it is the mere
+   PRESENCE of `visibility` in the transition property list. The rule
+   names no `transition-property`, so the transition list covers every
+   animatable property the element declares — including `visibility` —
+   and `visibility` then holds its start value instead of resolving.
+   Measured against three candidate rules:
+
+     `#auth-overlay.auth-hidden{visibility:hidden!important}`        -> hidden, unfocusable
+     `#auth-overlay.auth-hidden{display:none!important}`             -> none,   unfocusable
+     `#auth-overlay.auth-hidden{visibility:hidden!important;
+        transition:..., visibility 0s linear .24s!important}`       -> visible, FOCUSABLE
+
+   So the fix is not a longer delay or a different easing: `visibility`
+   has to leave the transition list. It is declared `!important` on the
+   hidden state so no theme-scoped layer can outrank it, and paired with
+   `display:none` as defence in depth (that one is deliberately NOT
+   !important, so any future code that shows the gate via an inline
+   `display` still wins).
+
+   Cost, stated plainly: the opacity fade is kept for the fade-IN, and the
+   dismissal now snaps rather than fading out. A gate the user passes once
+   is not worth a 240 ms animation, and `display:none` removes the subtree
+   from layout, the tab order and the accessibility tree — the complete
+   fix. */
+#auth-overlay{
+  transition:opacity var(--ds-dur-3) var(--ds-ease) !important;
+}
+#auth-overlay.auth-hidden{
+  visibility:hidden !important;
+  opacity:0 !important;
+  display:none;
+  pointer-events:none;
+}
+
+</style>
+
+
+<script id="motion-ds-js">
+(function(){
+  'use strict';
+  if (window.__motionDs) return;
+  window.__motionDs = true;
+
+  /* ══════════════════════════════════════════════════════════════════
+     A. ROUTE ANNOUNCEMENTS
+     Switching views is a client-side navigation, so nothing told screen
+     readers that the page had changed — the whole app read as one static
+     document. Announce the new view through a polite live region, and
+     mirror it into document.title so history, bookmarks and the tab
+     strip all identify where you are.
+
+     The wrapper chains onto whatever setView is currently installed
+     rather than replacing it (the same pattern the elevation passes use),
+     so no existing behaviour is lost.
+     ══════════════════════════════════════════════════════════════════ */
+  var live = document.getElementById('motion-ds-live');
+  if (!live) {
+    live = document.createElement('div');
+    live.id = 'motion-ds-live';
+    live.className = 'ds-visually-hidden';
+    live.setAttribute('role', 'status');
+    live.setAttribute('aria-live', 'polite');
+    live.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(live);
+  }
+
+  function authOrSplashUp() {
+    var ids = ['auth-overlay', 'motion-splash-screen'];
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (!el) continue;
+      var cs = getComputedStyle(el);
+      if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0') return true;
+    }
+    return false;
+  }
+
+  /* Derive the label from the app's own nav markup. New views therefore get
+     announced correctly without touching this file. */
+  function viewLabel(v) {
+    if (!v) return '';
+    var el = document.getElementById('tab-' + v);
+    if (!el) {
+      var nav = document.querySelector('.sidebar .nav-item[id="snav-' + v + '"]');
+      el = nav;
+    }
+    var txt = el && el.textContent ? el.textContent.trim() : '';
+    txt = txt.replace(/\s+/g, ' ');
+    if (txt) return txt;
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  }
+
+  var lastAnnounced = null;
+  function announce(v) {
+    if (!v || v === lastAnnounced) return;
+    /* Don't narrate the sign-in gate itself. Note the assignment to
+       lastAnnounced happens only on a real announcement: marking a
+       suppressed view as "already announced" would silently swallow the
+       next switch back to it. */
+    if (authOrSplashUp()) return;
+    var label = viewLabel(v);
+    if (!label) return;
+    lastAnnounced = v;
+    live.textContent = label + ' view';
+    try { document.title = label + ' · Motion'; } catch (e) {}
+  }
+
+  var prevSetView = window.setView;
+  if (typeof prevSetView === 'function') {
+    window.setView = function (v, sideEl) {
+      var r = prevSetView.apply(this, arguments);
+      try { announce(v); } catch (e) { /* never break navigation */ }
+      return r;
+    };
+  }
+  /* announce whichever view we booted into */
+  try {
+    if (typeof currentView !== 'undefined') announce(currentView);
+  } catch (e) {}
+
+  /* ══════════════════════════════════════════════════════════════════
+     B. "?" → THE SHORTCUTS REFERENCE
+     The app already owns a complete, accessible shortcuts reference: the
+     Quick Switcher's "Keyboard Shortcuts" mode, which renders HELP_ROWS.
+     Pressing "?" instead raised a one-line toast, so the real reference
+     was buried one ⌘K deep. Route "?" into the existing view rather than
+     building a second, divergent dialog.
+
+     Registered in the capture phase and with stopImmediatePropagation so
+     it can pre-empt the legacy toast handler without editing it. Degrades
+     to that original toast if the switcher cannot be reached.
+     ══════════════════════════════════════════════════════════════════ */
+  function inTextField(el) {
+    if (!el) return false;
+    var t = el.tagName;
+    return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || el.isContentEditable === true;
+  }
+
+  function openShortcuts() {
+    /* Drive the app's own public entry point: the Ctrl/Cmd+K handler that
+       the quick switcher already listens for. */
+    var opened = false;
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'k', code: 'KeyK', keyCode: 75,
+        ctrlKey: true, bubbles: true, cancelable: true
+      }));
+      opened = !!document.getElementById('ep4Cp');
+    } catch (e) {}
+
+    if (!opened) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Shortcuts: 1–9 views · N new block · T new task · ←/→ day · PgUp/PgDn tab · ⌘K switcher', '⌨', 4600);
+      }
+      return;
+    }
+
+    /* Narrow the list to the shortcuts row, then open it. */
+    var attempt = 0;
+    (function tryOpen() {
+      var list = document.getElementById('ep4CpList');
+      if (list) {
+        var input = document.getElementById('ep4CpIn');
+        if (input && input.value !== 'shortcuts') {
+          input.value = 'shortcuts';
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        var rows = list.querySelectorAll('.ep4-row');
+        for (var i = 0; i < rows.length; i++) {
+          if (/keyboard\s*shortcuts/i.test(rows[i].textContent || '')) {
+            rows[i].click();
+            return;
+          }
+        }
+      }
+      if (attempt++ < 14) setTimeout(tryOpen, 40);
+    })();
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key !== '?') return;
+    if (inTextField(document.activeElement)) return;
+    /* Never stack on top of a dialog that is already open. */
+    if (document.querySelector('.ep4-cp.open, .modal-overlay.open, .overlay.open')) return;
+    if (authOrSplashUp()) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();   /* suppress the legacy one-line toast */
+    openShortcuts();
+  }, true);
+
+  window.__motionDsReady = true;
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MOTION HARDENING v1 — platform & accessibility layer (final)
+     ─────────────────────────────────────────────────────────────────────
+     Scope: cross-cutting platform behavior that no themed layer owns.
+     Written additive & low-specificity on purpose — `:where()` keeps every
+     rule at zero specificity so existing component styles always win.
+     This is the intended LAST style/script block in the document; extend
+     here rather than appending another anonymous patch layer.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="motion-hardening-v1">
+
+/* ── 1. Text stability & iOS input-zoom prevention ────────────────────
+   Stops mobile browsers from inflating text on orientation change, and
+   stops iOS Safari zooming the viewport when a sub-16px control gains
+   focus. Coarse pointers only — desktop typography is untouched.
+   Tier A catches controls that inherit their size; Tier B re-asserts
+   the floor for the primary composers that declare their own small
+   font-size (this block sits last in the cascade, so it wins ties). */
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+@media (pointer: coarse){
+  /* Tier A — anything without an explicit font-size */
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+         select, textarea){
+    font-size:max(16px, 1em);
+  }
+  /* Tier B — primary composers with declared sizes */
+  .task-input, .task-pri-sel, .form-input, .rule-entry-input,
+  .cat-name-inp, .habit-name-inp,
+  .tool-field input, .tool-field select, .tool-field textarea,
+  textarea{
+    font-size:max(16px, 1em);
+  }
+}
+
+/* ── 1b. Flex overflow guard for composer inputs ──────────────────────
+   <input> flex items have min-width:auto ≈ 20ch of intrinsic width;
+   combined with a flex-shrink:0 sibling button (the Add CTA) they
+   overflow narrow rows on phones once the 16px floor above applies.
+   min-width:0 is the canonical fix — the input can now shrink to the
+   space the row actually has. */
+:where(.task-input-row input, .task-composer input){ min-width:0; }
+.task-input{ min-width:0; }
+
+/* ── 2. Pointer affordance ────────────────────────────────────────────
+   Buttons behave like buttons under a cursor. Zero specificity, so any
+   component that deliberately opts out keeps its own cursor rule. */
+:where(button:not(:disabled), [role="button"]:not(:disabled)){ cursor:pointer; }
+
+/* ── 3. Keyboard focus visibility (WCAG 2.4.7) ────────────────────────
+   A visible, theme-aware ring for anything focusable that doesn't
+   already draw one. Components with bespoke :focus-visible styles
+   (60+ across the themed layers) keep winning by specificity. */
+:where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+:where(a, button, [tabindex]):focus:not(:focus-visible){ outline:none; }
+
+/* ── 4. Touch-target sizing (Apple HIG 44pt / WCAG 2.5.5) ────────────
+   Visual sizes stay as designed. Small hit squares (sidebar toggle,
+   close buttons, calendar arrows) grow an invisible ::before apron to
+   a ~44px effective target on coarse pointers; the tab strip gets a
+   real 44px row height on touch devices. */
+@media (pointer: coarse){
+  :where(.tab-btn){ min-height:44px; }
+  :where(.sidebar-toggle, .sidebar-reopen, .close-btn, .nav-arrow){
+    position:relative;
+  }
+  :where(.sidebar-toggle, .sidebar-reopen, .close-btn, .nav-arrow)::before{
+    content:'';
+    position:absolute;
+    inset:-8px;
+    border-radius:inherit;
+  }
+}
+
+/* ── 5. Reduced-motion safety net (WCAG 2.3.3) ────────────────────────
+   Themed layers opt out individually (50+ targeted rules); this net
+   guarantees nothing animated slips through — including inline styles
+   and anything added later. Splash dismissal is timer-driven, so the
+   boot path is unaffected. */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    transition-delay:0ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* ── 6. Forced-colors mode (Windows High Contrast) ────────────────────
+   Translucent theme borders vanish in HCM; keep the focus ring pinned
+   to the system highlight so keyboard users stay oriented. */
+@media (forced-colors: active){
+  :where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible{
+    outline:2px solid Highlight;
+  }
+}
+</style>
+
+<script id="motion-hardening-v1-js">
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION HARDENING v1 — runtime augmentations
+   Runs after every other module. Owns no state, wraps defensively, and
+   degrades silently if any assumption about the host page is wrong.
+   ═══════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if (window.__motionHardening) return;
+  window.__motionHardening = 'v1';
+
+  var doc = document;
+
+  /* ── 1. Programmatic labels for icon-only controls ───────────────────
+     Many controls carry a visual tooltip ([title] / [data-tooltip]) but
+     no accessible name. Mirror the tooltip into aria-label — once for
+     the live DOM, then (rAF-throttled) for nodes added later by the
+     app's renderers. Observing childList only, so writing attributes
+     here can never feed back into the observer. */
+  function labelNode(root){
+    if (!root || root.nodeType !== 1 || !root.querySelectorAll) return;
+    try{
+      var els = root.querySelectorAll('button[title], [role="button"][title], [data-tooltip]:not([aria-label])');
+      for (var i = 0; i < els.length; i++){
+        var el = els[i];
+        if (el.getAttribute('aria-label')) continue;
+        var t = el.getAttribute('title') || el.getAttribute('data-tooltip');
+        if (t) el.setAttribute('aria-label', t);
+      }
+    }catch(e){ /* non-fatal */ }
+  }
+  if (doc.body) labelNode(doc.body);
+
+  var _queue = [], _queued = false;
+  try{
+    var _mo = new MutationObserver(function(muts){
+      for (var i = 0; i < muts.length; i++){
+        var m = muts[i];
+        if (m.type !== 'childList') continue;
+        for (var j = 0; j < m.addedNodes.length; j++){
+          var n = m.addedNodes[j];
+          if (n.nodeType === 1) _queue.push(n);
+        }
+      }
+      if (_queue.length && !_queued){
+        _queued = true;
+        requestAnimationFrame(function(){
+          _queued = false;
+          var batch = _queue.splice(0, 400);
+          for (var k = 0; k < batch.length; k++) labelNode(batch[k]);
+        });
+      }
+    });
+    _mo.observe(doc.body, { childList:true, subtree:true });
+  }catch(e){ /* observer unavailable — static pass already ran */ }
+
+  /* ── 2. Screen-reader view announcements ─────────────────────────────
+     setView() is already wrapped once (history integration, elevation
+     pass v4). This wraps whatever is current at load time, so the chain
+     stays intact: hardening → elevation wrapper → original setView. */
+  var _live = doc.createElement('div');
+  _live.id = 'motion-sr-live';
+  _live.setAttribute('role', 'status');
+  _live.setAttribute('aria-live', 'polite');
+  _live.style.cssText = 'position:fixed;width:1px;height:1px;overflow:hidden;' +
+    'clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;' +
+    'padding:0;margin:-1px;pointer-events:none;';
+  (doc.body || doc.documentElement).appendChild(_live);
+
+  function _announce(msg){
+    _live.textContent = '';
+    setTimeout(function(){ _live.textContent = msg; }, 30);
+  }
+
+  var VIEW_LABELS = {
+    dashboard:'Dashboard', home:'Today', blocks:'Time Blocks', tasks:'Tasks',
+    focus:'Focus Timer', rules:'Guidelines', tracker:'Tracker', notes:'Notes',
+    calendar:'Calendar', sound:'Sound Studio', settings:'Settings',
+    aihub:'AI Hub', assistant:'Assistant', tools:'Tools', office:'Office'
+  };
+
+  var _origSetView = window.setView;
+  if (typeof _origSetView === 'function'){
+    window.setView = function(v, sideEl, opts){
+      var before = (typeof currentView !== 'undefined') ? currentView : null;
+      var r = _origSetView.apply(this, arguments);
+      try{
+        if (v && v !== before && VIEW_LABELS[v]) _announce(VIEW_LABELS[v]);
+      }catch(e){ /* announcement is best-effort */ }
+      return r;
+    };
+  }
+
+  /* ── 3. Toast flood cap ───────────────────────────────────────────────
+     Toasts self-remove on their own timers; this only guards against a
+     burst (sync errors, rapid actions) stacking more than six at once. */
+  try{
+    var _tc = doc.getElementById('toast-container');
+    if (_tc){
+      var _capMo = new MutationObserver(function(){
+        while (_tc.children.length > 6) _tc.removeChild(_tc.firstChild);
+      });
+      _capMo.observe(_tc, { childList:true });
+    }
+  }catch(e){ /* non-fatal */ }
+
+})();
+
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     HOME HERO v2 — greeting bar redesign
+     ─────────────────────────────────────────────────────────────────────
+     The old bar showed the date twice (eyebrow + under the clock) and the
+     sub-line echoed the title ("Good morning" → "Morning"). It now carries
+     one useful piece of context (running/next block, open tasks), a live
+     1s clock, and a sun-arc dial marking the sun's position across the
+     day (the dot glides along the horizon at night as a hollow moon).
+     All rules override the base home-hero block at ~line 12663 by source
+     order; themed colors come from tokens only, so all six themes inherit.
+     ═══════════════════════════════════════════════════════════════════ -->
+<style id="home-hero-v2">
+
+/* Left block — one confident typographic unit */
+.home-hero{ padding:10px var(--home-pad,24px) 0; }
+.home-hero-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.home-greet-block{ min-width:0; flex:1; }
+.home-greet-eyebrow{
+  font-family:var(--font-mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:7px;
+  opacity:.92;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.home-greet-title{
+  font-family:var(--font-head);
+  font-size:clamp(24px,2.6vw,30px);
+  font-weight:800;
+  line-height:1.08;
+  color:var(--text);
+  letter-spacing:-.02em;
+  margin-bottom:7px;
+}
+.home-greet-sub{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  font-size:12.5px;
+  color:var(--text3);
+  font-weight:500;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.home-greet-sub::before{
+  content:'';
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:var(--accent);
+  opacity:.65;
+  flex-shrink:0;
+}
+.home-greet-sub .hgs-strong{ color:var(--text2); font-weight:600; }
+
+/* Right block — sun-arc dial + live clock */
+.home-hero-clock-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  flex-shrink:0;
+  padding-bottom:2px;
+}
+.home-day-arc{ display:block; overflow:visible; }
+.hda-horizon{ stroke:var(--border2); stroke-width:1; }
+/* Arc brightness follows the day: dim at the horizon ends, brightest at
+   the noon apex. Accent comes from the theme token, so it adapts to all
+   six themes; the sun dot carries a soft warm glow, the night moon none. */
+.hda-arc{
+  stroke:url(#hdaGrad);
+  stroke-width:1.5;
+  fill:none;
+  stroke-linecap:round;
+}
+.hda-g1,.hda-g3{ stop-color:var(--accent); stop-opacity:.25; }
+.hda-g2{ stop-color:var(--accent); stop-opacity:.75; }
+.hda-dot{
+  fill:#f2b25a;
+  stroke:rgba(0,0,0,.2);
+  stroke-width:1;
+  filter:drop-shadow(0 0 3px rgba(242,178,90,.6));
+}
+.home-day-arc.is-night .hda-dot{
+  fill:var(--bg2);
+  stroke:var(--text3);
+  stroke-width:1.5;
+  filter:none;
+}
+.home-hero-clock{
+  display:flex;
+  align-items:baseline;
+  font-family:var(--font-mono);
+  font-size:19px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1;
+}
+.hcc{ animation:hh2Colon 1.2s ease-in-out infinite; }
+@keyframes hh2Colon{ 0%,100%{opacity:1} 50%{opacity:.3} }
+.hcap{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text3);
+  margin-left:5px;
+  letter-spacing:.05em;
+}
+
+/* Small screens: keep the bar airy, drop the dial only */
+@media (max-width:440px){
+  .home-day-arc{ display:none; }
+  .home-hero-top{ margin-bottom:14px; }
+}
+</style>
+
+<script id="home-hero-v2-js">
+/* HOME HERO v2 — helpers. Every entry point is typeof-guarded at the call
+   sites inside renderHome(), so a boot race where renderHome runs before
+   this block executes degrades to the legacy behavior instead of throwing. */
+(function(){
+  'use strict';
+  if (window.__homeHeroV2) return;
+  window.__homeHeroV2 = true;
+
+  var DAYS_L  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MONTHS_U = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+  /* Eyebrow: full weekday · MON D · WEEK nn (ISO-8601 week number). */
+  function homeFormatEyebrow(){
+    var d = new Date();
+    var target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var dayNum = (target.getUTCDay() + 6) % 7;               /* Mon = 0 */
+    target.setUTCDate(target.getUTCDate() - dayNum + 3);      /* this week's Thu */
+    var firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+    var fd = (firstThursday.getUTCDay() + 6) % 7;
+    firstThursday.setUTCDate(firstThursday.getUTCDate() - fd + 3);
+    var week = 1 + Math.round((target - firstThursday) / (7 * 864e5));
+    return DAYS_L[d.getDay()] + ' \u00b7 ' + MONTHS_U[d.getMonth()] + ' ' + d.getDate() + ' \u00b7 WEEK ' + week;
+  }
+
+  /* Personalization: first name from the signed-in account, if any. */
+  function homeGreetName(){
+    try{
+      var raw = localStorage.getItem('ft_cloud_email') || '';
+      raw = String(raw).replace(/^"+|"+$/g, '');
+      if(!raw || raw.indexOf('@') < 0) return '';
+      var n = raw.split('@')[0].split(/[._\-+]/)[0] || '';
+      if(!n) return '';
+      return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+    }catch(e){ return ''; }
+  }
+
+  /* Live clock markup: 9:41 am with a gently breathing colon. */
+  function homeRenderClock(){
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    var ap = h < 12 ? 'am' : 'pm';
+    h = h % 12 || 12;
+    return '<span>' + h + '</span><span class="hcc">:</span><span>' +
+           String(m).padStart(2, '0') + '</span><small class="hcap">' + ap + '</small>';
+  }
+
+  /* Sun-arc dial. Day 06:00–18:00 rides the arc (6→18h maps 28→92px);
+     at night the dot glides along the horizon as a hollow moon and wraps
+     24h → 0h continuously. Cheap enough for a 1s tick. */
+  function homeDayArcUpdate(){
+    var svg = document.getElementById('homeDayArc');
+    if(!svg) return;
+    var dot = document.getElementById('homeDayArcDot');
+    if(!dot) return;
+    var d = new Date();
+    var m = d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+    var x, y, night = false;
+    if(m >= 360 && m <= 1080){
+      var pd = (m - 360) / 720;
+      x = 28 + 64 * pd;
+      y = 40 - 32 * Math.sin(Math.PI * pd);
+    } else if(m > 1080){
+      x = 92 + 18 * ((m - 1080) / 360);
+      y = 40;
+      night = true;
+    } else {
+      x = 10 + 18 * (m / 360);
+      y = 40;
+      night = true;
+    }
+    dot.setAttribute('cx', x.toFixed(1));
+    dot.setAttribute('cy', y.toFixed(1));
+    svg.classList.toggle('is-night', night);
+  }
+
+  window.homeFormatEyebrow = homeFormatEyebrow;
+  window.homeGreetName = homeGreetName;
+  window.homeRenderClock = homeRenderClock;
+  window.homeDayArcUpdate = homeDayArcUpdate;
 })();
 </script>
 
