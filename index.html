@@ -158,27 +158,8 @@ body>:not(#motion-splash-screen){visibility:hidden}
   from{transform:translateX(-160%)}
   to{transform:translateX(420%)}
 }
-/* ── Tagline — settles in under the loading line ── */
-#motion-splash-tagline{
-  position:relative;z-index:2;
-  margin-top:16px;
-  /* -10px: same optical-centering correction as the line above —
-     6px trailing letter-spacing minus the shared 8px offset. */
-  margin-left:-10px;
-  font-family:'Outfit',sans-serif;font-size:11px;font-weight:400;
-  letter-spacing:6px;text-transform:uppercase;
-  color:var(--text2,#8a87a6);
-  /* Base = final so the caption survives with animations off. */
-  opacity:.5;
-  will-change:opacity,transform,letter-spacing;
-  animation:splashTagIn .45s cubic-bezier(.16,1,.3,1) .55s both;
-}@keyframes splashTagIn{
-  0%{opacity:0;transform:translateY(4px);letter-spacing:5px}
-  100%{opacity:.5;transform:translateY(0);letter-spacing:6px}
-}
-
 /* ── Splash content wrapper ──
-   Wraps name + tagline + bar so the stack keeps one uniform set of
+   Wraps name + bar so the stack keeps one uniform set of
    proportions; the wrapper itself is inert (no transform on PC). */
 #motion-splash-content{
   position:relative;z-index:2;
@@ -4654,6 +4635,7 @@ select.form-input option{background:var(--bg2);color:var(--text);padding:8px 12p
 .content.focus-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.settings-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.blocks-list-active{mask-image:none!important;-webkit-mask-image:none!important}
+.content.tasks-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.dashboard-active{
   mask-image:linear-gradient(
     to bottom,
@@ -10284,7 +10266,17 @@ html[data-theme="aot"] .main::before {
   background:var(--surface);border-bottom:1px solid var(--border);
   font-size:12px;font-weight:600;color:var(--text2);
   font-family:var(--font-chat);letter-spacing:.02em;
+  /* Collapsible header — collapsed by default, click to expand the list */
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
+.ai-sources-header:hover{background:var(--bg3)}
+.ai-sources-header:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ai-sources-chevron{
+  margin-left:6px;flex-shrink:0;color:var(--text3);
+  transition:transform .28s cubic-bezier(.16,1,.3,1);
+}
+.ai-sources-header[aria-expanded="true"] .ai-sources-chevron{transform:rotate(180deg)}
 .ai-sources-header svg{color:var(--accent);flex-shrink:0}
 .ai-sources-count{
   margin-left:auto;font-size:10px;font-weight:700;
@@ -10293,6 +10285,18 @@ html[data-theme="aot"] .main::before {
 }
 .ai-sources-list{
   padding:8px 10px;display:flex;flex-direction:column;gap:4px;
+  overflow:hidden;
+  transition:height .3s cubic-bezier(.16,1,.3,1),
+             padding-top .3s cubic-bezier(.16,1,.3,1),
+             padding-bottom .3s cubic-bezier(.16,1,.3,1);
+}
+/* Collapsed by default: the header's aria-expanded state drives the height,
+   so a freshly rendered card (every re-render) starts closed. Padding is
+   zeroed too, otherwise the list would still show a thin strip under the
+   header (the mobile override tightens padding to 6px, which is still
+   visible). */
+.ai-sources-header[aria-expanded="false"]+.ai-sources-list{
+  height:0;padding-top:0!important;padding-bottom:0!important;
 }
 .source-chip{
   display:flex;align-items:center;gap:10px;
@@ -13174,10 +13178,10 @@ html[data-theme="aot"] .fn-balance-value.savings{color:#d4af37}
 /* Sidebar backdrop for closing */
 .asst-sidebar-backdrop{
   display:none;
-  position:fixed;inset:0;z-index:9997;
-  background:rgba(0,0,0,.5);
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
+  position:fixed;inset:0;z-index:2; /* keep it BELOW the mobile sidebar (z-index:20) */
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
   -webkit-tap-highlight-color:transparent;
 }
 /* Header toggle button — always visible above sidebar */
@@ -20535,7 +20539,6 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   <div id="motion-splash-content">
     <div id="motion-splash-name">Motion</div>
     <div id="motion-splash-bar"></div>
-    <div id="motion-splash-tagline">Own your time</div>
   </div>
 </div>
 <!-- SIDEBAR -->
@@ -21802,6 +21805,10 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Download .html
                   </button>
+                  <button class="ofc-btn" onclick="ofcExportDocTxt()" title="Download this document as plain text">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+                    .txt
+                  </button>
                   <button class="ofc-btn" onclick="ofcPrintDoc()" title="Print the document">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                     Print
@@ -22542,14 +22549,10 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
               <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
                 <div class="settings-row-left">
                   <div class="settings-row-label">API Keys</div>
-                  <div class="settings-row-desc">Add multiple keys with different models. All active keys appear in the assistant — use the same key with different model IDs, or different keys with the same model. Exact duplicates (same key + same model) are blocked.</div>
                 </div>
                 <button class="settings-action-btn" onclick="showAddApiKeyModal()" style="white-space:nowrap">+ Add Key</button>
               </div>
               <div id="apiKeyList" class="api-key-list"></div>
-              <div style="font-size:11px;line-height:1.5;color:var(--text3);padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg3)">
-                <b style="color:var(--text2)">Where are my keys stored?</b> In this browser's localStorage, in plain text, so they can be sent directly to the AI provider. They never leave this device except to the provider's API. Because this is a client-side app, any browser extension or script on this page could read them — rotate keys you add here and revoke them if a device is lost or shared.
-              </div>
             </div>
 
             <div class="settings-row">
@@ -22642,7 +22645,6 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
             <option value="mistral">Mistral</option>
             <option value="openrouter">OpenRouter</option>
             <option value="openai">OpenAI</option>
-            <option value="opus">Opus Proxy (Free Claude)</option>
             <option value="anthropic">Anthropic</option>
             <option value="google">Google AI (Gemini)</option>
             <option value="deepseek">DeepSeek</option>
@@ -22704,6 +22706,22 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           </div>
         </div>
 
+        <!-- Brainwave (top — the page's headline feature) -->
+        <div class="sound-section-hdr">
+          <span class="sound-section-label">Brainwave Entrainment</span>
+          <span class="sound-section-line"></span>
+          <span class="sound-badge">🎧 Headphones required</span>
+        </div>
+        <div class="sound-grid" id="snd-wave-grid"></div>
+
+        <!-- Focus Music (second) -->
+        <div class="sound-section-hdr">
+          <span class="sound-section-label">Focus Music</span>
+          <span class="sound-section-line"></span>
+          <span class="sound-badge">🎯 Built for deep work</span>
+        </div>
+        <div class="sound-grid" id="snd-music-grid"></div>
+
         <!-- Relaxing Music -->
         <div class="sound-section-hdr">
           <span class="sound-section-label">Relaxing Music</span>
@@ -22718,21 +22736,6 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           <span class="sound-section-line"></span>
         </div>
         <div class="sound-grid" id="snd-noise-grid"></div>
-
-        <!-- Brainwave -->
-        <div class="sound-section-hdr">
-          <span class="sound-section-label">Brainwave Entrainment</span>
-          <span class="sound-section-line"></span>
-          <span class="sound-badge">🎧 Headphones required</span>
-        </div>
-        <div class="sound-grid" id="snd-wave-grid"></div>
-
-        <!-- Focus Music -->
-        <div class="sound-section-hdr">
-          <span class="sound-section-label">Focus Music</span>
-          <span class="sound-section-line"></span>
-        </div>
-        <div class="sound-grid" id="snd-music-grid"></div>
 
         <!-- Lofi for Study -->
         <div class="sound-section-hdr">
@@ -32154,8 +32157,11 @@ const TOOLS_LIST=[
   // ── Time ──
   {id:'stopwatch',cat:'Time',name:'Stopwatch',desc:'Precision stopwatch with laps',icon:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><line x1="9" y1="2" x2="15" y2="2"/>'},
   {id:'countdown',cat:'Time',name:'Date Countdown',desc:'Days until a future date',icon:'<circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 14"/><line x1="9" y1="2" x2="15" y2="2"/>'},
-  // ── Thinking ──
-  {id:'mindmap',cat:'Thinking',name:'Mindmap',desc:'Visualize plans, roadmaps, ideas & thoughts',icon:'<circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="9.5" y1="9.5" x2="6.5" y2="6.5"/><line x1="14.5" y1="9.5" x2="17.5" y2="6.5"/><line x1="9.5" y1="14.5" x2="6.5" y2="17.5"/><line x1="14.5" y1="14.5" x2="17.5" y2="17.5"/>'},
+  // ── Developer & everyday utilities ──
+  {id:'jsonfmt',cat:'Text Tools',name:'JSON Formatter',desc:'Pretty-print, minify & validate JSON',icon:'<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>'},
+  {id:'textdiff',cat:'Text Tools',name:'Text Diff',desc:'Compare two texts, line by line',icon:'<line x1="4" y1="7" x2="9" y2="7"/><line x1="4" y1="12" x2="10" y2="12"/><line x1="4" y1="17" x2="8" y2="17"/><line x1="15" y1="7" x2="20" y2="7"/><line x1="14" y1="12" x2="20" y2="12"/><line x1="16" y1="17" x2="20" y2="17"/>'},
+  {id:'uuid',cat:'Generators',name:'UUID Generator',desc:'Generate v4 UUIDs in bulk',icon:'<rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/>'},
+  {id:'picker',cat:'Generators',name:'Random Picker',desc:'Paste a list, pick a random winner',icon:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'},
 ];
 
 /* The longer a tool's name, the smaller it renders — a 25-char name
@@ -32195,8 +32201,7 @@ function renderTools(){
   const custom=customToolLoad();
   const customFiltered=q?custom.filter(function(t){return t.name.toLowerCase().indexOf(q)>=0||t.url.toLowerCase().indexOf(q)>=0;}):custom;
   if(customFiltered.length){
-    const _catDelay2=_anim?Math.min(_cardIdx*35,600):0;
-    html+='<div class="tools-cat-label'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation:toolsCatIn .4s cubic-bezier(.16,1,.3,1) both;animation-delay:'+_catDelay2+'ms"':'')+'><span>My Links</span><span class="tools-cat-count">'+customFiltered.length+'</span></div>';
+    const _catDelay2=_anim?Math.min(_cardIdx*35,600):0;      html+='<div class="tools-cat-label'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation:toolsCatIn .4s cubic-bezier(.16,1,.3,1) both;animation-delay:'+_catDelay2+'ms"':'')+'><span>My Links</span></div>';
     html+='<div class="tools-grid">';
     customFiltered.forEach(function(t){
       var host='';
@@ -32219,7 +32224,7 @@ function renderTools(){
     cats.forEach(function(c){
       const catTools=filtered.filter(function(t){return t.cat===c;});
       const _catDelay=_anim?Math.min(_cardIdx*35,600):0; // delay the category label until first card in it
-      html+='<div class="tools-cat-label'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation:toolsCatIn .4s cubic-bezier(.16,1,.3,1) both;animation-delay:'+_catDelay+'ms"':'')+'><span>'+c+'</span><span class="tools-cat-count">'+catTools.length+'</span></div>';
+      html+='<div class="tools-cat-label'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation:toolsCatIn .4s cubic-bezier(.16,1,.3,1) both;animation-delay:'+_catDelay+'ms"':'')+'><span>'+c+'</span></div>';
       html+='<div class="tools-grid">';
       catTools.forEach(function(t){
         const _delay=_anim?Math.min(_cardIdx*35,600):0;
@@ -35546,6 +35551,158 @@ function rnCopy(){
   if(t&&t.indexOf('Click Generate')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
 }
 
+// ── JSON Formatter ──
+TOOL_RENDERERS.jsonfmt=function(){
+  toolBody(
+    '<div class="tool-field"><label>JSON input</label><textarea id="jfIn" placeholder=\'{"name":"Motion","tags":["focus","productive"],"count":3}\' oninput="jfRun(\'fmt\')" style="min-height:130px;font-family:var(--font-mono,\'Courier New\',monospace)"></textarea></div>'+
+    '<div class="tool-actions">'+
+      '<button class="tool-btn" onclick="jfRun(\'fmt\')">Pretty print</button>'+
+      '<button class="tool-btn-ghost tool-btn" onclick="jfRun(\'min\')">Minify</button>'+
+      '<button class="tool-btn-ghost tool-btn" onclick="jfCopy()">Copy</button>'+
+    '</div>'+
+    '<div class="tool-output" id="jfOut" style="font-family:var(--font-mono,\'Courier New\',monospace);white-space:pre-wrap;max-height:320px;overflow:auto"><span class="tool-output-empty">Formatted JSON appears here…</span></div>'
+  );
+};
+function jfRun(mode){
+  const inp=document.getElementById('jfIn'),out=document.getElementById('jfOut');
+  if(!inp||!out)return;
+  const raw=inp.value.trim();
+  if(!raw){out.innerHTML='<span class="tool-output-empty">Formatted JSON appears here…</span>';return;}
+  try{
+    const obj=JSON.parse(raw);
+    out.textContent=(mode==='min')?JSON.stringify(obj):JSON.stringify(obj,null,2);
+  }catch(e){
+    out.innerHTML='<span style="color:#f87171">Invalid JSON: '+esc(e.message)+'</span>';
+  }
+}
+function jfCopy(){
+  const t=document.getElementById('jfOut').innerText;
+  if(t&&t.indexOf('appears here')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
+}
+
+// ── URL Encoder / Decoder ──
+// ── Text Diff (line by line) ──
+TOOL_RENDERERS.textdiff=function(){
+  toolBody(
+    '<div class="tool-row">'+
+      '<div class="tool-field"><label>Original</label><textarea id="tdA" style="min-height:130px"></textarea></div>'+
+      '<div class="tool-field"><label>Changed</label><textarea id="tdB" style="min-height:130px"></textarea></div>'+
+    '</div>'+
+    '<div class="tool-actions"><button class="tool-btn" onclick="tdRun()">Compare</button></div>'+
+    '<div class="tool-output" id="tdOut" style="white-space:pre-wrap;max-height:340px;overflow:auto"><span class="tool-output-empty">Line-by-line differences appear here…</span></div>'+
+    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px"><span style="color:#4ade80">Green +</span> = added · <span style="color:#f87171">Red −</span> = removed · plain = unchanged</div>'
+  );
+};
+function tdRun(){
+  const A=(document.getElementById('tdA').value||'').split('\n');
+  const B=(document.getElementById('tdB').value||'').split('\n');
+  const out=document.getElementById('tdOut');
+  if(!out)return;
+  if((A.length===1&&A[0]==='')&&(B.length===1&&B[0]==='')){out.innerHTML='<span class="tool-output-empty">Line-by-line differences appear here…</span>';return;}
+  if(A.length>800||B.length>800){out.innerHTML='<span style="color:#f87171">Too long to diff — keep each side under 800 lines</span>';return;}
+  const n=A.length,m=B.length;
+  // LCS table (dp[i][j] = length of LCS of A[i:] and B[j:])
+  const dp=[];
+  for(let i=0;i<=n;i++)dp.push(new Uint16Array(m+1));
+  for(let i=n-1;i>=0;i--){
+    for(let j=m-1;j>=0;j--){
+      dp[i][j]=(A[i]===B[j])?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+    }
+  }
+  let html='',ai=0,bi=0,add=0,del=0;
+  const REM='<div style="color:#f87171;opacity:.9">− ',ADD='<div style="color:#4ade80;opacity:.9">+ ',END='</div>';
+  while(ai<n&&bi<m){
+    if(A[ai]===B[bi]){html+='<div>'+esc(A[ai])+'</div>';ai++;bi++;}
+    else if(dp[ai+1][bi]>=dp[ai][bi+1]){html+=REM+esc(A[ai])+END;del++;ai++;}
+    else{html+=ADD+esc(B[bi])+END;add++;bi++;}
+  }
+  while(ai<n){html+=REM+esc(A[ai])+END;del++;ai++;}
+  while(bi<m){html+=ADD+esc(B[bi])+END;bi++;add++;}
+  out.innerHTML='<div style="font-size:.68rem;color:var(--text3);margin-bottom:6px">'+add+' line'+(add===1?'':'s')+' added · '+del+' line'+(del===1?'':'s')+' removed</div>'+html;
+}
+
+// ── UUID Generator ──
+TOOL_RENDERERS.uuid=function(){
+  toolBody(
+    '<div class="tool-row">'+
+      '<div class="tool-field"><label>How many</label><input type="number" id="uuCount" value="5" min="1" max="100"/></div>'+
+      '<div class="tool-field"><label><input type="checkbox" id="uuUpper" style="width:auto;margin-right:6px"/>Uppercase</label></div>'+
+    '</div>'+
+    '<div class="tool-actions"><button class="tool-btn" onclick="uuGen()">Generate</button><button class="tool-btn-ghost tool-btn" onclick="uuCopy()">Copy all</button></div>'+
+    '<div class="tool-output" id="uuOut" style="font-family:var(--font-mono,\'Courier New\',monospace);white-space:pre-wrap"><span class="tool-output-empty">Click Generate…</span></div>'
+  );
+};
+function uuGen(){
+  const count=Math.min(100,Math.max(1,parseInt(document.getElementById('uuCount').value)||5));
+  const upper=document.getElementById('uuUpper').checked;
+  const list=[];
+  for(let i=0;i<count;i++){
+    let u;
+    if(window.crypto&&crypto.randomUUID){
+      u=crypto.randomUUID();
+    } else {
+      const bytes=new Uint8Array(16);
+      if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(bytes);
+      else for(let k=0;k<16;k++)bytes[k]=Math.floor(Math.random()*256);
+      bytes[6]=(bytes[6]&0x0f)|0x40;   // version 4
+      bytes[8]=(bytes[8]&0x3f)|0x80;   // variant
+      const h=[];
+      for(let k=0;k<16;k++)h.push((bytes[k]>>>4).toString(16),(bytes[k]&15).toString(16));
+      u=h.join('');
+      u=u.slice(0,8)+'-'+u.slice(8,12)+'-'+u.slice(12,16)+'-'+u.slice(16,20)+'-'+u.slice(20);
+    }
+    list.push(upper?u.toUpperCase():u);
+  }
+  document.getElementById('uuOut').textContent=list.join('\n');
+}
+function uuCopy(){
+  const t=document.getElementById('uuOut').innerText;
+  if(t&&t.indexOf('Click Generate')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
+}
+
+// ── Random Picker (decision maker) ──
+let pkPicked=null;
+TOOL_RENDERERS.picker=function(){
+  pkPicked=null;
+  toolBody(
+    '<div class="tool-field"><label>One item per line</label><textarea id="pkIn" placeholder="Alice\nBob\nCharlie\nDana" style="min-height:130px"></textarea></div>'+
+    '<div class="tool-field"><label><input type="checkbox" id="pkNoRepeat" style="width:auto;margin-right:6px"/>No repeats (picked items drop out)</label></div>'+
+    '<div class="tool-actions"><button class="tool-btn" onclick="pkPick()">Pick one</button><button class="tool-btn-ghost tool-btn" onclick="pkReset()">Reset</button></div>'+
+    '<div class="tool-output" id="pkOut"><span class="tool-output-empty">Add your items above, then pick…</span></div>'+
+    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px" id="pkStatus"></div>'
+  );
+};
+function pkItems(){
+  const raw=document.getElementById('pkIn').value||'';
+  return raw.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+}
+function pkPick(){
+  const items=pkItems();
+  if(!items.length){showToast('Add at least one item first','!',1600);return;}
+  if(pkPicked===null)pkPicked=[];
+  const noRepeat=document.getElementById('pkNoRepeat').checked;
+  let pool=items;
+  if(noRepeat){
+    pool=items.filter(function(it){return pkPicked.indexOf(it)<0;});
+    if(!pool.length){
+      document.getElementById('pkOut').innerHTML='<div class="tool-result-big" style="font-size:1.3rem">🎉 Everyone has been picked — hit Reset to start over</div>';
+      return;
+    }
+  }
+  const winner=pool[Math.floor(Math.random()*pool.length)];
+  if(noRepeat)pkPicked.push(winner);
+  document.getElementById('pkOut').innerHTML='<div class="tool-result-big" style="font-size:1.7rem">'+esc(winner)+'</div>';
+  const st=document.getElementById('pkStatus');
+  if(st)st.textContent=noRepeat?(pool.length-1)+' item'+(pool.length-1===1?'':'s')+' left':'from '+items.length+' item'+(items.length===1?'':'s');
+}
+function pkReset(){
+  pkPicked=null;
+  const o=document.getElementById('pkOut');
+  if(o)o.innerHTML='<span class="tool-output-empty">Add your items above, then pick…</span>';
+  const st=document.getElementById('pkStatus');
+  if(st)st.textContent='';
+}
+
 // ── Number Base Converter ──
 TOOL_RENDERERS.baseconv=function(){
   toolBody(
@@ -37913,9 +38070,30 @@ const AI_TOOLS = [
   {id:'uizard-design', name:'Uizard', cat:'Design AI', desc:'Turns sketches and text into editable app and web wireframes.', tier:'Freemium', url:'https://uizard.io'},
   {id:'freepik-design', name:'Freepik AI', cat:'Design AI', desc:'All-in-one generator for images, vectors and mockups with a daily free quota.', tier:'Freemium', url:'https://www.freepik.com'},
   {id:'visily-design', name:'Visily', cat:'Design AI', desc:'Converts screenshots and text into editable app designs — free plan.', tier:'Free', url:'https://www.visily.ai'},
-  {id:'v0-design', name:'v0 by Vercel', cat:'Design AI', desc:'Generates polished React and Tailwind UI from a prompt — daily free credits.', tier:'Freemium', url:'https://v0.dev'}
+  {id:'v0-design', name:'v0 by Vercel', cat:'Design AI', desc:'Generates polished React and Tailwind UI from a prompt — daily free credits.', tier:'Freemium', url:'https://v0.dev'},
+
+  // ── Education AI ──
+  {id:'khanmigo-edu', name:'Khanmigo', cat:'Education AI', desc:'Khan Academy\'s AI tutor — guides you to answers with hints instead of giving them.', tier:'Free', url:'https://www.khanmigo.ai'},
+  {id:'socratic-edu', name:'Socratic by Google', cat:'Education AI', desc:'Snap a homework question — explains concepts with steps and web sources.', tier:'Free', url:'https://socratic.org'},
+  {id:'notebooklm-edu', name:'NotebookLM', cat:'Education AI', desc:'Upload your notes and papers — get summaries, study guides and audio overviews.', tier:'Free', url:'https://notebooklm.google.com'},
+  {id:'quizlet-edu', name:'Quizlet', cat:'Education AI', desc:'Turns your material into flashcards, practice tests and study plans.', tier:'Freemium', url:'https://quizlet.com'},
+  {id:'gauth-edu', name:'Gauth', cat:'Education AI', desc:'Step-by-step solver for math, physics and chemistry problems.', tier:'Freemium', url:'https://gauthmath.com'},
+
+  // ── Translation AI ──
+  {id:'deepl-tr', name:'DeepL', cat:'Translation AI', desc:'Often the most natural-sounding machine translation — free web and desktop use.', tier:'Free', url:'https://www.deepl.com/translator'},
+  {id:'google-tr', name:'Google Translate', cat:'Translation AI', desc:'130+ languages with camera, handwriting and offline translation.', tier:'Free', url:'https://translate.google.com'},
+  {id:'bing-tr', name:'Microsoft Translator', cat:'Translation AI', desc:'Converse mode translates multi-person conversations in real time.', tier:'Free', url:'https://www.microsoft.com/en-us/translator/translator-app/'},
+  {id:'yandex-tr', name:'Yandex Translate', cat:'Translation AI', desc:'Strong for Eastern European and Asian language pairs.', tier:'Free', url:'https://translate.yandex.com'},
+  {id:'papago-tr', name:'Papago', cat:'Translation AI', desc:'Naver\'s translator — excellent for Korean, Japanese and Chinese.', tier:'Free', url:'https://papago.naver.com'},
+
+  // ── Writing AI ──
+  {id:'quillbot-wr', name:'QuillBot', cat:'Writing AI', desc:'Paraphraser, grammar checker and summarizer with a generous free tier.', tier:'Freemium', url:'https://quillbot.com'},
+  {id:'grammarly-wr', name:'Grammarly', cat:'Writing AI', desc:'Real-time grammar, tone and clarity suggestions everywhere you type.', tier:'Freemium', url:'https://www.grammarly.com'},
+  {id:'copyai-wr', name:'Copy.ai', cat:'Writing AI', desc:'Drafts emails, ads and blog posts — free monthly word quota.', tier:'Freemium', url:'https://www.copy.ai'},
+  {id:'rytr-wr', name:'Rytr', cat:'Writing AI', desc:'Lightweight copywriting assistant with a free monthly character allowance.', tier:'Freemium', url:'https://rytr.me'},
+  {id:'hyperwrite-wr', name:'HyperWrite', cat:'Writing AI', desc:'Personalized writing agent that drafts in your own tone of voice.', tier:'Freemium', url:'https://www.hyperwrite.ai'}
 ];
-const AIH_CATEGORIES = ['Chat AI','Coding AI','Image Generation','Research','Video AI','Audio AI','Productivity AI','Design AI'];
+const AIH_CATEGORIES = ['Chat AI','Coding AI','Image Generation','Research','Video AI','Audio AI','Productivity AI','Design AI','Education AI','Translation AI','Writing AI'];
 
 function aihLoadFavs(){
   try{ return JSON.parse(localStorage.getItem(AIH_FAV_KEY)||'[]'); }catch(e){ return []; }
@@ -38076,11 +38254,8 @@ function renderAIHub(){
   if(filtersEl){
     const cats = ['All', ...allCats];
     filtersEl.innerHTML = cats.map(c=>{
-      let cnt;
-      if(c==='All') cnt = allTools.length;
-      else cnt = allTools.filter(t=>aihSameCat(t.cat,c)).length;
       const active = c===activeFilter ? 'active' : '';
-      return `<button class="aih-filter-btn ${active}" onclick="aihSetFilter('${c}')">${esc(c)}<span class="aih-filter-count">${cnt}</span></button>`;
+      return `<button class="aih-filter-btn ${active}" onclick="aihSetFilter('${c}')">${esc(c)}</button>`;
     }).join('');
   }
 
@@ -38127,7 +38302,7 @@ function renderAIHub(){
   sectionsEl.innerHTML = Object.entries(groups).map(([cat,items])=>{
     return `
       <div class="aih-section">
-        <div class="aih-section-title">${esc(cat)} <span class="aih-section-count">${items.length}</span></div>
+        <div class="aih-section-title">${esc(cat)}</div>
         <div class="aih-grid">
           ${items.map(t=>aihCardHTML(t, favs.includes(t.id))).join('')}
         </div>
@@ -38393,20 +38568,60 @@ function animateCount(el,target,unit=''){
 
 /* ═══ SOUND STUDIO ═══ */
 (function(){
-  let sndCtx=null, masterGain=null;
+  let sndCtx=null, masterGain=null, sndAnalyser=null;
   const sndNodes={};
   let sndInited=false;
+
+  /* ── Generator lifecycle ──
+     Generators schedule their own setTimeout() chains (bird chirps, drips,
+     thunder, drum grooves, note sequences…). Before this existed, those chains
+     kept firing long after the user pressed Stop: the card said "Play" again
+     and you heard nothing — the node graph had been disconnected — yet every
+     tick still created oscillators nothing could ever release, so a few minutes
+     of browsing leaked hundreds of dead nodes and burned CPU.
+     `_genCtl` marks the sound whose generator is currently running. `__sched`
+     refuses to fire callbacks of a stopped sound, and swaps itself in for
+     window.setTimeout only while a generator body (or one of its callbacks)
+     runs synchronously — so every nested setTimeout() below is captured without
+     rewriting each call site. */
+  let _genCtl=null, _liveSchedTimers=0;
+  /* Capture the real setTimeout BEFORE anything swaps window.setTimeout for
+     __sched — otherwise __sched's own setTimeout() call re-enters __sched and
+     recurses until the stack overflows. */
+  const _nativeST=window.setTimeout.bind(window);
+  const _nativeCT=window.clearTimeout.bind(window);
+  function __sched(fn,ms){
+    const ctl=_genCtl;
+    if(!ctl) return _nativeST(fn,ms);
+    const id=_nativeST(function(){
+      ctl.timers.delete(id); _liveSchedTimers--;
+      if(!ctl.alive) return;
+      const prevCtl=_genCtl, prevSet=window.setTimeout;
+      _genCtl=ctl; window.setTimeout=__sched;
+      try{ fn(); } finally { window.setTimeout=prevSet; _genCtl=prevCtl; }
+    },ms);
+    ctl.timers.add(id); _liveSchedTimers++;
+    return id;
+  }
+  function releaseCtl(ctl){
+    if(!ctl) return;
+    ctl.alive=false;
+    ctl.timers.forEach(function(t){ _nativeCT(t); _liveSchedTimers--; });
+    ctl.timers.clear();
+  }
 
   const NOISE_SOUNDS=[
     {id:'brown',name:'Brown noise',desc:'Deep warm rumble. Masks voices, reduces anxiety.',dot:'#8B5E3C',type:'brown'},
     {id:'white',name:'White noise',desc:'Full-spectrum hiss. Blocks all distraction frequencies.',dot:'#b0b0b0',type:'white'},
     {id:'pink',name:'Pink noise',desc:'Balanced & natural. Like steady rain — gentle and smooth.',dot:'#d48fa8',type:'pink'},
+    {id:'green',name:'Green noise',desc:'Mid-range haze — the quiet centre of the spectrum. Softer than white, brighter than brown.',dot:'#6FCF97',type:'green'},
   ];
   const WAVE_SOUNDS=[
-    {id:'alpha',name:'Alpha waves',desc:'8–12 Hz. Calm alertness, creative flow, relaxed focus.',dot:'#7B8FE8',type:'binaural',freq:10,carrier:200},
-    {id:'theta',name:'Theta waves',desc:'4–8 Hz. Deep meditation, memory, creative insight.',dot:'#9B7BE8',type:'binaural',freq:6,carrier:180},
+    {id:'alpha',name:'Alpha waves',desc:'10 Hz. Calm alertness, creative flow, relaxed focus.',dot:'#7B8FE8',type:'binaural',freq:10,carrier:200},
+    {id:'beta',name:'Beta waves',desc:'16 Hz. Active attention, alert energy — the gears-in-motion state for hard work.',dot:'#E09070',type:'binaural',freq:16,carrier:220},
+    {id:'theta',name:'Theta waves',desc:'6 Hz. Deep meditation, memory, creative insight.',dot:'#9B7BE8',type:'binaural',freq:6,carrier:180},
     {id:'gamma',name:'Gamma waves',desc:'40 Hz. Peak cognition, memory encoding, deep problem-solving.',dot:'#3DAA7A',type:'binaural',freq:40,carrier:200},
-    {id:'delta',name:'Delta waves',desc:'1–3 Hz. Ultra-deep rest, recovery, restorative study breaks.',dot:'#5B9BD4',type:'binaural',freq:2,carrier:160},
+    {id:'delta',name:'Delta waves',desc:'2 Hz. Ultra-deep rest, recovery, restorative study breaks.',dot:'#5B9BD4',type:'binaural',freq:2,carrier:160},
   ];
   const MUSIC_SOUNDS=[
     {id:'lofi1',name:'Lo-fi Rain',desc:'Soft rain over mellow lo-fi chords. Cozy and focused.',dot:'#E8A050',type:'music',gen:'lofi_rain'},
@@ -38417,6 +38632,7 @@ function animateCount(el,target,unit=''){
     {id:'fireplace',name:'Fireplace',desc:'Crackling fire, warm and grounding.',dot:'#E05030',type:'music',gen:'fireplace'},
   ];
   const NATURE_SOUNDS=[
+    {id:'brook',name:'Babbling Brook',desc:'Clear water tumbling over stones. Bright, close, endlessly varied.',dot:'#4FB3D9',type:'music',gen:'brook'},
     {id:'ocean',name:'Ocean Waves',desc:'Rhythmic surf rolling onto shore. Breathing pace, deeply calming.',dot:'#2E8BC0',type:'music',gen:'ocean_waves'},
     {id:'thunderstorm',name:'Thunderstorm',desc:'Distant rolling thunder with heavy rain. Powerful and immersive.',dot:'#4A5899',type:'music',gen:'thunderstorm'},
     {id:'wind',name:'Mountain Wind',desc:'Whistling alpine wind through valleys. Vast and contemplative.',dot:'#7CA8B8',type:'music',gen:'wind'},
@@ -38425,6 +38641,7 @@ function animateCount(el,target,unit=''){
     {id:'rain_light',name:'Light Rain',desc:'Soft drizzle on leaves and rooftops. Gentle and constant.',dot:'#6A9EC0',type:'music',gen:'light_rain'},
   ];
   const AMBIENT_SOUNDS=[
+    {id:'library',name:'Library Room',desc:'Distant pages, soft footsteps, hushed air. Everyone else is working too.',dot:'#9A8F7A',type:'music',gen:'library'},
     {id:'airplane',name:'Airplane Cabin',desc:'Steady engine drone at cruising altitude. Surprisingly great for focus.',dot:'#7A8899',type:'music',gen:'airplane'},
     {id:'train',name:'Train Ride',desc:'Rhythmic clickety-clack of rails. Meditative motion.',dot:'#8B7355',type:'music',gen:'train'},
     {id:'piano',name:'Ambient Piano',desc:'Sparse, gentle piano notes floating in reverb. Contemplative beauty.',dot:'#C0A0D0',type:'music',gen:'piano_ambient'},
@@ -38441,7 +38658,7 @@ function animateCount(el,target,unit=''){
     {id:'soft_strings',name:'Soft Strings',desc:'Lush string ensemble pad. Cinematic warmth, like a film score fading in.',dot:'#D08A8A',type:'music',gen:'soft_strings'},
     {id:'music_box',name:'Music Box',desc:'Delicate music box lullaby. Tinkling melodies from a childhood dream.',dot:'#E8C870',type:'music',gen:'music_box'},
     {id:'kalimba_night',name:'Kalimba Night',desc:'African thumb piano under stars. Sweet metallic tones, deeply soothing.',dot:'#80B8C8',type:'music',gen:'kalimba_night'},
-    {id:'singing_bowl',name:'Singing Bowl',desc:'Resonant Tibetan bowl overtones. Deep vibrations that melt tension away.',dot:'#C8A0D8',type:'music',gen:'singing_bowl'},
+    {id:'bowl_calm',name:'Singing Bowl (Calm)',desc:'Resonant Tibetan bowl overtones. Deep vibrations that melt tension away.',dot:'#C8A0D8',type:'music',gen:'singing_bowl'},
     {id:'ambient_choir',name:'Ambient Choir',desc:'Ethereal vocal pads swelling and fading. Cathedral-like serenity and peace.',dot:'#A8C8D8',type:'music',gen:'ambient_choir'},
   ];
   const LOFI_SOUNDS=[
@@ -38461,6 +38678,15 @@ function animateCount(el,target,unit=''){
       masterGain=sndCtx.createGain();
       masterGain.connect(sndCtx.destination);
       masterGain.gain.value=0.70;
+      /* Diagnostics tap: a silent analyser on the master bus so the sound page
+         can measure its own output (self-test + volume metering). It only
+         reads — it is not routed to the destination, so nothing is audible
+         through it. */
+      try{
+        sndAnalyser=sndCtx.createAnalyser();
+        sndAnalyser.fftSize=2048;
+        masterGain.connect(sndAnalyser);
+      }catch(e){ sndAnalyser=null; }
     }
     if(sndCtx.state==='suspended') sndCtx.resume();
   }
@@ -38480,11 +38706,139 @@ function animateCount(el,target,unit=''){
         b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
         d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
       }
+    } else if(type==='green'){
+      // Green noise: pink noise with the very bottom rolled off, so the energy
+      // sits in the mid-range — softer than white, less rumbly than brown.
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0,prevP=0,prevY=0;
+      const a=0.94; // one-pole high-pass ≈ 350 Hz at 44.1 kHz
+      for(let i=0;i<len;i++){
+        const w=Math.random()*2-1;
+        b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;
+        b2=0.96900*b2+w*0.1538520;b3=0.86650*b3+w*0.3104856;
+        b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
+        const pink=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+        const y=a*(prevY+pink-prevP);
+        d[i]=y*1.6;prevP=pink;prevY=y;
+      }
     } else {
       let last=0;
       for(let i=0;i<len;i++){const w=Math.random()*2-1;d[i]=(last+(0.02*w))/1.02;last=d[i];d[i]*=3.5;}
     }
     const src=sndCtx.createBufferSource();src.buffer=buf;src.loop=true;return src;
+  }
+
+  /* ── Shared musical toolkit ──────────────────────────────────────────────
+     A lot of the older tracks were static: a chord held forever with a slow
+     LFO on top, which reads as "a drone", not music. These three helpers give
+     every category real movement — chords that change, notes that are struck,
+     and a beat that swings — and they create only self-stopping nodes, so
+     Stop() still tears everything down cleanly. */
+
+  /* progPad(out, chords, opts) — sustained chords that cross-fade bar by bar.
+     opts: bar (seconds, default 8), gain (per voice, default .028),
+           cutoff (low-pass Hz, default 900), waves (osc types). */
+  function progPad(out,chords,opts){
+    const o=opts||{};
+    const dur=+(o.bar||8), gain=+(o.gain||0.028), cutoff=+(o.cutoff||900);
+    const waves=o.waves||['sine'];
+    const rel=Math.max(1.6,dur-2);
+    let idx=0;
+    const nextBar=function(){
+      const chord=chords[idx%chords.length];idx++;
+      const t=sndCtx.currentTime;
+      chord.forEach(function(f,i){
+        [-4,4].forEach(function(det,k){
+          const os=sndCtx.createOscillator(),g=sndCtx.createGain(),lp=sndCtx.createBiquadFilter();
+          os.type=waves[(i+k)%waves.length];os.frequency.value=f;os.detune.value=det+(k?1.5:-1.5);
+          lp.type='lowpass';lp.frequency.value=cutoff*(1+i*0.10);
+          const peak=gain*(k?0.65:1);
+          g.gain.setValueAtTime(0,t);
+          g.gain.linearRampToValueAtTime(peak,t+1.3);
+          g.gain.setValueAtTime(peak,t+rel);
+          g.gain.linearRampToValueAtTime(0.0001,t+dur+1.4);
+          os.connect(g);g.connect(lp);lp.connect(out);
+          os.start(t);os.stop(t+dur+1.5);
+        });
+      });
+      setTimeout(nextBar,dur*1000);
+    };
+    nextBar();
+  }
+
+  /* pluck(out, freq, t, opts) — one struck note (piano / guitar / kalimba
+     flavour) with a bright attack that closes down as it decays.
+     opts: dur (s), vol, waves (harmonic wave types). */
+  function pluck(out,freq,t,opts){
+    const o=opts||{};
+    const dur=+(o.dur||2.6), vol=+(o.vol||0.1);
+    const waves=o.waves||['triangle','sine','sine'];
+    const lp=sndCtx.createBiquadFilter();lp.type='lowpass';
+    lp.frequency.setValueAtTime(Math.min(12000,freq*8),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(140,freq*2),t+dur*0.75);
+    lp.connect(out);
+    waves.forEach(function(w,hi){
+      const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+      os.type=w;os.frequency.value=freq*(hi+1)*(hi?1.001:1);
+      const v=vol/Math.pow(hi+1,1.6);
+      g.gain.setValueAtTime(v,t);
+      g.gain.exponentialRampToValueAtTime(Math.max(v*0.4,0.0002),t+0.07);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      os.connect(g);g.connect(lp);os.start(t);os.stop(t+dur+0.05);
+    });
+  }
+
+  /* groove(out, opts) — a soft lo-fi drum pattern.
+     opts: bpm (default 72), kick/snare/hat/shaker step arrays (16th notes
+     over one bar), swing (0..0.4 of a 16th), and *Vol levels. */
+  function groove(out,opts){
+    const o=opts||{};
+    const bpm=+(o.bpm||72), sixteenth=(60/bpm/4)*1000, swing=+(o.swing||0.12);
+    const K=o.kick!==undefined?o.kick:[0,8];
+    const S=o.snare!==undefined?o.snare:[4,12];
+    const H=o.hat!==undefined?o.hat:[0,2,4,6,8,10,12,14];
+    const sr2=sndCtx.sampleRate;
+    // One-shot drum buffers, built once per groove.
+    function noiseBuf(sec,decay){
+      const n=Math.floor(sr2*sec),b=sndCtx.createBuffer(1,n,sr2),d=b.getChannelData(0);
+      for(let i=0;i<n;i++){const t=i/sr2;d[i]=(Math.random()*2-1)*Math.exp(-t*decay);}
+      return b;
+    }
+    function kickBuf(){
+      const n=Math.floor(sr2*0.25),b=sndCtx.createBuffer(1,n,sr2),d=b.getChannelData(0);
+      for(let i=0;i<n;i++){
+        const t=i/sr2;
+        d[i]=Math.sin(2*Math.PI*(110*Math.exp(-t*22)+45)*t)*Math.exp(-t*11)*0.9;
+      }
+      return b;
+    }
+    const KB=kickBuf(), SB=noiseBuf(0.16,26), HB=noiseBuf(0.05,150), SH=noiseBuf(0.09,70);
+    function hit(buf,vol,type,freq,q){
+      const s=sndCtx.createBufferSource();s.buffer=buf;
+      const g=sndCtx.createGain();g.gain.value=vol;
+      let node=g;
+      if(type){
+        const f=sndCtx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q||0.8;
+        g.connect(f);node=f;
+      }
+      s.connect(g);node.connect(out);s.start();
+    }
+    let step=0;
+    const tick=function(){
+      const s=step%16;
+      const off=(s%2)?sixteenth*swing:0;      // swung off-beats
+      const t=sndCtx.currentTime+0.01+off/1000;
+      if(K.indexOf(s)>=0){
+        const b=sndCtx.createBufferSource();b.buffer=KB;
+        const g=sndCtx.createGain();g.gain.value=(o.kickVol||0.5);
+        b.connect(g);g.connect(out);b.start(t);
+      }
+      if(S.indexOf(s)>=0) { const b=sndCtx.createBufferSource();b.buffer=SB;const g=sndCtx.createGain();g.gain.value=(o.snareVol||0.16);const f=sndCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=1900;f.Q.value=0.7;b.connect(g);g.connect(f);f.connect(out);b.start(t); }
+      if(H.indexOf(s)>=0) { const b=sndCtx.createBufferSource();b.buffer=HB;const g=sndCtx.createGain();g.gain.value=(o.hatVol||0.06)*(s%4?0.7:1);const f=sndCtx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;b.connect(g);g.connect(f);f.connect(out);b.start(t); }
+      if(o.shaker&&o.shaker.indexOf(s)>=0){ const b=sndCtx.createBufferSource();b.buffer=SH;const g=sndCtx.createGain();g.gain.value=(o.shakerVol||0.05);const f=sndCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=5200;f.Q.value=1.2;b.connect(g);g.connect(f);f.connect(out);b.start(t); }
+      step++;
+      setTimeout(tick,sixteenth);
+    };
+    setTimeout(tick,60);
   }
 
   function makeMusic(gen){
@@ -38500,13 +38854,23 @@ function animateCount(el,target,unit=''){
       for(let i=0;i<rainLen;i++){const w=Math.random()*2-1;b0=0.99886*b0+w*0.0555;b1=0.99332*b1+w*0.0751;b2=0.969*b2+w*0.154;b3=0.865*b3+w*0.311;rd[i]=(b0+b1+b2+b3)*0.14;}
       const rain=sndCtx.createBufferSource();rain.buffer=rainBuf;rain.loop=true;
       const rg=sndCtx.createGain();rg.gain.value=0.5;rain.connect(rg);rg.connect(out);rain.start();oscs.push(rain);
-      // Chord pads
-      [130.8,164.8,196,261.6,329.6].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='sine';o.frequency.value=f;g.gain.value=0.04;
-        lfo.type='sine';lfo.frequency.value=0.08+i*0.02;lg.gain.value=0.02;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);g.connect(out);o.start();lfo.start();oscs.push(o,lfo);
-      });
+      // Moving chord progression + arpeggio + soft groove — this track used to
+      // hold one chord forever, which read as a drone rather than lo-fi music.
+      progPad(out,[
+        [130.81,164.81,196.00,246.94],   // Cmaj7
+        [110.00,164.81,196.00,261.63],   // Am7
+        [174.61,220.00,261.63,329.63],   // Fmaj7
+        [123.47,146.83,196.00,246.94],   // Em7
+      ],{bar:9,gain:0.022,cutoff:760});
+      const arpNotes=[261.63,329.63,392.00,493.88,392.00,329.63];
+      let aIdx=0;
+      const arp=function(){
+        pluck(out,arpNotes[aIdx%arpNotes.length],sndCtx.currentTime+0.01,{dur:1.8,vol:0.05});
+        aIdx++;
+        setTimeout(arp,430+Math.random()*200);
+      };
+      setTimeout(arp,700);
+      groove(out,{bpm:68,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.28,snareVol:0.08,hatVol:0.03,swing:0.18});
     } else if(gen==='forest'){
       const len=sr*4,buf=sndCtx.createBuffer(1,len,sr);const fd=buf.getChannelData(0);
       let lv=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;fd[i]=(lv+(0.04*w))/1.04;lv=fd[i];fd[i]*=2.8;}
@@ -38530,11 +38894,42 @@ function animateCount(el,target,unit=''){
       for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;b0=0.99886*b0+w*0.04;b1=0.993*b1+w*0.06;b2=0.969*b2+w*0.1;b3=0.865*b3+w*0.18;b4=0.55*b4+w*0.2;d[i]=(b0+b1+b2+b3+b4)*0.09;}}
       const src=sndCtx.createBufferSource();src.buffer=buf;src.loop=true;
       const sg=sndCtx.createGain();sg.gain.value=0.4;src.connect(sg);sg.connect(out);src.start();oscs.push(src);
-      [200,320,480].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain();
-        o.type='triangle';o.frequency.value=f;g.gain.value=0.012;
-        o.connect(g);g.connect(out);o.start();oscs.push(o);
-      });
+      // Distant conversation — syllable bursts through a vocal-ish band-pass
+      const syll=function(){
+        const t=sndCtx.currentTime,n=Math.floor(sr*0.16);
+        const b=sndCtx.createBuffer(1,n,sr),d=b.getChannelData(0);
+        for(let i=0;i<n;i++){const tt=i/sr;d[i]=(Math.random()*2-1)*Math.min(1,tt*40)*Math.exp(-tt*18);}
+        const s=sndCtx.createBufferSource();s.buffer=b;
+        const g=sndCtx.createGain();g.gain.value=0.05+Math.random()*0.05;
+        const f=sndCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=350+Math.random()*800;f.Q.value=2.2;
+        s.connect(g);g.connect(f);f.connect(out);s.start(t);
+        setTimeout(syll,240+Math.random()*430);
+      };
+      setTimeout(syll,600);
+      // Occasional cup / cutlery clink
+      const clink=function(){
+        const t=sndCtx.currentTime,f0=2400+Math.random()*1800;
+        [1,2.76,5.4].forEach(function(h,i){
+          const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+          os.type='sine';os.frequency.value=f0*h;
+          g.gain.setValueAtTime(0.03/(i+1),t);
+          g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+          os.connect(g);g.connect(out);os.start(t);os.stop(t+0.7);
+        });
+        setTimeout(clink,9000+Math.random()*14000);
+      };
+      setTimeout(clink,5000);
+      // Chair-scrape / footsteps in the room
+      const mov=function(){
+        const t=sndCtx.currentTime,n=Math.floor(sr*0.5),b=sndCtx.createBuffer(1,n,sr),d=b.getChannelData(0);
+        for(let i=0;i<n;i++){const tt=i/sr;d[i]=(Math.random()*2-1)*Math.exp(-tt*5)*(0.5+0.5*Math.sin(tt*40));}
+        const s=sndCtx.createBufferSource();s.buffer=b;
+        const g=sndCtx.createGain();g.gain.value=0.05+Math.random()*0.05;
+        const f=sndCtx.createBiquadFilter();f.type='lowpass';f.frequency.value=900;
+        s.connect(g);g.connect(f);f.connect(out);s.start(t);
+        setTimeout(mov,12000+Math.random()*16000);
+      };
+      setTimeout(mov,8000);
     } else if(gen==='space'){
       [40,60,80,55,75].forEach((f,i)=>{
         const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
@@ -38544,17 +38939,55 @@ function animateCount(el,target,unit=''){
       });
       const len=sr*4,buf=sndCtx.createBuffer(1,len,sr);const nd=buf.getChannelData(0);for(let i=0;i<len;i++)nd[i]=(Math.random()*2-1)*0.012;
       const ns=sndCtx.createBufferSource();ns.buffer=buf;ns.loop=true;const ng=sndCtx.createGain();ng.gain.value=0.3;ns.connect(ng);ng.connect(out);ns.start();oscs.push(ns);
+      // Slow harmonic drift — the void used to be one frozen chord
+      progPad(out,[
+        [65.41,98.00,146.83],
+        [58.27,87.31,130.81],
+        [49.00,73.42,110.00],
+        [65.41,116.54,174.61],
+      ],{bar:14,gain:0.028,cutoff:420,waves:['sine']});
+      // Far-off shimmer
+      const ping=function(){
+        const stars=[523.25,659.26,783.99,1046.50];
+        pluck(out,stars[Math.floor(Math.random()*stars.length)],sndCtx.currentTime+0.01,{dur:3.5,vol:0.028,waves:['sine','sine']});
+        setTimeout(ping,4000+Math.random()*7000);
+      };
+      setTimeout(ping,3000);
     } else if(gen==='tibetan'){
-      const bowlFreqs=[111,222,333,444,174,285,396,528];
+      const bowlFreqs=[111,166.5,222,277,333,396];
       bowlFreqs.forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='sine';o.frequency.value=f;g.gain.value=0.035;
-        lfo.type='sine';lfo.frequency.value=0.05+i*0.03;lg.gain.value=0.025;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);g.connect(out);o.start();lfo.start();
-        const o2=sndCtx.createOscillator(),g2=sndCtx.createGain();
-        o2.type='sine';o2.frequency.value=f*2.01;g2.gain.value=0.012;o2.connect(g2);g2.connect(out);o2.start();
-        oscs.push(o,lfo,o2);
+        // One bowl at a time — struck and left to ring. The old version held
+        // every partial open at once, which came out as a muddy wash rather
+        // than clear bowl tones.
+        const ring=function(){
+          const t=sndCtx.currentTime;
+          [1,2.02,3.05,4.10,5.30].forEach(function(h,hi){
+            const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+            os.type='sine';os.frequency.value=f*h*(1+(Math.random()*0.002-0.001));
+            const v=0.085/Math.pow(hi+1,1.25);
+            g.gain.setValueAtTime(v,t);
+            g.gain.exponentialRampToValueAtTime(v*0.45,t+0.5);
+            g.gain.exponentialRampToValueAtTime(0.0001,t+6.5);
+            os.connect(g);g.connect(out);os.start(t);os.stop(t+6.7);
+          });
+          // Mallet contact
+          const n=Math.floor(sr*0.06),b=sndCtx.createBuffer(1,n,sr),d=b.getChannelData(0);
+          for(let j=0;j<n;j++){const tt=j/sr;d[j]=(Math.random()*2-1)*Math.exp(-tt*70)*0.4;}
+          const s=sndCtx.createBufferSource();s.buffer=b;
+          const mg=sndCtx.createGain();mg.gain.value=0.09;
+          const flt=sndCtx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=f*4;flt.Q.value=3;
+          s.connect(mg);mg.connect(flt);flt.connect(out);s.start(t);
+          setTimeout(ring,7000+i*2600+Math.random()*5000);
+        };
+        setTimeout(ring,300+i*1500);
       });
+      // Soft room resonance underneath
+      const rLen=Math.floor(sr*4),rBuf=sndCtx.createBuffer(1,rLen,sr);const rdb=rBuf.getChannelData(0);
+      for(let i=0;i<rLen;i++) rdb[i]=(Math.random()*2-1)*0.004;
+      const rSrc=sndCtx.createBufferSource();rSrc.buffer=rBuf;rSrc.loop=true;
+      const rG=sndCtx.createGain();rG.gain.value=0.35;rSrc.connect(rG);
+      const rF=sndCtx.createBiquadFilter();rF.type='bandpass';rF.frequency.value=330;rF.Q.value=0.4;
+      rG.connect(rF);rF.connect(out);rSrc.start();oscs.push(rSrc);
     } else if(gen==='fireplace'){
       const len=sr*4,buf=sndCtx.createBuffer(1,len,sr);const cd=buf.getChannelData(0);
       let lv=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;cd[i]=(lv+(0.015*w))/1.015;lv=cd[i];cd[i]*=4.0;}
@@ -38583,24 +39016,15 @@ function animateCount(el,target,unit=''){
       // Filter the crackle to make it sound more like vinyl
       const crFilt=sndCtx.createBiquadFilter();crFilt.type='highpass';crFilt.frequency.value=3000;
       crG.connect(crFilt);crFilt.connect(out);crSrc.start();oscs.push(crSrc);
-      // Warm jazz chord pads — Cmaj9 voicing
-      [130.81,164.81,196.00,246.94,293.66].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='sine';o.frequency.value=f;g.gain.value=0.028;
-        lfo.type='sine';lfo.frequency.value=0.06+i*0.015;lg.gain.value=0.012;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);
-        // Low-pass filter for warmth
-        const filt=sndCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=800+i*60;
-        g.connect(filt);filt.connect(out);o.start();lfo.start();oscs.push(o,lfo);
-      });
-      // Soft kick drum pattern (low sine burst)
-      const kickFreq=55,kickLen=Math.floor(sr*0.12),kickBuf=sndCtx.createBuffer(1,kickLen,sr);const kd=kickBuf.getChannelData(0);
-      for(let i=0;i<kickLen;i++){const t=i/sr;kd[i]=Math.sin(2*Math.PI*kickFreq*Math.exp(-t*15)*t)*Math.exp(-t*12)*0.5;}
-      const schedKick=()=>{
-        const ks=sndCtx.createBufferSource();ks.buffer=kickBuf;
-        const kg=sndCtx.createGain();kg.gain.value=0.25;ks.connect(kg);kg.connect(out);ks.start();
-        setTimeout(schedKick,2200+Math.random()*400);
-      };setTimeout(schedKick,800);
+      // Warm jazz chord pads that actually move — Cmaj9 → Am9 → Fmaj9 → Em9
+      progPad(out,[
+        [130.81,164.81,196.00,246.94,293.66],   // Cmaj9
+        [110.00,146.83,164.81,246.94,293.66],   // Am9
+        [87.31,130.81,174.61,220.00,329.63],    // Fmaj9
+        [82.41,123.47,164.81,196.00,246.94],    // Em9
+      ],{bar:8,gain:0.020,cutoff:820});
+      // Real groove — kick on 1 & 3-and, snare on 2/4, swung off-beat hats
+      groove(out,{bpm:74,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.40,snareVol:0.11,hatVol:0.045,swing:0.16});
 
     } else if(gen==='lofi_chillhop'){
       // Gentle vinyl crackle
@@ -38610,35 +39034,24 @@ function animateCount(el,target,unit=''){
       const crG=sndCtx.createGain();crG.gain.value=0.55;crSrc.connect(crG);
       const crFilt=sndCtx.createBiquadFilter();crFilt.type='highpass';crFilt.frequency.value=4000;
       crG.connect(crFilt);crFilt.connect(out);crSrc.start();oscs.push(crSrc);
-      // Rhodes-style electric piano pads — Fmaj7
-      [174.61,220.00,261.63,329.63,349.23].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='triangle';o.frequency.value=f;g.gain.value=0.032;
-        lfo.type='sine';lfo.frequency.value=0.04+i*0.012;lg.gain.value=0.015;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);
-        const filt=sndCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=700+i*80;filt.Q.value=1.5;
-        g.connect(filt);filt.connect(out);o.start();lfo.start();oscs.push(o,lfo);
-      });
-      // Subtle hi-hat pattern
-      const hhLen=Math.floor(sr*0.03),hhBuf=sndCtx.createBuffer(1,hhLen,sr);const hd=hhBuf.getChannelData(0);
-      for(let i=0;i<hhLen;i++){const t=i/sr;hd[i]=(Math.random()*2-1)*Math.exp(-t*250)*0.15;}
-      const schedHH=()=>{
-        const hs=sndCtx.createBufferSource();hs.buffer=hhBuf;
-        const hg=sndCtx.createGain();hg.gain.value=0.12+Math.random()*0.08;
-        hs.connect(hg);hg.connect(out);hs.start();
-        setTimeout(schedHH,550+Math.random()*150);
-      };setTimeout(schedHH,400);
+      // Rhodes-style electric piano — Fmaj7 → Em7 → Dm7 → G6, slowly turning
+      progPad(out,[
+        [174.61,220.00,261.63,329.63],   // Fmaj7
+        [164.81,196.00,246.94,329.63],   // Em7
+        [146.83,174.61,220.00,261.63],   // Dm7
+        [196.00,246.94,293.66,349.23],   // G6
+      ],{bar:9,gain:0.024,cutoff:780,waves:['triangle']});
+      // Full chillhop beat (was hats only — no pulse to study to)
+      groove(out,{bpm:64,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.34,snareVol:0.075,hatVol:0.05,swing:0.22});
 
     } else if(gen==='lofi_midnight'){
-      // Deep ambient pads — Em9 voicing, very slow modulation
-      [82.41,123.47,164.81,196.00,246.94].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='sine';o.frequency.value=f;g.gain.value=0.04;
-        lfo.type='sine';lfo.frequency.value=0.02+i*0.008;lg.gain.value=0.025;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);
-        const filt=sndCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=500+i*40;
-        g.connect(filt);filt.connect(out);o.start();lfo.start();oscs.push(o,lfo);
-      });
+      // Deep pads that drift through the small hours — Em9 → Cmaj9 → Am9 → Dm9
+      progPad(out,[
+        [82.41,123.47,164.81,196.00,246.94],   // Em9
+        [65.41,98.00,130.81,164.81,196.00],    // Cmaj9
+        [55.00,110.00,164.81,196.00,261.63],   // Am9
+        [73.42,110.00,146.83,174.61,220.00],   // Dm9
+      ],{bar:12,gain:0.026,cutoff:520});
       // Very soft brown noise bed
       const nLen=sr*4,nBuf=sndCtx.createBuffer(1,nLen,sr);const nd=nBuf.getChannelData(0);
       let nlv=0;for(let i=0;i<nLen;i++){const w=Math.random()*2-1;nd[i]=(nlv+(0.02*w))/1.02;nlv=nd[i];nd[i]*=1.5;}
@@ -38646,17 +39059,17 @@ function animateCount(el,target,unit=''){
       const nG=sndCtx.createGain();nG.gain.value=0.3;nSrc.connect(nG);
       const nFilt=sndCtx.createBiquadFilter();nFilt.type='lowpass';nFilt.frequency.value=300;
       nG.connect(nFilt);nFilt.connect(out);nSrc.start();oscs.push(nSrc);
+      // Barely-there pulse so it still counts as lo-fi
+      groove(out,{bpm:58,kick:[0],snare:[],hat:[8],kickVol:0.20,hatVol:0.03,swing:0.25});
 
     } else if(gen==='lofi_sunset'){
-      // Warm nostalgic chords — Dmaj7, golden warmth
-      [146.83,185.00,220.00,277.18,293.66].forEach((f,i)=>{
-        const o=sndCtx.createOscillator(),g=sndCtx.createGain(),lfo=sndCtx.createOscillator(),lg=sndCtx.createGain();
-        o.type='sine';o.frequency.value=f;g.gain.value=0.035;
-        lfo.type='sine';lfo.frequency.value=0.05+i*0.01;lg.gain.value=0.018;
-        lfo.connect(lg);lg.connect(g.gain);o.connect(g);
-        const filt=sndCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=900+i*70;
-        g.connect(filt);filt.connect(out);o.start();lfo.start();oscs.push(o,lfo);
-      });
+      // Golden-hour chords that set — Dmaj7 → Gmaj7 → Bm7 → Asus
+      progPad(out,[
+        [146.83,185.00,220.00,277.18],   // Dmaj7
+        [196.00,246.94,293.66,392.00],   // Gmaj7
+        [123.47,185.00,246.94,293.66],   // Bm7
+        [110.00,164.81,220.00,293.66],   // Asus
+      ],{bar:10,gain:0.024,cutoff:950});
       // Gentle tape-like wow (very slow pitch modulation)
       const subO=sndCtx.createOscillator(),subG=sndCtx.createGain();
       subO.type='sine';subO.frequency.value=0.15;subG.gain.value=0.004;
@@ -38668,6 +39081,7 @@ function animateCount(el,target,unit=''){
       const tG=sndCtx.createGain();tG.gain.value=0.4;tSrc.connect(tG);
       const tFilt=sndCtx.createBiquadFilter();tFilt.type='bandpass';tFilt.frequency.value=2500;tFilt.Q.value=0.5;
       tG.connect(tFilt);tFilt.connect(out);tSrc.start();oscs.push(tSrc);
+      groove(out,{bpm:68,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.30,snareVol:0.065,hatVol:0.04,swing:0.20});
 
     } else if(gen==='lofi_sleep'){
       // Ultra-mellow Am7 pads, very low and slow
@@ -38690,6 +39104,16 @@ function animateCount(el,target,unit=''){
       const sG=sndCtx.createGain();sG.gain.value=0.25;sSrc.connect(sG);
       const sFilt=sndCtx.createBiquadFilter();sFilt.type='lowpass';sFilt.frequency.value=250;
       sG.connect(sFilt);sFilt.connect(out);sSrc.start();oscs.push(sSrc);
+      // Drowsy half-time pulse and a half-awake melody
+      groove(out,{bpm:56,kick:[0],snare:[],hat:[8],kickVol:0.18,hatVol:0.028,swing:0.25});
+      const sleepNotes=[164.81,196.00,246.94,329.63,246.94,196.00];
+      let sIdx=0;
+      const sleepArp=function(){
+        pluck(out,sleepNotes[sIdx%sleepNotes.length],sndCtx.currentTime+0.01,{dur:3.2,vol:0.035,waves:['sine','sine']});
+        sIdx++;
+        setTimeout(sleepArp,2400+Math.random()*1600);
+      };
+      setTimeout(sleepArp,1500);
 
     } else if(gen==='lofi_rain_window'){
       // Heavy rain on glass — pink noise through bandpass
@@ -38718,6 +39142,7 @@ function animateCount(el,target,unit=''){
         ds.connect(dg);dg.connect(out);ds.start();
         setTimeout(schedDrip,1500+Math.random()*3000);
       };setTimeout(schedDrip,2000);
+      groove(out,{bpm:66,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.28,snareVol:0.06,hatVol:0.035,swing:0.22});
 
     } else if(gen==='lofi_sakura'){
       // Japanese pentatonic scale — A minor pentatonic (A C D E G)
@@ -38748,6 +39173,8 @@ function animateCount(el,target,unit=''){
       const wG=sndCtx.createGain();wG.gain.value=0.2;wSrc.connect(wG);
       const wFilt=sndCtx.createBiquadFilter();wFilt.type='bandpass';wFilt.frequency.value=600;wFilt.Q.value=0.3;
       wG.connect(wFilt);wFilt.connect(out);wSrc.start();oscs.push(wSrc);
+      // Taiko-soft rim & shaker groove under the koto
+      groove(out,{bpm:70,kick:[0,10],snare:[12],shaker:[2,6,10,14],kickVol:0.26,snareVol:0.055,shakerVol:0.04,swing:0.2});
 
     } else if(gen==='lofi_cassette'){
       // Tape wow & flutter — modulate all oscillators with slow+fast LFOs
@@ -38776,6 +39203,7 @@ function animateCount(el,target,unit=''){
       const flutLFO=sndCtx.createOscillator(),flutG=sndCtx.createGain();
       flutLFO.type='sine';flutLFO.frequency.value=6;flutG.gain.value=0.003;
       flutLFO.connect(flutG);flutG.connect(hG.gain);flutLFO.start();oscs.push(flutLFO);
+      groove(out,{bpm:70,kick:[0,10],snare:[4,12],hat:[2,6,10,14],kickVol:0.34,snareVol:0.085,hatVol:0.04,swing:0.18});
 
     /* ═══════════════════════════════════════
        NATURE SOUNDSCAPES — Endel-inspired
@@ -39477,6 +39905,143 @@ function animateCount(el,target,unit=''){
         const filt=sndCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=600;
         g.connect(filt);filt.connect(out);o.start();lfo.start();oscs.push(o,lfo);
       });
+    } else if(gen==='ambient_choir'){
+      /* Ethereal vocal pads — this entry shipped WITHOUT a generator, so the
+         card played complete silence. Overlapping "ahh" swells over a slow
+         progression, sculpted by vowel formant filters. */
+      const choirChords=[
+        [220.00,261.63,329.63,440.00],   // Am
+        [174.61,220.00,261.63,349.23],   // F
+        [196.00,246.94,293.66,392.00],   // G
+        [164.81,196.00,246.94,329.63],   // Em
+      ];
+      const body=sndCtx.createBiquadFilter();body.type='lowpass';body.frequency.value=720;
+      const f1=sndCtx.createBiquadFilter();f1.type='bandpass';f1.frequency.value=780;f1.Q.value=1.0;
+      const f2=sndCtx.createBiquadFilter();f2.type='bandpass';f2.frequency.value=1180;f2.Q.value=1.4;
+      const bus=sndCtx.createGain();bus.gain.value=1;
+      const gBody=sndCtx.createGain();gBody.gain.value=0.55;
+      const g1=sndCtx.createGain();g1.gain.value=0.50;
+      const g2=sndCtx.createGain();g2.gain.value=0.26;
+      bus.connect(body);body.connect(gBody);gBody.connect(out);
+      bus.connect(f1);f1.connect(g1);g1.connect(out);
+      bus.connect(f2);f2.connect(g2);g2.connect(out);
+      let cIdx=0;
+      const swell=function(){
+        const chord=choirChords[cIdx%choirChords.length];cIdx++;
+        const t=sndCtx.currentTime;
+        chord.forEach(function(f){
+          [-6,6].forEach(function(det){
+            const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+            os.type='sine';os.frequency.value=f;os.detune.value=det;
+            g.gain.setValueAtTime(0,t);
+            g.gain.linearRampToValueAtTime(0.05,t+2.4);
+            g.gain.setValueAtTime(0.05,t+4.2);
+            g.gain.linearRampToValueAtTime(0.0001,t+8.5);
+            os.connect(g);g.connect(bus);
+            os.start(t);os.stop(t+8.6);
+          });
+        });
+        setTimeout(swell,5200);   // deliberately overlaps the previous swell
+      };
+      swell();
+      // Breath / room texture underneath
+      const brLen=Math.floor(sndCtx.sampleRate*5),brBuf=sndCtx.createBuffer(1,brLen,sndCtx.sampleRate);
+      const brd=brBuf.getChannelData(0);let blv=0;
+      for(let i=0;i<brLen;i++){const w=Math.random()*2-1;blv=(blv+(0.03*w))/1.03;brd[i]=blv*2.5;}
+      const br=sndCtx.createBufferSource();br.buffer=brBuf;br.loop=true;
+      const brG=sndCtx.createGain();brG.gain.value=0.10;
+      const brF=sndCtx.createBiquadFilter();brF.type='lowpass';brF.frequency.value=1400;
+      br.connect(brG);brG.connect(brF);brF.connect(out);br.start();oscs.push(br);
+
+    } else if(gen==='brook'){
+      // Babbling brook — bright water bed plus randomized gurgles
+      const bLen=Math.floor(sndCtx.sampleRate*6),bBuf=sndCtx.createBuffer(1,bLen,sndCtx.sampleRate);
+      const bd=bBuf.getChannelData(0);
+      let p0=0,p1=0,p2=0,p3=0;
+      for(let i=0;i<bLen;i++){const w=Math.random()*2-1;p0=0.99886*p0+w*0.0555;p1=0.99332*p1+w*0.0751;p2=0.969*p2+w*0.154;p3=0.865*p3+w*0.311;bd[i]=(p0+p1+p2+p3)*0.13;}
+      const bSrc=sndCtx.createBufferSource();bSrc.buffer=bBuf;bSrc.loop=true;
+      const bG=sndCtx.createGain();bG.gain.value=0.55;
+      const bF=sndCtx.createBiquadFilter();bF.type='bandpass';bF.frequency.value=1900;bF.Q.value=0.5;
+      bSrc.connect(bG);bG.connect(bF);bF.connect(out);bSrc.start();oscs.push(bSrc);
+      const shim=sndCtx.createOscillator(),shimG=sndCtx.createGain();
+      shim.type='sine';shim.frequency.value=0.23;shimG.gain.value=0.14;
+      shim.connect(shimG);shimG.connect(bG.gain);shim.start();oscs.push(shim);
+      // Lower tumble layer — stones under the surface
+      const tLen=Math.floor(sndCtx.sampleRate*6),tBuf=sndCtx.createBuffer(1,tLen,sndCtx.sampleRate);
+      const td=tBuf.getChannelData(0);let tl=0;
+      for(let i=0;i<tLen;i++){const w=Math.random()*2-1;tl=(tl+(0.02*w))/1.02;td[i]=tl*3.2;}
+      const tSrc=sndCtx.createBufferSource();tSrc.buffer=tBuf;tSrc.loop=true;
+      const tG=sndCtx.createGain();tG.gain.value=0.30;
+      const tF=sndCtx.createBiquadFilter();tF.type='lowpass';tF.frequency.value=650;
+      tSrc.connect(tG);tG.connect(tF);tF.connect(out);tSrc.start();oscs.push(tSrc);
+      // Gurgles — short pitch-swept blips
+      const gurgle=function(){
+        const t=sndCtx.currentTime,f0=500+Math.random()*900;
+        const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+        os.type='sine';
+        os.frequency.setValueAtTime(f0,t);
+        os.frequency.exponentialRampToValueAtTime(f0*(0.55+Math.random()*0.9),t+0.12);
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.045,t+0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.17);
+        os.connect(g);g.connect(out);os.start(t);os.stop(t+0.2);
+        setTimeout(gurgle,150+Math.random()*800);
+      };
+      setTimeout(gurgle,500);
+
+    } else if(gen==='library'){
+      /* Library room — hushed room tone with page turns, footsteps and the
+         occasional chair creak. Company while you work, without the talking. */
+      const rLen=Math.floor(sndCtx.sampleRate*5),rBuf=sndCtx.createBuffer(1,rLen,sndCtx.sampleRate);
+      const rd=rBuf.getChannelData(0);
+      let q0=0,q1=0,q2=0,q3=0;
+      for(let i=0;i<rLen;i++){const w=Math.random()*2-1;q0=0.99886*q0+w*0.0555;q1=0.99332*q1+w*0.0751;q2=0.969*q2+w*0.154;q3=0.865*q3+w*0.311;rd[i]=(q0+q1+q2+q3)*0.10;}
+      const rSrc=sndCtx.createBufferSource();rSrc.buffer=rBuf;rSrc.loop=true;
+      const rG=sndCtx.createGain();rG.gain.value=0.5;
+      const rF=sndCtx.createBiquadFilter();rF.type='lowpass';rF.frequency.value=950;
+      rSrc.connect(rG);rG.connect(rF);rF.connect(out);rSrc.start();oscs.push(rSrc);
+      // Building hum
+      [98,196,294].forEach(function(f,i){
+        const os=sndCtx.createOscillator(),g=sndCtx.createGain();
+        os.type='sine';os.frequency.value=f;g.gain.value=0.012/(i+1);
+        os.connect(g);g.connect(out);os.start();oscs.push(os);
+      });
+      // Page turns
+      const page=function(){
+        const t=sndCtx.currentTime,n=Math.floor(sndCtx.sampleRate*0.55);
+        const b=sndCtx.createBuffer(1,n,sndCtx.sampleRate),d=b.getChannelData(0);
+        for(let i=0;i<n;i++){
+          const tt=i/sndCtx.sampleRate;
+          d[i]=(Math.random()*2-1)*(Math.exp(-tt*6)*0.5+0.35*Math.exp(-Math.pow((tt-0.20)*7,2)));
+        }
+        const s=sndCtx.createBufferSource();s.buffer=b;
+        const g=sndCtx.createGain();g.gain.value=0.20+Math.random()*0.15;
+        const f=sndCtx.createBiquadFilter();f.type='bandpass';f.frequency.value=2400+Math.random()*1600;f.Q.value=0.6;
+        s.connect(g);g.connect(f);f.connect(out);s.start(t);
+        setTimeout(page,6000+Math.random()*9000);
+      };
+      setTimeout(page,2500);
+      // Distant footsteps
+      const foot=function(){
+        const t=sndCtx.currentTime;
+        const n=Math.floor(sndCtx.sampleRate*0.18),b=sndCtx.createBuffer(1,n,sndCtx.sampleRate),d=b.getChannelData(0);
+        for(let i=0;i<n;i++){
+          const tt=i/sndCtx.sampleRate;
+          d[i]=Math.sin(2*Math.PI*85*tt)*Math.exp(-tt*26)*0.7+(Math.random()*2-1)*Math.exp(-tt*60)*0.25;
+        }
+        const s=sndCtx.createBufferSource();s.buffer=b;
+        const g=sndCtx.createGain();g.gain.value=0.16+Math.random()*0.10;
+        const f=sndCtx.createBiquadFilter();f.type='lowpass';f.frequency.value=1200;
+        s.connect(g);g.connect(f);f.connect(out);s.start(t);
+        // second step of the pair
+        const s2=sndCtx.createBufferSource();s2.buffer=b;
+        const g2=sndCtx.createGain();g2.gain.value=0.12;
+        s2.connect(g2);g2.connect(f);s2.start(t+0.42);
+        setTimeout(foot,7000+Math.random()*8000);
+      };
+      setTimeout(foot,4000);
+    } else {
+      console.warn('[SoundStudio] no generator for:',gen);
     }
     return{out,oscs};
   }
@@ -39487,10 +40052,26 @@ function animateCount(el,target,unit=''){
     lo.frequency.value=carrier;ro.frequency.value=carrier+freq;
     const merger=sndCtx.createChannelMerger(2);
     const lg=sndCtx.createGain(),rg=sndCtx.createGain();
-    lg.gain.value=0.18;rg.gain.value=0.18;
+    lg.gain.value=0.15;rg.gain.value=0.15;
     lo.connect(lg);ro.connect(rg);lg.connect(merger,0,0);rg.connect(merger,0,1);
     lo.start();ro.start();
-    return{merger,oscs:[lo,ro]};
+    const oscs=[lo,ro];
+    /* Two bare sine tones read as a harsh test-sweep and leave dead silence
+       between pulses. A very slow swell ("breathing") plus a whisper of brown
+       noise bed makes the tone feel like a room rather than a signal generator. */
+    const swell=sndCtx.createOscillator(),swellG=sndCtx.createGain();
+    swell.type='sine';swell.frequency.value=0.07;swellG.gain.value=0.045;
+    swell.connect(swellG);swellG.connect(lg.gain);swellG.connect(rg.gain);
+    swell.start();oscs.push(swell);
+    const bedLen=Math.floor(sndCtx.sampleRate*4),bedBuf=sndCtx.createBuffer(1,bedLen,sndCtx.sampleRate);
+    const bd=bedBuf.getChannelData(0);let bl=0;
+    for(let i=0;i<bedLen;i++){const w=Math.random()*2-1;bl=(bl+(0.02*w))/1.02;bd[i]=bl*3.2;}
+    const bed=sndCtx.createBufferSource();bed.buffer=bedBuf;bed.loop=true;
+    const bedG=sndCtx.createGain();bedG.gain.value=0.05;
+    const bedF=sndCtx.createBiquadFilter();bedF.type='lowpass';bedF.frequency.value=500;
+    bed.connect(bedG);bedG.connect(bedF);bedF.connect(merger,0,0);bedF.connect(merger,0,1);
+    bed.start();oscs.push(bed);
+    return{merger,oscs};
   }
 
   function playSound(id,s){
@@ -39503,7 +40084,14 @@ function animateCount(el,target,unit=''){
     if(s.type==='binaural'){
       const bi=makeBinaural(s.freq,s.carrier);bi.merger.connect(gain);sndNodes[id]={gain,oscs:bi.oscs,type:'binaural'};
     } else if(s.type==='music'){
-      const m=makeMusic(s.gen);m.out.connect(gain);sndNodes[id]={gain,oscs:m.oscs,type:'music',out:m.out};
+      // Build the generator under its own lifecycle control so every
+      // setTimeout() it schedules can be cancelled by stopSound().
+      const prevCtl=_genCtl, prevSet=window.setTimeout, ctl={alive:true,timers:new Set()};
+      _genCtl=ctl; window.setTimeout=__sched;
+      let m;
+      try{ m=makeMusic(s.gen); }
+      finally{ window.setTimeout=prevSet; _genCtl=prevCtl; }
+      m.out.connect(gain);sndNodes[id]={gain,oscs:m.oscs,type:'music',out:m.out,ctl};
     } else {
       const src=makeNoiseBuffer(s.type);src.connect(gain);src.start();sndNodes[id]={gain,src,type:'noise'};
     }
@@ -39512,6 +40100,7 @@ function animateCount(el,target,unit=''){
 
   function stopSound(id){
     const n=sndNodes[id];if(!n)return;
+    releaseCtl(n.ctl);          // cancel pending generator callbacks first
     n.gain.gain.setTargetAtTime(0,sndCtx.currentTime,.2);
     setTimeout(()=>{
       try{
@@ -39613,6 +40202,19 @@ function animateCount(el,target,unit=''){
   window._sndActiveIds = function(){ return Object.keys(sndNodes); };
   window._sndStop      = function(id){ if(sndNodes[id]) stopSound(id); };
   window.initSoundStudio=initSoundStudio;
+
+  /* Diagnostics used by the sound page's own self-test: current master-bus
+     peak (0..1, so "silence" is provable) and generator bookkeeping. */
+  window.__sndDiag=function(){
+    let peak=0;
+    if(sndAnalyser){
+      const buf=new Float32Array(sndAnalyser.fftSize);
+      sndAnalyser.getFloatTimeDomainData(buf);
+      for(let i=0;i<buf.length;i++){const a=Math.abs(buf[i]);if(a>peak)peak=a;}
+    }
+    return{peak:+peak.toFixed(4),active:Object.keys(sndNodes).length,
+           schedTimers:_liveSchedTimers,ctx:sndCtx?sndCtx.state:'none'};
+  };
 
   // Stop all sounds on page unload
   window.addEventListener('beforeunload',()=>{ try{ if(sndCtx)sndCtx.close(); }catch(e){} });
@@ -42240,7 +42842,6 @@ var asstProviderDefaults = [
   { providerId:'google',    name:'Gemini',    icon:'G', color:'#4285f4', defaultModel:'gemini-2.5-flash',                                  ctx:'1M',   desc:'Free, huge context, web search ready',    vision:true },
   { providerId:'deepseek',  name:'DeepSeek',  icon:'D', color:'#4d6bfe', defaultModel:'deepseek-chat',                                     ctx:'128K', desc:'Free chat model, strong coding',  vision:false },
   { providerId:'openai',    name:'OpenAI',    icon:'O', color:'#10a37f', defaultModel:'gpt-4o-mini',                                       ctx:'128K', desc:'GPT-4o mini (affordable)',        vision:true },
-  { providerId:'opus',      name:'Claude Opus 4.7',icon:'C', color:'#d4a574', defaultModel:'claude-opus-4-7',                            ctx:'200K', desc:'via abhi bot', vision:true },
   { providerId:'anthropic', name:'Claude',    icon:'C', color:'#c4956a', defaultModel:'claude-3-5-haiku-20241022',                         ctx:'200K', desc:'Claude Haiku (fast & cheap)',     vision:true },
   { providerId:'mistral',   name:'Mistral',   icon:'M', color:'#ff7000', defaultModel:'mistral-small-latest',                               ctx:'128K', desc:'Mistral Small (free tier)',       vision:false },
   { providerId:'groq',      name:'Groq',      icon:'Q', color:'#f55036', defaultModel:'llama-3.3-70b-versatile',                          ctx:'128K', desc:'Free, ultra-fast inference',      vision:false },
@@ -42257,7 +42858,7 @@ var asstProviderDefaults = [
 // Map provider display names to provider IDs for API key lookup
 var asstProviderIdMap = {
   'Groq':'groq', 'Gemini':'google', 'DeepSeek':'deepseek',
-  'OpenAI':'openai', 'Claude':'anthropic', 'Claude Opus 4.7':'opus', 'Mistral':'mistral',
+  'OpenAI':'openai', 'Claude':'anthropic', 'Mistral':'mistral',
   'Cohere':'cohere', 'Perplexity':'perplexity', 'OpenRouter':'openrouter', 'Together':'together',
   'Custom':'custom'
 };
@@ -43699,6 +44300,41 @@ function _asstNormalizeAIHtml(html){
   return host.innerHTML;
 }
 
+/* ── AI Sources card — collapsed by default, click to expand ──
+   The header renders with aria-expanded="false", and the stylesheet rule
+   `.ai-sources-header[aria-expanded="false"]+.ai-sources-list{height:0}` keeps
+   the list hidden until the reader asks for it — so every re-render starts
+   closed. This toggle animates the height (unfold instead of snap), then
+   hands control back to the stylesheet (height auto → "") so later resizes
+   and re-renders behave. */
+function aiSourcesToggle(header){
+  try{
+    var card=header&&header.parentElement;
+    if(!card)return;
+    var list=card.querySelector('.ai-sources-list');
+    if(!list)return;
+    var expanded=header.getAttribute('aria-expanded')==='true';
+    if(expanded){
+      // Collapse: pin the current height first so the transition has a start value
+      list.style.height=list.scrollHeight+'px';
+      void list.offsetHeight;                 // force reflow
+      list.style.height='0px';
+      header.setAttribute('aria-expanded','false');
+      setTimeout(function(){
+        if(header.getAttribute('aria-expanded')==='false') list.style.height='';
+      },320);
+    } else {
+      list.style.height='0px';
+      header.setAttribute('aria-expanded','true');
+      void list.offsetHeight;                 // force reflow
+      list.style.height=list.scrollHeight+'px';
+      setTimeout(function(){
+        if(header.getAttribute('aria-expanded')==='true') list.style.height='auto';
+      },320);
+    }
+  }catch(e){}
+}
+
 function asstRenderContent(text, quick){
   // Premium markdown rendering with professional clean styling
   // `quick` = streaming frame: skip the final DOM normalization pass (a full
@@ -43885,10 +44521,11 @@ function asstRenderContent(text, quick){
       return match;
     }
     sourcesCard = '<div class="ai-sources-card">'
-      +'<div class="ai-sources-header">'
+      +'<div class="ai-sources-header" role="button" tabindex="0" aria-expanded="false" aria-label="Show '+count+' source'+(count===1?'':'s')+'" onclick="aiSourcesToggle(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();aiSourcesToggle(this)}">'
         +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>'
         +'<span>Sources</span>'
         +'<span class="ai-sources-count">'+count+'</span>'
+        +'<svg class="ai-sources-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'
       +'</div>'
       +'<div class="ai-sources-list">'+items+'</div>'
     +'</div>';
@@ -49526,17 +50163,16 @@ if(!Array.isArray(apiKeys)) apiKeys = [];
 })();
 
 var apiKeyProviderInfo = {
-  mistral:   { name:'Mistral',    icon:'M', color:'#ff7000', freeHint:'Mistral offers free tier API access. Get your key at <a href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer">console.mistral.ai</a>' },
-  openrouter:{ name:'OpenRouter', icon:'O', color:'#7c3aed', freeHint:'OpenRouter aggregates multiple AI providers with free models + built-in web search. Get your key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">openrouter.ai</a><br><br><b>Multi-key tip:</b> You can add multiple OpenRouter keys (e.g. from different Gmail accounts). Only one key is active at a time — switch manually when one runs out.' },
-  openai:    { name:'OpenAI',     icon:'O', color:'#10a37f', freeHint:'OpenAI offers free API credits for new accounts. Get your key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com</a>' },
-  opus:      { name:'Opus Proxy',  icon:'C', color:'#d4a574', freeHint:'Free Claude Opus access via Opus Proxy — 300K tokens/day, resets every 24h. Get your key at <a href="https://opus.abhibots.com" target="_blank" rel="noopener noreferrer">opus.abhibots.com</a><br><br><b>Model:</b> claude-opus-4-7<br><b>Limit:</b> 300K tokens/day (FREE)<br><b>Note:</b> Third-party proxy — prompts go through their server' },
-  anthropic: { name:'Anthropic',  icon:'A', color:'#c4956a', freeHint:'Anthropic provides free API credits on sign-up. Get your key at <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>' },
-  google:    { name:'Google AI',  icon:'G', color:'#4285f4', freeHint:'Google AI Studio offers free Gemini API access with built-in web search. Get your key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com</a>' },
-  deepseek:  { name:'DeepSeek',   icon:'D', color:'#4d6bfe', freeHint:'DeepSeek offers very affordable API access with free credits. Get your key at <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer">platform.deepseek.com</a>' },
-  cohere:    { name:'Cohere',     icon:'R', color:'#39594d', freeHint:'Cohere offers free API for developers with built-in web search. Get your key at <a href="https://dashboard.cohere.com/api-keys" target="_blank" rel="noopener noreferrer">dashboard.cohere.com</a>' },
-  perplexity:{ name:'Perplexity', icon:'P', color:'#20b8cd', freeHint:'Perplexity API always searches the web and cites sources. Get your key at <a href="https://www.perplexity.ai/settings/api" target="_blank" rel="noopener noreferrer">perplexity.ai/settings/api</a>' },
-  together:  { name:'Together AI',icon:'T', color:'#0081a7', freeHint:'Together AI offers free credits for open-source models. Get your key at <a href="https://api.together.xyz/settings/api-keys" target="_blank" rel="noopener noreferrer">api.together.xyz</a>' },
-  groq:      { name:'Groq',       icon:'Q', color:'#f55036', freeHint:'Groq provides free inference with generous limits. Get your key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">console.groq.com</a>' },
+  mistral:   { name:'Mistral',    icon:'M', color:'#ff7000', freeHint:'' },
+  openrouter:{ name:'OpenRouter', icon:'O', color:'#7c3aed', freeHint:'' },
+  openai:    { name:'OpenAI',     icon:'O', color:'#10a37f', freeHint:'' },
+  anthropic: { name:'Anthropic',  icon:'A', color:'#c4956a', freeHint:'' },
+  google:    { name:'Google AI',  icon:'G', color:'#4285f4', freeHint:'' },
+  deepseek:  { name:'DeepSeek',   icon:'D', color:'#4d6bfe', freeHint:'' },
+  cohere:    { name:'Cohere',     icon:'R', color:'#39594d', freeHint:'' },
+  perplexity:{ name:'Perplexity', icon:'P', color:'#20b8cd', freeHint:'' },
+  together:  { name:'Together AI',icon:'T', color:'#0081a7', freeHint:'' },
+  groq:      { name:'Groq',       icon:'Q', color:'#f55036', freeHint:'' },
   custom:    { name:'Custom',     icon:'C', color:'var(--text3)', freeHint:'' },
 };
 
@@ -63532,13 +64168,6 @@ html[data-theme="pure-light"] #motion-splash-name.visible{
   animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
 
-html[data-theme="light"] #motion-splash-tagline,
-html[data-theme="pure-light"] #motion-splash-tagline{color:var(--text2,#52525b)}
-
-html[data-theme="light"] #motion-splash-tagline.visible,
-html[data-theme="pure-light"] #motion-splash-tagline.visible{
-  animation:splashTagIn .45s cubic-bezier(.16,1,.3,1) .55s both;
-}
 
 html[data-theme="light"] #motion-splash-bar,
 html[data-theme="pure-light"] #motion-splash-bar{
@@ -67116,7 +67745,7 @@ html[data-theme="light"] .toast.toast,
 html[data-theme="pure-light"] .toast.toast{
   background:var(--bg2) !important;
   border:1px solid rgba(15,17,33,.08) !important;
-  box-shadow:0 2px 8px rgba(15,17,33,.06),0 8px 24px rgba(15,17,33,.10),inset 0 1px 0 rgba(255,255,255,.8) !important;
+  box-shadow:0 2px 8px rgba(15,17,33,.06),0 8px 24px rgba(15,17,33,.10) !important;
   color:var(--text) !important;
 }
 
@@ -67638,7 +68267,6 @@ html[data-theme="deep"] #motion-splash-name{
 html[data-theme="deep"] #motion-splash-name.visible{
   animation:splashNameIn .55s cubic-bezier(.16,1,.3,1) .1s both;
 }
-html[data-theme="deep"] #motion-splash-tagline{color:var(--text2,#9aa5cc)}
 html[data-theme="deep"] #motion-splash-bar{background:var(--border,#262d45)}
 
 
@@ -74958,7 +75586,7 @@ html[data-theme="pure-light"] #view-dashboard .db-inline-add{
 html[data-theme="light"] #view-dashboard .db-inline-add:focus-within,
 html[data-theme="pure-light"] #view-dashboard .db-inline-add:focus-within{
   border-color:color-mix(in srgb, var(--accent) 30%, transparent) !important;
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  box-shadow:none !important;
   background:#ffffff !important;
 }
 html[data-theme="light"] #view-dashboard .db-inline-add-btn,
@@ -86335,7 +86963,7 @@ html[data-theme="light"] .db-inline-add:focus-within,
 html[data-theme="pure-light"] .db-inline-add:focus-within{
   background: #ffffff !important;
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 4px var(--accent-glow2) !important;
+  box-shadow: none !important;
 }
 
 /* ── 16m. Habit checks — custom-styled, not browser-default ── */
@@ -88859,6 +89487,7 @@ function ofcRenderSheetBar(){
       (OFC.sheets.length>1 ? '<span class="ofc-sheet-x" title="Delete sheet" onclick="ofcDeleteSheet(event,\''+s.id+'\',this)">×</span>' : '')+
       '</button>';
   });
+  html += '<button class="ofc-sheet-add" onclick="ofcDuplicateSheet()" title="Duplicate current sheet" aria-label="Duplicate current sheet">⧉</button>';
   html += '<button class="ofc-sheet-add" onclick="ofcAddSheet()" title="Add sheet" aria-label="Add sheet">+</button>';
   bar.innerHTML = html;
 }
@@ -88873,6 +89502,22 @@ function ofcAddSheet(){
   ofcRenderCells();
   ofcSetFocus(0,0,false);
   showToast('Sheet "'+name+'" created', '✓', 1800);
+}
+function ofcDuplicateSheet(){
+  var s = ofcActiveSheet();
+  if(!s) return;
+  var copy = JSON.parse(JSON.stringify(s));
+  copy.id = 's'+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
+  copy.name = s.name + ' (copy)';
+  var idx = OFC.sheets.indexOf(s);
+  OFC.sheets.splice(idx+1, 0, copy);
+  OFC.activeSheetId = copy.id;
+  ofcSave();
+  ofcRenderSheetBar();
+  ofcBuildGrid();
+  ofcRenderCells();
+  ofcSetFocus(0,0,false);
+  showToast('Sheet duplicated', '✓', 1600);
 }
 function ofcSwitchSheet(id){
   if(ofcEditing) ofcCommitEdit();
@@ -89190,7 +89835,8 @@ function ofcUpdateDocStats(){
   if(!paper || !el) return;
   var text = paper.textContent || '';
   var words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  el.textContent = words.toLocaleString() + ' words · ' + text.length.toLocaleString() + ' chars';
+  var mins = Math.max(1, Math.round(words/200));
+  el.textContent = words.toLocaleString() + ' words · ' + text.length.toLocaleString() + ' chars · ~' + mins + ' min read';
 }
 function ofcSyncToolbar(){
   try{
@@ -89209,6 +89855,15 @@ function ofcExportDoc(){
   var html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(d.name)+'</title><style>'+css+'</style></head><body>'+(d.html||'')+'</body></html>';
   var fname = (d.name||'document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'document';
   ofcDownload(fname+'.html', html, 'text/html;charset=utf-8');
+  showToast('Document downloaded', '✓', 2000);
+}
+function ofcExportDocTxt(){
+  var d = ofcActiveDoc(); if(!d) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = d.html || '';
+  var text = (tmp.textContent || '').replace(/\n{3,}/g, '\n\n');
+  var fname = (d.name||'document').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase() || 'document';
+  ofcDownload(fname+'.txt', text, 'text/plain;charset=utf-8');
   showToast('Document downloaded', '✓', 2000);
 }
 function ofcPrintDoc(){ window.print(); }
