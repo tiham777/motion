@@ -223,15 +223,16 @@ body>:not(#motion-splash-screen){visibility:visible!important}
 <!-- jsPDF is fetched on demand by _loadJsPDF() when the user actually exports
      a PDF. Preloading it cost ~350KB on every visit for a feature most sessions
      never touch, and Chrome logged a "preloaded but not used" warning. -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap">
 <!-- PERF (v21): Outfit is served as a single variable woff2 covering every
      weight the app and the splash brand word use. Preloading it closes the
      stylesheet→font discover gap, so first text paint (the "Motion" splash
      word, the whole UI) uses the real font instead of swapping mid-load. -->
 <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtq.woff2">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<!-- Consolidated into a single Google Fonts request (was two: Bebas Neue
+     fetched separately from Inter/Outfit/DM Mono). One CSS fetch, one less
+     round trip; the preload above warms this exact URL so it still applies. -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <!-- Subresource Integrity (SRI): the Firebase compat SDK files are immutable
      at pinned version 10.12.2, so each tag carries a sha384 integrity hash —
      if the CDN is ever compromised and serves different bytes, the browser
@@ -2250,7 +2251,11 @@ body.sidebar-hidden .sidebar-reopen svg{ width:9px;height:9px; }
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .logo-tag{font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);font-family:var(--font-mono);margin-top:2px}
-.sidebar-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);padding:0 10px;margin-bottom:6px;opacity:.7;display:flex;align-items:center}
+/* Contrast fix: the old `color:var(--text3)` + `opacity:.7` composited to
+   ~#656565 on the near-black sidebar — ≈3.4:1, below the WCAG AA 4.5:1 floor
+   (flagged by Lighthouse). A solid color-mix of text2/text3 keeps the muted
+   eyebrow look while clearing AA in every theme (dark ≈6.4:1, light ≈7.8:1). */
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);color:color-mix(in srgb, var(--text2) 55%, var(--text3));padding:0 10px;margin-bottom:6px;display:flex;align-items:center}
 .nav-item{
   display:flex;align-items:center;gap:10px;padding:9px 10px;
   border-radius:var(--radius-xs);cursor:pointer;font-size:15px;font-weight:500;
@@ -20881,7 +20886,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
   </button>
   <div class="logo" id="sidebarLogo" role="button" tabindex="0"
-       title="Motion — go to Dashboard" aria-label="Motion — go to Dashboard"
+       title="Motion — go to Dashboard" aria-label="Motion Productivity — go to Dashboard"
        onclick="setView('dashboard',null)"
        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setView('dashboard',null);}">
     <div class="logo-icon">
@@ -20964,7 +20969,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
 <button class="sidebar-reopen" id="sidebarReopen" onclick="toggleSidebar()" title="Open sidebar">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
 </button>
-<main class="main" id="main">
+<main class="main" id="main" tabindex="-1">
   <div class="topbar" id="topbar"></div>
 
   <div class="tabs">
@@ -22973,48 +22978,10 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="settings-section">
           <div class="settings-section-title">About</div>
           <div class="settings-about-card">
-            <div class="settings-about-logo">
-              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:translateX(-0.3px)">
-                <defs>
-                  <linearGradient id="slg-a" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="var(--ring-stop1)" stop-opacity="0.7"/>
-                    <stop offset="55%" stop-color="var(--ring-stop1)"/>
-                    <stop offset="100%" stop-color="var(--ring-stop2)"/>
-                  </linearGradient>
-                  <linearGradient id="slg-top" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="var(--ring-stop2)" stop-opacity="0"/>
-                    <stop offset="100%" stop-color="var(--ring-stop2)" stop-opacity="0.5"/>
-                  </linearGradient>
-                  <filter id="slg-glow" x="-60%" y="-60%" width="220%" height="220%">
-                    <feGaussianBlur stdDeviation="1.8" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                  <filter id="slg-halo" x="-120%" y="-120%" width="340%" height="340%">
-                    <feGaussianBlur stdDeviation="3"/>
-                  </filter>
-                  <filter id="slg-dot" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur stdDeviation="1.2" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-                <rect x="5" y="24" width="8" height="11" rx="4" fill="var(--accent)" opacity="0.28" filter="url(#slg-halo)"/>
-                <rect x="16" y="16" width="8" height="19" rx="4" fill="var(--accent)" opacity="0.34" filter="url(#slg-halo)"/>
-                <rect x="27" y="7" width="8" height="28" rx="4" fill="var(--accent2)" opacity="0.42" filter="url(#slg-halo)"/>
-                <rect x="4" y="35.5" width="32" height="1.2" rx="0.6" fill="var(--accent)" opacity="0.35"/>
-                <rect x="5" y="24" width="8" height="11" rx="4" fill="url(#slg-a)" opacity="0.72" filter="url(#slg-glow)"/>
-                <rect x="16" y="16" width="8" height="19" rx="4" fill="url(#slg-a)" opacity="0.88" filter="url(#slg-glow)"/>
-                <rect x="27" y="7" width="8" height="28" rx="4" fill="url(#slg-a)" opacity="1" filter="url(#slg-glow)"/>
-                <rect x="5" y="24" width="8" height="5" rx="4" fill="url(#slg-top)" opacity="0.55"/>
-                <rect x="16" y="16" width="8" height="6" rx="4" fill="url(#slg-top)" opacity="0.55"/>
-                <rect x="27" y="7" width="8" height="7" rx="4" fill="url(#slg-top)" opacity="0.55"/>
-                <circle cx="31" cy="6.5" r="3.5" fill="var(--accent2)" opacity="1" filter="url(#slg-dot)"/>
-                <circle cx="31" cy="6.5" r="1.6" fill="white" opacity="0.85"/>
-              </svg>
-            </div>
-            <div>
+            <div class="settings-about-body">
               <div class="settings-about-name">Mo<span>tion</span></div>
-              <div class="settings-about-ver">v17.0 — Premium Edition</div>
-              <div class="settings-about-tagline">Your personal productivity OS. Built for deep work, flow states, and consistent progress.</div>
+              <div class="settings-about-ver">v17.0 &middot; Premium Edition</div>
+              <div class="settings-about-tagline">Your personal productivity OS, built for deep work, flow states, and consistent progress.</div>
               <div class="settings-about-legal">
                 <div class="sal-row">
                   <span class="sal-label">Operated by</span>
@@ -23026,10 +22993,10 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
                 </div>
                 <div class="sal-row">
                   <span class="sal-label">Contact</span>
-                  <a class="sal-value sal-mail" href="mailto:tihamyt07@example.com">tihamyt07@example.com</a>
+                  <a class="sal-value sal-mail" href="mailto:tihamyt07@gmail.com">tihamyt07@gmail.com</a>
                 </div>
-                <div class="settings-about-trust">No ads &middot; No trackers &middot; No analytics &middot; Data stays on your device unless you sync</div>
               </div>
+              <div class="settings-about-trust">No ads, no trackers, no analytics. Your data stays on your device.</div>
             </div>
           </div>
         </div>
@@ -23060,7 +23027,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <p class="legal-intro">This Privacy Policy explains how Motion (&ldquo;we&rdquo;, &ldquo;us&rdquo;, the app) handles your personal data. It is written to comply with India&rsquo;s <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and general international privacy expectations. Using the app in guest mode requires almost no data sharing at all — details below.</p>
 
             <h4>1. Who we are</h4>
-            <p>Motion is a personal productivity web application operated by <strong>TIHAM 777</strong>, Chittagong, Bangladesh. Contact: <a href="mailto:tihamyt07@example.com" style="color:var(--accent2)">tihamyt07@example.com</a>.</p>
+            <p>Motion is a personal productivity web application operated by <strong>TIHAM 777</strong>, Chittagong, Bangladesh. Contact: <a href="mailto:tihamyt07@gmail.com" style="color:var(--accent2)">tihamyt07@gmail.com</a>.</p>
 
             <h4>2. What data we handle</h4>
             <p><strong>a) In guest mode (no account):</strong> everything you create — tasks, time blocks, notes, journal entries, habits, guidelines and settings — is stored <em>only in your own browser</em> (localStorage). It never leaves your device unless you use an online tool described in section 5.</p>
@@ -23096,7 +23063,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <p>Local data lives in your browser until you delete it (Settings &rarr; data tools, or by clearing site data). Cloud sync data is retained until you delete it in the app or request erasure. We keep up to three short-lived pre-sync safety backups to protect you against accidental data loss. All traffic uses HTTPS; Firebase data is encrypted in transit and at rest. No system is perfectly secure — please don&rsquo;t store information in the app that could endanger you if exposed.</p>
 
             <h4>7. Your rights (DPDP Act)</h4>
-            <p>You have the right to: <strong>access</strong> a summary of your data and how it&rsquo;s processed; <strong>correct or complete</strong> inaccurate data; <strong>erase</strong> your data; <strong>nominate</strong> someone to exercise rights if you&rsquo;re incapacitated or deceased; and <strong>grievance redressal</strong>. You can exercise most of these yourself instantly: Settings &rarr; Data tools (export, clear), sign out, or clear browser data for this site. For anything else, write to us at <strong>tihamyt07@example.com</strong> — we respond within thirty (30) days.</p>
+            <p>You have the right to: <strong>access</strong> a summary of your data and how it&rsquo;s processed; <strong>correct or complete</strong> inaccurate data; <strong>erase</strong> your data; <strong>nominate</strong> someone to exercise rights if you&rsquo;re incapacitated or deceased; and <strong>grievance redressal</strong>. You can exercise most of these yourself instantly: Settings &rarr; Data tools (export, clear), sign out, or clear browser data for this site. For anything else, write to us at <strong>tihamyt07@gmail.com</strong> — we respond within thirty (30) days.</p>
 
             <h4>8. Children</h4>
             <p>Motion is a general productivity tool and is not directed at children. We do not knowingly process children&rsquo;s personal data and we run no tracking or targeted advertising directed at any user, of any age. If you believe a child has provided data, contact us and we will delete it.</p>
@@ -23145,7 +23112,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <p>These Terms are governed by the laws of Bangladesh, with exclusive jurisdiction of the courts at <strong>Chittagong, Bangladesh</strong>.</p>
 
             <h4>10. Contact</h4>
-            <p><strong>TIHAM 777</strong> &middot; <strong>tihamyt07@example.com</strong></p>
+            <p><strong>TIHAM 777</strong> &middot; <strong>tihamyt07@gmail.com</strong></p>
           </div>
 
           <!-- ══════════ COOKIE POLICY ══════════ -->
@@ -23175,7 +23142,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <p class="legal-intro">Motion is <strong>completely free</strong>. There are no purchases, subscriptions, in-app payments or fees of any kind today — so there is normally nothing to refund.</p>
 
             <h4>1. Today (free app)</h4>
-            <p>All features are free. You will never be asked for payment details. If you ever see a payment prompt claiming to be Motion, it is not us — please report it to <strong>tihamyt07@example.com</strong>.</p>
+            <p>All features are free. You will never be asked for payment details. If you ever see a payment prompt claiming to be Motion, it is not us — please report it to <strong>tihamyt07@gmail.com</strong>.</p>
 
             <h4>2. If paid features are ever introduced</h4>
             <p>Any future paid features will clearly show price, billing terms and a refund policy <em>at the point of purchase</em>, and this page will be updated before the first charge is possible. Nothing will be charged without your explicit action.</p>
@@ -23184,13 +23151,13 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <p>Any future paid digital services will honour refund rights available under India&rsquo;s Consumer Protection (E-Commerce) Rules and the DPDP Act, including withdrawal where applicable. Nothing in this policy limits your statutory consumer rights.</p>
 
             <h4>4. Questions / disputes</h4>
-            <p>Billing questions (past or future): <strong>tihamyt07@example.com</strong>. We respond within thirty (30) days.</p>
+            <p>Billing questions (past or future): <strong>tihamyt07@gmail.com</strong>. We respond within thirty (30) days.</p>
           </div>
         </div>
 
         <div class="legal-foot">
           <span class="legal-foot-brand">Motion &middot; v17.0</span>
-          <span class="legal-foot-note">Operated by <strong>TIHAM 777</strong> &middot; <strong>tihamyt07@example.com</strong></span>
+          <span class="legal-foot-note">Operated by <strong>TIHAM 777</strong> &middot; <strong>tihamyt07@gmail.com</strong></span>
         </div>
       </div>
     </div>
@@ -76893,11 +76860,13 @@ html[data-theme="light"] .nav-item.nav-item.active::before,
 html[data-theme="pure-light"] .nav-item.nav-item.active::before{
   box-shadow:0 0 3px color-mix(in srgb, var(--accent) 30%, transparent) !important;
 }
-/* Light sidebar labels — readable on white */
+/* Light sidebar labels — readable on white. No opacity: dimming --text3 by
+   .85 composited down to ≈4.1:1 on white; at full strength it clears AA
+   (≈5.8:1 on light, ≈7:1 on pure-light). */
 html[data-theme="light"] .sidebar-label,
 html[data-theme="pure-light"] .sidebar-label{
   color:var(--text3) !important;
-  opacity:.85 !important;
+  opacity:1 !important;
 }
 /* Light logo name — darker on white */
 html[data-theme="light"] .logo-name,
@@ -97238,6 +97207,103 @@ html[data-theme="pure-light"] #view-sound .sound-play-btn.on:hover{
   window.homeGreetName = homeGreetName;
   window.homeRenderClock = homeRenderClock;
   window.homeDayArcUpdate = homeDayArcUpdate;
+})();
+</script>
+
+<style id="about-card-v2">
+/* ════════════════════════════════════════════════════════════════════
+   ABOUT CARD - Settings > About.
+
+   Plain on purpose. No pills, status dots, accent bars or corner glow:
+   the panel leans on the wording, the type scale and the theme's own
+   card surface, so it sits quietly with the other Settings cards
+   instead of reading as a badge wall.
+
+   Surface and type only. Delete this block to fall back to the
+   original About card styling.
+   ════════════════════════════════════════════════════════════════════ */
+
+#view-settings .settings-about-card{
+  display:block;
+  padding:22px 24px;
+}
+
+/* Wordmark, then the edition as a quiet subtitle line. */
+#view-settings .settings-about-name{ margin:0 0 4px; font-size:19px; }
+#view-settings .settings-about-ver{ margin:0 0 13px; font-size:11px; }
+
+#view-settings .settings-about-tagline{
+  font-size:13px; line-height:1.6;
+}
+
+/* Operator details - a colophon: term left, detail right, one rule
+   above the group rather than a divider under every row. */
+#view-settings .settings-about-legal{
+  margin-top:17px; padding-top:5px;
+  font-size:12px; line-height:1.6;
+}
+#view-settings .sal-row{ padding:7px 0; }
+#view-settings .sal-row + .sal-row{ border-top:0; }
+#view-settings .sal-label{
+  font-family:inherit; font-size:12px; font-weight:400;
+  text-transform:none; letter-spacing:0;
+}
+#view-settings .sal-value{ font-size:12.5px; font-weight:500; }
+
+/* Closing reassurance - a sentence, not a badge row. */
+#view-settings .settings-about-trust{
+  margin-top:16px; padding-top:0; border-top:0;
+  font-size:12px; font-weight:400; line-height:1.6;
+  letter-spacing:0; color:var(--text3);
+}
+</style>
+
+<script id="sidebar-nav-a11y">
+/* ═══ A11Y (polish): keyboard-operable desktop sidebar navigation ═══
+   The wide-screen primary nav is the .sidebar's rows, authored as
+   <div class="nav-item" onclick="setView(…)"> — the <button> .tabs bar is
+   the narrow-screen nav. The rows already receive .active + aria-current
+   from setView(), but with no role/tabindex/Enter handler they were
+   unreachable by keyboard and screen-reader users.
+
+   This adds the missing button semantics and Enter/Space activation. It
+   also keeps the rows out of the tab order while the sidebar is collapsed
+   (.sidebar.collapsed is width:0 + overflow:hidden, so a focusable row
+   there would trap focus off-screen). Existing markup, setView() and its
+   aria-current management are untouched. Remove this block to revert. */
+(function(){
+  var sb = document.querySelector('.sidebar');
+  if(!sb) return;
+  var items = sb.querySelectorAll('.nav-item');
+  if(!items.length) return;
+
+  function syncFocusable(){
+    var collapsed = sb.classList.contains('collapsed');
+    for(var i=0;i<items.length;i++){
+      items[i].setAttribute('tabindex', collapsed ? '-1' : '0');
+    }
+  }
+
+  for(var i=0;i<items.length;i++){
+    var el = items[i];
+    if(!el.hasAttribute('role')) el.setAttribute('role','button');
+    if(!el.__a11yNav){
+      el.__a11yNav = true;
+      // `this` is the row the listener is bound to.
+      el.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' || e.keyCode === 13 || e.keyCode === 32){
+          e.preventDefault();
+          this.click();
+        }
+      });
+    }
+  }
+  syncFocusable();
+
+  // Re-sync when the sidebar is collapsed/expanded.
+  if(window.MutationObserver){
+    new MutationObserver(syncFocusable).observe(sb, {attributes:true, attributeFilter:['class']});
+  }
 })();
 </script>
 
