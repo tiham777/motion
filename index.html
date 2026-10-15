@@ -216,9 +216,9 @@ body>:not(#motion-splash-screen){visibility:visible!important}
      semantics are preserved; only the network fetch is started earlier.
      jsPDF is lazy-loaded on demand by _loadJsPDF(); preloading it warms the
      browser cache so the first PDF export feels instant. -->
-<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
-<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
-<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous">
 <link rel="preload" as="script" href="https://accounts.google.com/gsi/client">
 <!-- jsPDF is fetched on demand by _loadJsPDF() when the user actually exports
      a PDF. Preloading it cost ~350KB on every visit for a feature most sessions
@@ -232,12 +232,18 @@ body>:not(#motion-splash-screen){visibility:visible!important}
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<!-- gsi/client — restored from working old version. Must load eagerly for Firebase Auth popup to work correctly. -->
+<!-- Subresource Integrity (SRI): the Firebase compat SDK files are immutable
+     at pinned version 10.12.2, so each tag carries a sha384 integrity hash —
+     if the CDN is ever compromised and serves different bytes, the browser
+     refuses to execute the script instead of running attacker code.
+     crossorigin="anonymous" is REQUIRED for SRI on cross-origin scripts
+     (and also fixes the preload↔script CORS match below).
+     NOTE: gsi/client is a mutable, unversioned endpoint — it legitimately
+     changes server-side, so SRI cannot be used there. -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<!-- Firebase SDK for Auth + Firestore — deferred so they don't block first paint (the SDK is initialized lazily by _initFirebase) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous" defer></script>
 <script>
 // Lazy-load jsPDF only when needed (PDF export). Tracks a pending promise so that
 // rapid double-clicks on "Download PDF" don't inject two script tags.
@@ -247,7 +253,12 @@ function _loadJsPDF(){
   if(_jspdfPromise) return _jspdfPromise;
   _jspdfPromise = new Promise(function(resolve, reject){
     var s = document.createElement('script');
+    // SRI: jsPDF is pinned at 2.5.1 on cdnjs — integrity hash matches that
+    // exact file, so a compromised CDN cannot serve tampered code. crossorigin
+    // is required for SRI on cross-origin scripts (cdnjs sends ACAO:*).
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.integrity = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+    s.crossOrigin = 'anonymous';
     s.onload = function(){ resolve(window.jspdf); };
     s.onerror = function(err){ _jspdfPromise = null; reject(err); };
     document.head.appendChild(s);
@@ -1030,7 +1041,7 @@ html[data-theme="deep"]{
   --bg:#02030a;--bg2:#080a1a;--bg3:#0e1228;
   --surface:#0f1430;--surface2:#1e2a55;
   --border:#080d22;--border2:#283568;
-  --text:#e8eefb;--text2:#a8b4d8;--text3:#6e78a8;
+  --text:#e8eefb;--text2:#a8b4d8;--text3:#7d87b8;
   --accent:#5b8eff;--accent2:#9bb8ff;
   --accent-glow:rgba(91,142,255,0.14);
   --accent-glow2:rgba(91,142,255,0.085);
@@ -1539,7 +1550,7 @@ html[data-theme="matcha"]{
   --bg:#040805;--bg2:#0a1208;--bg3:#121e0e;
   --surface:#0e1a0c;--surface2:#1c3216;
   --border:#0a1a08;--border2:#1f4520;
-  --text:#e5f0e0;--text2:#9bc897;--text3:#588055;
+  --text:#e5f0e0;--text2:#9bc897;--text3:#679a63;
   --accent:#5fb964;--accent2:#9ad99c;
   --accent-glow:rgba(95,185,100,0.14);
   --accent-glow2:rgba(95,185,100,0.085);
@@ -2009,7 +2020,7 @@ html[data-theme="bleach"]{
   --accent-glow:rgba(196,184,255,0.16);
   --accent-glow2:rgba(196,184,255,0.10);
   --accent-glow3:rgba(196,184,255,0.055);
-  --text:#f2ecff;--text2:#a89ed8;--text3:#7068a8;
+  --text:#f2ecff;--text2:#a89ed8;--text3:#8b82cc;
   --red:#f87171;
   --green:#34d399;--green-bg:rgba(52,211,153,0.10);
   --orange:#fb923c;
@@ -2041,7 +2052,7 @@ html[data-theme="aot"]{
   --accent-glow:rgba(78,168,144,0.17);
   --accent-glow2:rgba(78,168,144,0.11);
   --accent-glow3:rgba(78,168,144,0.060);
-  --text:#f5e8d0;--text2:#bcae8e;--text3:#7e6d52;
+  --text:#f5e8d0;--text2:#bcae8e;--text3:#9a8766;
   --red:#f87171;
   --green:#4ea890;--green-bg:rgba(78,168,144,0.10);
   --orange:#fb923c;
@@ -2494,6 +2505,7 @@ html.sidebar-zoom .main:has(.content.habits-active){
    transform residual — this keeps text rendering crisp.
    Expanded to cover ALL views (was missing several, causing blurry text
    on some pages after the view-enter animation ended). */
+#view-legal:not(.view-enter),
 #view-home:not(.view-enter),
 #view-blocks:not(.view-enter),
 #view-tasks:not(.view-enter),
@@ -2517,7 +2529,7 @@ html.sidebar-zoom .main:has(.content.habits-active){
 /* Also clear any lingering GPU-compositing hints that cause blurry text */
 #view-home, #view-blocks, #view-tasks, #view-focus, #view-dashboard,
 #view-rules, #view-tracker, #view-notes, #view-calendar, #view-sound,
-#view-settings, #view-aihub, #view-assistant, #view-tools{
+#view-settings, #view-aihub, #view-assistant, #view-tools, #view-legal{
   backface-visibility:visible !important;
   -webkit-backface-visibility:visible !important;
   perspective:none !important;
@@ -2590,7 +2602,7 @@ z-index:50;
 .content.calendar-active #view-calendar{flex:1;display:flex;min-height:0}
 .content.blocks-cal-active{padding:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;contain:none!important}
 .content.blocks-cal-active #view-blocks{flex:1 1 0%!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
-#view-dashboard,#view-blocks,#view-tasks,#view-focus,#view-rules,#view-tracker,#view-notes,#view-calendar,#view-sound,#view-settings,#view-aihub,#view-assistant,#view-tools{display:none}
+#view-dashboard,#view-blocks,#view-tasks,#view-focus,#view-rules,#view-tracker,#view-notes,#view-calendar,#view-sound,#view-settings,#view-aihub,#view-assistant,#view-tools,#view-legal{display:none}
 #view-dashboard,#view-tasks,#view-aihub,#view-settings,#view-sound{zoom:1.05}
 #view-tracker{zoom:1.04}
 /* ═══ Toggle-bar invariant for Time Blocks sub-pages ═══
@@ -20510,6 +20522,237 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   .ofc-panel.active{animation:none}
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   LEGAL & COMPLIANCE LAYER v1 (DPDP-ready)
+   · #view-legal — in-app policy center (privacy / terms / cookies / refund)
+   · .legal-consent-banner — first-visit storage & data notice
+   · .auth-consent — affirmative sign-in consent (checkbox, no pre-tick)
+   · .settings-about-legal — operator details (TIHAM 777)
+   · .aihub-privacy-note / .api-key-privacy-note — key-handling notices
+   All colours come from theme variables so every theme (light + dark)
+   keeps ≥4.5:1 body-text contrast automatically.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Legal view page ──
+   NOTE: visibility of #view-legal is controlled by setView() inline styles,
+   same as every other view (see the base #view-*{display:none} rules above). */
+.legal-page{
+  max-width:820px;margin:0 auto;padding:26px 4px 64px;
+  font-size:13.5px;line-height:1.65;color:var(--text2);
+  letter-spacing:-.005em;
+}
+.legal-head{margin-bottom:20px;position:relative}
+.legal-back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:none;border:1px solid var(--border);border-radius:8px;
+  color:var(--text2);font-size:11.5px;font-weight:600;font-family:inherit;
+  padding:6px 12px;margin-bottom:14px;cursor:pointer;
+  transition:border-color .18s ease,color .18s ease,background .18s ease;
+}
+.legal-back-btn:hover{border-color:var(--accent-glow5);color:var(--text);background:var(--accent-glow3)}
+.legal-back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legal-eyebrow{
+  font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:6px;
+}
+.legal-title{
+  font-family:var(--font-head);font-size:26px;font-weight:800;
+  letter-spacing:-.02em;color:var(--text);margin-bottom:8px;
+}
+.legal-sub{font-size:13px;color:var(--text3);max-width:560px}
+.legal-updated{color:var(--text3);font-weight:600;white-space:nowrap}
+
+/* Tabs */
+.legal-tabs{
+  display:flex;gap:6px;flex-wrap:wrap;
+  border-bottom:1px solid var(--border);margin-bottom:22px;
+}
+.legal-tab{
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:700;letter-spacing:-.005em;
+  color:var(--text3);padding:10px 14px;position:relative;
+  transition:color .18s ease;
+}
+.legal-tab:hover{color:var(--text2)}
+.legal-tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px 8px 0 0}
+.legal-tab.active{color:var(--text)}
+.legal-tab.active::after{
+  content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;
+  background:var(--accent);border-radius:2px;
+}
+
+/* Document card */
+.legal-doc{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:26px 28px;overflow:hidden;display:none;
+}
+.legal-doc.active{display:block}
+.legal-doc h3{
+  font-family:var(--font-head);font-size:19px;font-weight:800;
+  color:var(--text);margin-bottom:10px;letter-spacing:-.01em;
+}
+.legal-doc h4{
+  font-size:13px;font-weight:700;color:var(--text);
+  margin:22px 0 8px;letter-spacing:-.008em;
+  padding-top:16px;border-top:1px solid color-mix(in srgb,var(--border) 60%,transparent);
+}
+.legal-doc h4:first-of-type{border-top:none;padding-top:0;margin-top:16px}
+.legal-intro{
+  font-size:13px;color:var(--text2);background:var(--bg3);
+  border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+}
+.legal-doc p{margin:0 0 10px;color:var(--text2)}
+.legal-doc ul{margin:4px 0 12px;padding-left:20px}
+.legal-doc li{margin:5px 0;color:var(--text2)}
+.legal-doc strong{color:var(--text);font-weight:650}
+.legal-doc em{color:var(--text2)}
+.legal-doc code{
+  font-family:var(--font-mono);font-size:11.5px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:5px;padding:1px 6px;
+}
+/* Footer */
+.legal-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;margin-top:18px;padding:14px 4px 0;
+  border-top:1px solid var(--border);font-size:11.5px;color:var(--text3);
+}
+.legal-foot-brand{font-weight:800;color:var(--text2);letter-spacing:-.01em}
+
+/* ── First-visit consent banner ── */
+.legal-consent-banner{
+  position:fixed;left:50%;bottom:18px;transform:translate(-50%,16px);
+  width:min(680px,calc(100vw - 32px));z-index:90000;
+  opacity:0;pointer-events:none;
+  transition:opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1);
+}
+.legal-consent-banner.lcb-in{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.lcb-inner{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  padding:14px 18px;
+  box-shadow:0 12px 40px -12px rgba(0,0,0,.45);
+}
+.lcb-text{flex:1 1 320px;font-size:12px;line-height:1.55;color:var(--text2)}
+.lcb-text strong{color:var(--text)}
+.lcb-link{
+  background:none;border:none;padding:0;margin:0 2px;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:700;
+  color:var(--accent2);text-decoration:underline;text-underline-offset:2px;
+}
+.lcb-link:hover{color:var(--text)}
+.lcb-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.lcb-accept{
+  flex-shrink:0;background:var(--accent);color:var(--btn-text);
+  border:1px solid var(--accent);border-radius:10px;
+  font-family:inherit;font-size:12.5px;font-weight:700;letter-spacing:-.005em;
+  padding:9px 22px;cursor:pointer;
+  transition:background .18s ease;
+}
+.lcb-accept:hover{background:var(--accent2)}
+.lcb-accept:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── Auth-card consent (sign-in) ── */
+.auth-consent{
+  display:flex;align-items:flex-start;gap:10px;text-align:left;
+  margin:18px 0 4px;cursor:pointer;
+  font-size:11.5px;line-height:1.55;color:var(--text2);
+}
+.auth-consent input[type="checkbox"]{
+  width:16px;height:16px;margin:1px 0 0;flex-shrink:0;
+  accent-color:var(--accent);cursor:pointer;
+}
+.auth-consent input[type="checkbox"]:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+.auth-consent.consent-shake{animation:consentShake .4s ease}
+@keyframes consentShake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+.auth-link{
+  background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;font-size:inherit;font-weight:700;
+  color:var(--accent2);text-decoration:underline;text-underline-offset:2px;
+}
+.auth-link:hover{color:var(--text)}
+.auth-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.auth-privacy-note{
+  margin-top:14px;font-size:10.5px;line-height:1.55;
+  color:var(--text3);text-align:center;
+}
+/* light themes: keep the tint readable */
+html[data-theme="light"] .lcb-text,
+html[data-theme="pure-light"] .lcb-text,
+html[data-theme="bleach"] .lcb-text{color:var(--text2)}
+html[data-theme="light"] .legal-doc,
+html[data-theme="pure-light"] .legal-doc{box-shadow:none}
+
+/* ── About-card operator block (TIHAM 777) ── */
+.settings-about-legal{
+  margin-top:12px;
+  border-top:1px solid var(--border);
+  font-size:11px;line-height:1.7;color:var(--text3);
+}
+.sal-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:6.5px 0;
+}
+.sal-row + .sal-row{border-top:1px solid color-mix(in srgb,var(--text) 5%,transparent)}
+.sal-label{
+  font-family:var(--font-mono);font-size:9.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.13em;
+  color:var(--text3);white-space:nowrap;
+}
+.sal-value{
+  font-size:12.5px;font-weight:600;color:var(--text);
+  letter-spacing:-.005em;text-align:right;
+}
+.sal-mail{
+  color:var(--text);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+  padding-bottom:1px;
+  transition:color .2s ease,border-color .2s ease;
+}
+.sal-mail:hover{
+  color:var(--accent);border-bottom-color:var(--accent);
+}
+.settings-about-trust{
+  margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  font-size:10.5px;font-weight:600;color:var(--text3);
+  letter-spacing:.01em;
+}
+
+/* ── AI Hub + API-key notices ── */
+.aihub-privacy-note{
+  display:flex;align-items:flex-start;gap:8px;
+  margin-top:16px;padding:11px 13px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  font-size:11px;line-height:1.55;color:var(--text3);
+}
+.aihub-privacy-note svg{flex-shrink:0;margin-top:1px;color:var(--accent2)}
+.api-key-privacy-note{
+  font-size:10.5px;line-height:1.6;color:var(--text3);
+  margin:4px 2px 2px;
+}
+.api-key-privacy-note .auth-link{font-size:10.5px}
+
+/* ── Mobile ── */
+@media (max-width:640px){
+  .legal-page{padding:18px 2px 56px;font-size:13px}
+  .legal-doc{padding:18px 16px;border-radius:12px}
+  .legal-tab{padding:9px 10px;font-size:11.5px}
+  .lcb-inner{flex-direction:column;align-items:stretch;gap:10px}
+  .lcb-accept{width:100%}
+  .legal-foot{flex-direction:column;align-items:flex-start;gap:4px}
+}
+
+/* ── Reduced motion for consent UI ── */
+@media (prefers-reduced-motion:reduce){
+  .legal-consent-banner{transition:opacity .2s ease}
+  .auth-consent.consent-shake{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -20547,20 +20790,81 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
 })();
 </script>
 <div id="auth-overlay">
-  <div class="auth-card">
-    <div class="auth-logo">Motion</div>
-    <div class="auth-tagline">Sign in to save &amp; sync — or continue as guest</div>
-    <button class="auth-btn auth-btn-google" onclick="authSignInGoogle()">
-      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Sign in with Google
-    </button>
-    <div class="auth-divider"><span>or</span></div>
-    <button class="auth-btn auth-btn-guest" onclick="authSignInGuest()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Continue as Guest
-    </button>
-    <div class="auth-status" id="auth-status"></div>
-    
+  <div class="auth-stage">
+    <!-- ── Brand / value showcase (desktop only; hidden < 960px) ── -->
+    <aside class="auth-showcase">
+      <div class="as-brand">
+        <span class="as-mark" aria-hidden="true"><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="asMkBg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26272b"/><stop offset="55" stop-color="#101013"/><stop offset="100" stop-color="#000"/></linearGradient><linearGradient id="asMkM1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="100" stop-color="#c8cede"/></linearGradient></defs><rect width="512" height="512" rx="116" fill="url(#asMkBg1)"/><path d="M104 392V120h80l64 128 64-128h80v272h-64V218l-64 120h-32l-64-120v174z" fill="url(#asMkM1)"/></svg></span>
+        <span class="as-name">Motion</span>
+      </div>
+      <div class="as-main">
+        <h2 class="as-title">Plan the day.<br/><em>Own the focus.</em></h2>
+        <p class="as-sub">Time blocks, tasks, habits and guidelines — one calm workspace that lives entirely in your browser.</p>
+        <ul class="as-feats">
+          <li class="as-feat">
+            <span class="as-feat-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 9.5h18"/><path d="M8.5 14.5l2.4 2.4 4.6-4.6"/></svg></span>
+            <div class="as-feat-body"><strong>Time blocking</strong><span>Design tomorrow before it arrives.</span></div>
+          </li>
+          <li class="as-feat">
+            <span class="as-feat-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v4l2.5 1.5"/><path d="M9.5 2.5h5"/><path d="M12 2.5v1.6"/></svg></span>
+            <div class="as-feat-body"><strong>Deep-work timer</strong><span>Ambient sessions that respect your focus.</span></div>
+          </li>
+          <li class="as-feat">
+            <span class="as-feat-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2.1 5-5 2.1 2.1-5z"/></svg></span>
+            <div class="as-feat-body"><strong>Habits &amp; guidelines</strong><span>Small rules, kept daily — on purpose.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div class="as-foot">Free&ensp;&middot;&ensp;No ads&ensp;&middot;&ensp;No trackers&ensp;&middot;&ensp;Your data stays yours</div>
+    </aside>
+    <!-- ── Sign-in form ── -->
+    <div class="auth-pane">
+      <div class="auth-pane-inner">
+        <div class="auth-card auth-card-pro">
+          <div class="auth-mobile-brand" aria-hidden="true">
+            <span class="as-mark"><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="asMkBg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26272b"/><stop offset="55" stop-color="#101013"/><stop offset="100" stop-color="#000"/></linearGradient><linearGradient id="asMkM2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="100" stop-color="#c8cede"/></linearGradient></defs><rect width="512" height="512" rx="116" fill="url(#asMkBg2)"/><path d="M104 392V120h80l64 128 64-128h80v272h-64V218l-64 120h-32l-64-120v174z" fill="url(#asMkM2)"/></svg></span>
+            <span class="as-name">Motion</span>
+          </div>
+          <h1 class="auth-heading">Welcome to Motion</h1>
+          <p class="auth-sub">Sign in to save &amp; sync across your devices — or keep everything on this device.</p>
+          <button class="auth-btn auth-btn-google" onclick="authSignInGoogle()" aria-describedby="authConsentHint">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span>Continue with Google</span>
+          </button>
+          <label class="auth-consent" id="authConsentLabel">
+            <input type="checkbox" id="authConsentCheck"/>
+            <span>I agree to the <button type="button" class="auth-link" onclick="openLegalDoc('terms',true)">Terms &amp; Conditions</button> and <button type="button" class="auth-link" onclick="openLegalDoc('privacy',true)">Privacy Policy</button>, and consent to my Google account data being used for sign-in and sync.</span>
+          </label>
+          <div class="auth-divider"><span>or</span></div>
+          <button class="auth-btn auth-btn-guest" onclick="authSignInGuest()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Continue as Guest</span>
+          </button>
+          <div class="auth-status" id="auth-status" aria-live="polite"></div>
+          <div class="auth-privacy-note" id="authConsentHint">Guest mode keeps everything on this device — nothing is uploaded. <button type="button" class="auth-link" onclick="openLegalDoc('cookies',true)">How we use storage</button></div>
+        </div>
+        <p class="auth-legal-micro">
+          <button type="button" class="auth-link" onclick="openLegalDoc('terms',true)">Terms</button>
+          <span aria-hidden="true">&middot;</span>
+          <button type="button" class="auth-link" onclick="openLegalDoc('privacy',true)">Privacy</button>
+          <span aria-hidden="true">&middot;</span>
+          <button type="button" class="auth-link" onclick="openLegalDoc('cookies',true)">Storage</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STORAGE & DATA CONSENT BANNER (first visit) -->
+<div id="legalConsentBanner" class="legal-consent-banner" role="region" aria-label="Data and storage notice" style="display:none">
+  <div class="lcb-inner">
+    <div class="lcb-text">
+      <strong>Your data stays yours.</strong>
+      Motion stores your tasks, notes and settings in this browser only — no ads, no trackers, no analytics. Signing in with Google syncs your data via Firebase so it follows you across devices.
+      <button type="button" class="lcb-link" onclick="openLegalDoc('privacy')">Privacy Policy</button>
+      <button type="button" class="lcb-link" onclick="openLegalDoc('cookies')">Cookie Policy</button>
+    </div>
+    <button class="lcb-accept" onclick="legalAcceptBanner()">Accept</button>
   </div>
 </div>
 
@@ -20576,7 +20880,10 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
   <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
   </button>
-  <div class="logo">
+  <div class="logo" id="sidebarLogo" role="button" tabindex="0"
+       title="Motion — go to Dashboard" aria-label="Motion — go to Dashboard"
+       onclick="setView('dashboard',null)"
+       onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setView('dashboard',null);}">
     <div class="logo-icon">
       <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:translateX(-0.3px)">
         <defs>
@@ -21008,7 +21315,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Duration <span class="task-meta-hint task-meta-hint--free-text">free text</span>
               </label>
-              <input class="task-dur-inp" id="taskDur" type="text" placeholder="e.g. 30m, 2h, 1d, 2day 4h" maxlength="32"/>
+              <input class="task-dur-inp" id="taskDur" type="text" placeholder="30m · 2h · 1d" maxlength="32"/>
             </div>
             <div class="task-meta-field">
               <label class="task-meta-label" for="taskDeadline">
@@ -21074,14 +21381,14 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Duration <span class="task-meta-hint task-meta-hint--free-text">free text</span>
               </label>
-              <input class="task-dur-inp" id="dailyTaskDur" type="text" placeholder="e.g. 30m, 2h, 1d, 2day 4h" maxlength="32"/>
+              <input class="task-dur-inp" id="dailyTaskDur" type="text" placeholder="30m · 2h · 1d" maxlength="32"/>
             </div>
             <div class="task-meta-field">
               <label class="task-meta-label" for="dailyTaskTime">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Due by <span class="task-meta-hint">AM/PM</span>
               </label>
-              <input class="task-time-inp" id="dailyTaskTime" type="text" placeholder="e.g. 2:30 PM, 14:00" maxlength="16"/>
+              <input class="task-time-inp" id="dailyTaskTime" type="text" placeholder="2:30 PM or 14:00" maxlength="16"/>
             </div>
             <div class="task-meta-field">
               <label class="task-meta-label" for="dailyTaskCat">
@@ -21144,7 +21451,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
                 <button class="preset-btn" onclick="setPreset(25,this)">25 min</button>
                 <button class="preset-btn" onclick="setPreset(50,this)">50 min</button>
                 <div class="preset-custom-wrap" id="presetCustomWrap">
-                  <input type="number" class="preset-custom-input" id="presetCustomInput" min="1" max="999" placeholder="—" title="Custom minutes" onkeydown="if(event.key==='Enter')applyCustomPreset()"/>
+                  <input type="number" class="preset-custom-input" id="presetCustomInput" min="1" max="999" placeholder="30" title="Custom minutes" onkeydown="if(event.key==='Enter')applyCustomPreset()"/>
                   <span class="preset-custom-label">min</span>
                   <button class="preset-custom-go" onclick="applyCustomPreset()" title="Set custom time">→</button>
                 </div>
@@ -22045,7 +22352,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="nb-stream" id="nbStream">
           <div class="nb-capture">
             <div class="nb-capture-inner">
-              <textarea id="nbNoteInput" placeholder="Write a note… Press Enter to save, Shift+Enter for new line." rows="2" oninput="autoGrowTextarea(this)"></textarea>
+              <textarea id="nbNoteInput" placeholder="Write a note…" rows="2" oninput="autoGrowTextarea(this)"></textarea>
               <div class="nb-capture-footer">
                 <span class="nb-capture-hint">Enter to save · Shift+Enter new line</span>
                 <button class="nb-save-btn" onclick="nbAddNote()">
@@ -22077,6 +22384,10 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         </div>
 
         <div class="aihub-sections" id="aihSections"></div>
+        <div class="aihub-privacy-note">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          API keys you add are stored only in this browser, sent only to the provider you choose, and never synced to the cloud or included in backup exports. Assistant messages are processed by that provider under their privacy policy.
+        </div>
       </div>
     </div>
 
@@ -22620,6 +22931,44 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           </div>
         </div>
 
+        <!-- ── LEGAL & PRIVACY ── -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Legal &amp; Privacy
+          </div>
+          <div class="settings-card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Privacy Policy</div>
+                <div class="settings-row-desc">What we collect, why, and your rights under India&rsquo;s DPDP Act</div>
+              </div>
+              <button class="settings-action-btn" onclick="openLegalDoc('privacy')">View</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Terms &amp; Conditions</div>
+                <div class="settings-row-desc">The rules for using Motion, in plain language</div>
+              </div>
+              <button class="settings-action-btn" onclick="openLegalDoc('terms')">View</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Cookie &amp; Storage Policy</div>
+                <div class="settings-row-desc">No tracking cookies, no analytics — see exactly what is stored</div>
+              </div>
+              <button class="settings-action-btn" onclick="openLegalDoc('cookies')">View</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Refund Policy</div>
+                <div class="settings-row-desc">Motion is free today — how any future paid features would be handled</div>
+              </div>
+              <button class="settings-action-btn" onclick="openLegalDoc('refund')">View</button>
+            </div>
+          </div>
+        </div>
+
         <!-- ── ABOUT ── -->
         <div class="settings-section">
           <div class="settings-section-title">About</div>
@@ -22666,12 +23015,240 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
               <div class="settings-about-name">Mo<span>tion</span></div>
               <div class="settings-about-ver">v17.0 — Premium Edition</div>
               <div class="settings-about-tagline">Your personal productivity OS. Built for deep work, flow states, and consistent progress.</div>
+              <div class="settings-about-legal">
+                <div class="sal-row">
+                  <span class="sal-label">Operated by</span>
+                  <span class="sal-value">TIHAM 777</span>
+                </div>
+                <div class="sal-row">
+                  <span class="sal-label">Location</span>
+                  <span class="sal-value">Chittagong, Bangladesh</span>
+                </div>
+                <div class="sal-row">
+                  <span class="sal-label">Contact</span>
+                  <a class="sal-value sal-mail" href="mailto:tihamyt07@example.com">tihamyt07@example.com</a>
+                </div>
+                <div class="settings-about-trust">No ads &middot; No trackers &middot; No analytics &middot; Data stays on your device unless you sync</div>
+              </div>
             </div>
           </div>
         </div>
 
       </div>
     </div>
+
+    <!-- LEGAL & POLICIES VIEW -->
+    <div id="view-legal" style="display:none">
+      <div class="legal-page">
+        <div class="legal-head">
+          <button class="legal-back-btn" id="legalBackBtn" onclick="legalBack()" aria-label="Back to app">&#8592; Back</button>
+          <div class="legal-eyebrow">Legal Center</div>
+          <h2 class="legal-title">Policies &amp; Terms</h2>
+          <p class="legal-sub">Motion is free, stores your data on your device by default, and never sells it. <span class="legal-updated">Last updated: October 2025.</span></p>
+        </div>
+        <div class="legal-tabs" role="tablist" aria-label="Policy documents">
+          <button class="legal-tab active" id="legalTab-privacy" role="tab" aria-selected="true" aria-controls="legalDoc-privacy" onclick="legalShowDoc('privacy')">Privacy Policy</button>
+          <button class="legal-tab" id="legalTab-terms" role="tab" aria-selected="false" aria-controls="legalDoc-terms" onclick="legalShowDoc('terms')">Terms &amp; Conditions</button>
+          <button class="legal-tab" id="legalTab-cookies" role="tab" aria-selected="false" aria-controls="legalDoc-cookies" onclick="legalShowDoc('cookies')">Cookie Policy</button>
+          <button class="legal-tab" id="legalTab-refund" role="tab" aria-selected="false" aria-controls="legalDoc-refund" onclick="legalShowDoc('refund')">Refund Policy</button>
+        </div>
+
+        <div class="legal-docs">
+          <!-- ══════════ PRIVACY POLICY ══════════ -->
+          <div class="legal-doc active" id="legalDoc-privacy" role="tabpanel" aria-labelledby="legalTab-privacy">
+            <h3>Privacy Policy</h3>
+            <p class="legal-intro">This Privacy Policy explains how Motion (&ldquo;we&rdquo;, &ldquo;us&rdquo;, the app) handles your personal data. It is written to comply with India&rsquo;s <strong>Digital Personal Data Protection Act, 2023 (DPDP Act)</strong> and general international privacy expectations. Using the app in guest mode requires almost no data sharing at all — details below.</p>
+
+            <h4>1. Who we are</h4>
+            <p>Motion is a personal productivity web application operated by <strong>TIHAM 777</strong>, Chittagong, Bangladesh. Contact: <a href="mailto:tihamyt07@example.com" style="color:var(--accent2)">tihamyt07@example.com</a>.</p>
+
+            <h4>2. What data we handle</h4>
+            <p><strong>a) In guest mode (no account):</strong> everything you create — tasks, time blocks, notes, journal entries, habits, guidelines and settings — is stored <em>only in your own browser</em> (localStorage). It never leaves your device unless you use an online tool described in section 5.</p>
+            <p><strong>b) If you sign in with Google:</strong> we receive from Google your <em>email address, display name, profile photo and a unique account ID</em>. We use these solely to sign you in and label your sync data.</p>
+            <p><strong>c) If you enable cloud sync:</strong> the content you create (tasks, notes, habits, and other app data, including AI chat history) is uploaded to your private sync store (Google Firebase / Drive) so it follows you across devices. We also store a short device label (e.g. &ldquo;Phone&rdquo;/&ldquo;Computer&rdquo;), a truncated browser user-agent and timestamps to keep syncs consistent.</p>
+            <p><strong>d) What we never collect:</strong> we run no advertising, no analytics, no tracking pixels, no behavioural profiling, and we never sell or rent any data.</p>
+
+            <h4>3. Why we process data (purpose limitation)</h4>
+            <ul>
+              <li>To provide the app&rsquo;s core functions (storing and showing <em>your own</em> content back to you).</li>
+              <li>To authenticate you and sync your data across your devices <strong>only after you affirmatively consent</strong> at sign-in.</li>
+              <li>To keep the service working (fraud prevention, abuse detection, technical diagnostics are limited to what is strictly necessary).</li>
+            </ul>
+
+            <h4>4. Data minimisation</h4>
+            <p>We only ask for data the app genuinely needs: guest mode needs <em>nothing</em>; sign-in needs your Google identity; sync needs your content. The optional Google Drive permission is requested only if you turn Drive sync on, and we no longer request the broad Drive scope during plain sign-in.</p>
+
+            <h4>5. Third-party services (processors / tools)</h4>
+            <p>Some features rely on external services. Each only receives the minimum needed for that feature:</p>
+            <ul>
+              <li><strong>Google Firebase</strong> (Authentication, Firestore) — sign-in and cloud sync, if you sign in.</li>
+              <li><strong>Google Drive API</strong> — only if you enable Drive sync in Settings; stores one backup file in your Drive.</li>
+              <li><strong>Google Fonts</strong> — font files; your browser requests them directly (your IP is visible to Google during that request).</li>
+              <li><strong>cdnjs / jsPDF</strong> — the library used for PDF export.</li>
+              <li><strong>Translator tool</strong> — text you type is sent to Google Translate / MyMemory to produce the translation.</li>
+              <li><strong>QR code tool</strong> — text you type is sent to the goqr.me (api.qrserver.com) API to render the QR image.</li>
+              <li><strong>Currency tool</strong> — requests exchange rates from open.er-api.com (no personal data sent).</li>
+              <li><strong>AI Assistant / AI Hub</strong> — only if you add your own API key: your prompts and content are sent directly to the provider you choose (e.g. OpenAI, Anthropic, Google, Mistral, DeepSeek, Groq, Cohere, Perplexity, Together, OpenRouter or a custom endpoint) and are governed by that provider&rsquo;s privacy policy. Your API keys are stored only in this browser.</li>
+            </ul>
+            <p>These providers may process data outside Bangladesh. We do not transfer your data to any advertiser, data broker or analytics company.</p>
+
+            <h4>6. Storage, retention &amp; security</h4>
+            <p>Local data lives in your browser until you delete it (Settings &rarr; data tools, or by clearing site data). Cloud sync data is retained until you delete it in the app or request erasure. We keep up to three short-lived pre-sync safety backups to protect you against accidental data loss. All traffic uses HTTPS; Firebase data is encrypted in transit and at rest. No system is perfectly secure — please don&rsquo;t store information in the app that could endanger you if exposed.</p>
+
+            <h4>7. Your rights (DPDP Act)</h4>
+            <p>You have the right to: <strong>access</strong> a summary of your data and how it&rsquo;s processed; <strong>correct or complete</strong> inaccurate data; <strong>erase</strong> your data; <strong>nominate</strong> someone to exercise rights if you&rsquo;re incapacitated or deceased; and <strong>grievance redressal</strong>. You can exercise most of these yourself instantly: Settings &rarr; Data tools (export, clear), sign out, or clear browser data for this site. For anything else, write to us at <strong>tihamyt07@example.com</strong> — we respond within thirty (30) days.</p>
+
+            <h4>8. Children</h4>
+            <p>Motion is a general productivity tool and is not directed at children. We do not knowingly process children&rsquo;s personal data and we run no tracking or targeted advertising directed at any user, of any age. If you believe a child has provided data, contact us and we will delete it.</p>
+
+            <h4>9. Withdraw consent</h4>
+            <p>You may withdraw consent at any time: sign out, revoke Motion&rsquo;s access in your Google Account settings, or clear the app&rsquo;s data in your browser. Withdrawal does not affect processing already lawfully completed.</p>
+
+            <h4>10. Changes</h4>
+            <p>We may update this policy; the &ldquo;Last updated&rdquo; date above will change and significant updates will be surfaced in the app before they take effect.</p>
+          </div>
+
+          <!-- ══════════ TERMS & CONDITIONS ══════════ -->
+          <div class="legal-doc" id="legalDoc-terms" role="tabpanel" aria-labelledby="legalTab-terms">
+            <h3>Terms &amp; Conditions</h3>
+            <p class="legal-intro">These Terms govern your use of Motion. By using the app — as a guest or with an account — you accept them.</p>
+
+            <h4>1. The service</h4>
+            <p>Motion is a free, browser-based personal productivity app (time blocks, tasks, habits, notes, guidelines, focus timer, AI assistant integration). We may add, change or remove features at any time.</p>
+
+            <h4>2. Eligibility &amp; accounts</h4>
+            <p>You must be at least 18 years old, or use Motion with a parent/guardian&rsquo;s consent. Accounts use Google Sign-In. You are responsible for keeping your Google account secure; we can&rsquo;t be liable for losses from someone else using your device or account.</p>
+
+            <h4>3. Your content</h4>
+            <p>Everything you write in Motion stays <strong>yours</strong> — you own your content. You grant us only the limited technical right to store, sync and display it back to you as needed to run the app. You are responsible for what you store and for having the right to use it.</p>
+
+            <h4>4. AI features</h4>
+            <p>AI features run through third-party providers using <em>your own</em> API keys. Outputs are generated by those providers, may be inaccurate, and must not be relied upon as professional, medical, legal or financial advice. Your use of each provider is also governed by their terms.</p>
+
+            <h4>5. Acceptable use</h4>
+            <ul>
+              <li>Don&rsquo;t use Motion for anything unlawful, fraudulent or abusive.</li>
+              <li>Don&rsquo;t try to disrupt, overload or reverse-engineer the service or circumvent its security.</li>
+              <li>Don&rsquo;t use Motion to store or distribute content that infringes others&rsquo; rights.</li>
+            </ul>
+
+            <h4>6. Intellectual property</h4>
+            <p>The Motion app — its design, code and branding — belongs to <strong>TIHAM 777</strong>. All third-party names, logos and trademarks (Google, Firebase, OpenAI, etc.) belong to their owners and are used only to describe compatibility.</p>
+
+            <h4>7. Disclaimer &amp; limitation of liability</h4>
+            <p>Motion is provided <strong>&ldquo;as is&rdquo; and &ldquo;as available&rdquo;</strong> without warranties of any kind. We don&rsquo;t promise uninterrupted or error-free service, and we are <strong>not liable</strong> for data loss, lost profits or indirect damages arising from your use of the app. Your data is stored in your browser and cloud account — please keep your own backups (Settings &rarr; Backup &amp; Restore). Nothing in these Terms limits liability that cannot be limited under applicable law.</p>
+
+            <h4>8. Termination</h4>
+            <p>You may stop using Motion anytime — just clear your browser data or delete the app from your device. We may suspend abusive accounts or take the service offline at any time (it&rsquo;s a free, best-effort app).</p>
+
+            <h4>9. Governing law</h4>
+            <p>These Terms are governed by the laws of Bangladesh, with exclusive jurisdiction of the courts at <strong>Chittagong, Bangladesh</strong>.</p>
+
+            <h4>10. Contact</h4>
+            <p><strong>TIHAM 777</strong> &middot; <strong>tihamyt07@example.com</strong></p>
+          </div>
+
+          <!-- ══════════ COOKIE POLICY ══════════ -->
+          <div class="legal-doc" id="legalDoc-cookies" role="tabpanel" aria-labelledby="legalTab-cookies">
+            <h3>Cookie &amp; Storage Policy</h3>
+            <p class="legal-intro">Short version: <strong>Motion sets no advertising or tracking cookies, runs no analytics, and embeds no ad networks.</strong> Here&rsquo;s exactly what we use instead.</p>
+
+            <h4>1. Local storage (essential)</h4>
+            <p>The app stores your tasks, notes, blocks, habits, guidelines, settings and preferences in your browser&rsquo;s <strong>localStorage</strong> under <code>ft_*</code> keys. This is strictly necessary for the app to work at all — without it, nothing could be saved between visits. It is readable only by Motion on your device.</p>
+
+            <h4>2. Cookies</h4>
+            <p>Motion itself sets <strong>no cookies</strong>. If you use Google Sign-In, Google&rsquo;s sign-in flow (on accounts.google.com) uses its own cookies as part of authentication — those are governed by Google&rsquo;s policies, and the session token Firebase keeps in your browser is needed to keep you signed in.</p>
+
+            <h4>3. Third-party requests</h4>
+            <p>Your browser contacts these services only when the related feature is used: Google Fonts (fonts), cdnjs (PDF export library), Firebase / Drive (only when signed in or syncing), the Translator, QR and Currency tools (see the Privacy Policy, section 5). The AI assistant contacts your chosen AI provider only when you send it a message with your own API key configured.</p>
+
+            <h4>4. No tracking, ever</h4>
+            <p>We don&rsquo;t use Google Analytics, Meta Pixel, Mixpanel, Hotjar, session recording, fingerprinting, advertising SDKs or any other tracker. There is nothing to opt out of, because there is nothing tracking you.</p>
+
+            <h4>5. Managing storage</h4>
+            <p>You can view, export or delete everything from Settings &rarr; data tools, or wipe all Motion data via your browser&rsquo;s site-data settings. Clearing storage erases local guest data permanently — export first if you want a copy.</p>
+          </div>
+
+          <!-- ══════════ REFUND POLICY ══════════ -->
+          <div class="legal-doc" id="legalDoc-refund" role="tabpanel" aria-labelledby="legalTab-refund">
+            <h3>Refund Policy</h3>
+            <p class="legal-intro">Motion is <strong>completely free</strong>. There are no purchases, subscriptions, in-app payments or fees of any kind today — so there is normally nothing to refund.</p>
+
+            <h4>1. Today (free app)</h4>
+            <p>All features are free. You will never be asked for payment details. If you ever see a payment prompt claiming to be Motion, it is not us — please report it to <strong>tihamyt07@example.com</strong>.</p>
+
+            <h4>2. If paid features are ever introduced</h4>
+            <p>Any future paid features will clearly show price, billing terms and a refund policy <em>at the point of purchase</em>, and this page will be updated before the first charge is possible. Nothing will be charged without your explicit action.</p>
+
+            <h4>3. Digital content &amp; applicable law</h4>
+            <p>Any future paid digital services will honour refund rights available under India&rsquo;s Consumer Protection (E-Commerce) Rules and the DPDP Act, including withdrawal where applicable. Nothing in this policy limits your statutory consumer rights.</p>
+
+            <h4>4. Questions / disputes</h4>
+            <p>Billing questions (past or future): <strong>tihamyt07@example.com</strong>. We respond within thirty (30) days.</p>
+          </div>
+        </div>
+
+        <div class="legal-foot">
+          <span class="legal-foot-brand">Motion &middot; v17.0</span>
+          <span class="legal-foot-note">Operated by <strong>TIHAM 777</strong> &middot; <strong>tihamyt07@example.com</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    /* ══ Legal Center — view routing, doc tabs, consent banner ══ */
+    var _legalFromAuth=false;
+    var _legalPrevView='settings';
+    var _LEGAL_DOCS=['privacy','terms','cookies','refund'];
+    function legalShowDoc(which){
+      which=_LEGAL_DOCS.indexOf(which)>-1?which:'privacy';
+      _LEGAL_DOCS.forEach(function(d){
+        var tab=document.getElementById('legalTab-'+d),doc=document.getElementById('legalDoc-'+d);
+        if(tab){tab.classList.toggle('active',d===which);tab.setAttribute('aria-selected',d===which?'true':'false');}
+        if(doc)doc.classList.toggle('active',d===which);
+      });
+      var wrap=document.querySelector('#view-legal .legal-page');
+      if(wrap)wrap.scrollTop=0;
+    }
+    function openLegalDoc(which,fromAuth){
+      _legalFromAuth=!!fromAuth;
+      /* Remember where the user came from so Back returns there. */
+      try{
+        if(typeof currentView!=='undefined'&&currentView&&currentView!=='legal')_legalPrevView=currentView;
+        else if(!fromAuth)_legalPrevView='settings';
+      }catch(e){_legalPrevView='settings';}
+      var back=document.getElementById('legalBackBtn');
+      if(back)back.innerHTML=_legalFromAuth?'&#8592; Back to sign in':'&#8592; Back';
+      legalShowDoc(which);
+      if(_legalFromAuth&&typeof hideAuthOverlay==='function')hideAuthOverlay();
+      if(typeof setView==='function')setView('legal',null);
+    }
+    function legalBack(){
+      if(_legalFromAuth){
+        _legalFromAuth=false;
+        if(typeof showAuthOverlay==='function')showAuthOverlay();
+        /* Restore the underlying view (silently — it sits behind the auth
+           overlay, so no entrance animation is needed). */
+        if(typeof setView==='function')setView(_legalPrevView||'dashboard',null,{silent:true});
+      }else if(typeof setView==='function'){
+        setView(_legalPrevView||'settings',null);
+      }
+    }
+    function legalAcceptBanner(){
+      try{localStorage.setItem('ft_legal_ack_v1','1');}catch(e){}
+      var b=document.getElementById('legalConsentBanner');
+      if(b)b.style.display='none';
+    }
+    (function(){
+      var ack=false;
+      try{ack=!!localStorage.getItem('ft_legal_ack_v1');}catch(e){}
+      if(ack)return;
+      setTimeout(function(){
+        var b=document.getElementById('legalConsentBanner');
+        if(b){b.style.display='block';requestAnimationFrame(function(){b.classList.add('lcb-in');});}
+      },1500);
+    })();
+    </script>
 
     <!-- ADD API KEY MODAL -->
     <div class="overlay" id="apiKeyOverlay" onclick="if(event.target===this)closeApiKeyModal()">
@@ -22723,6 +23300,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <span id="apiKeyFreeHintText">OpenAI offers free API credits for new accounts. Get your key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com</a></span>
         </div>
+        <div class="api-key-privacy-note">Keys are stored only in this browser (local storage), are sent only to the provider you select, and are never synced to the cloud or included in backup exports. See the <button type="button" class="auth-link" onclick="closeApiKeyModal();openLegalDoc('privacy')">Privacy Policy</button>.</div>
         <div class="modal-actions">
           <button class="btn btn-cancel" onclick="closeApiKeyModal()">Cancel</button>
           <button class="btn btn-save" onclick="saveApiKey()">Save Key</button>
@@ -22740,10 +23318,10 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
           <div class="sound-hero-title">Sound Studio</div>
           <div class="sound-hero-sub">Layer noise colors &amp; brainwave tones for deep focus</div>
           <div class="sound-master-row">
-            <span class="sound-master-label"><span class="sound-master-label-icon">🔊</span> Master Volume</span>
+            <span class="sound-master-label"><svg class="sound-master-label-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M13 4.6c0-.9-1.1-1.3-1.7-.7L7.1 8H4.6c-1 0-1.6.7-1.6 1.6v4.8c0 .9.7 1.6 1.6 1.6h2.5l4.2 4.1c.6.6 1.7.2 1.7-.7V4.6zM16.8 8.4c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4.8.8 1.2 1.7 1.2 2.9s-.4 2.1-1.2 2.9c-.4.4-.4 1 0 1.4.4.4 1 .4 1.4 0 1.1-1.1 1.8-2.6 1.8-4.3s-.7-3.2-1.8-4.3z"/></svg> Master Volume</span>
             <input type="range" min="0" max="100" value="70" step="1" id="snd-master" class="sound-range sound-master-range"/>
             <span class="sound-master-val" id="snd-master-val">70%</span>
-            <button class="sound-stopall" id="snd-stopall">⏹ Stop all</button>
+            <button class="sound-stopall" id="snd-stopall"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Stop all</button>
           </div>
         </div>
 
@@ -22751,7 +23329,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Brainwave Entrainment</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">🎧 Headphones required</span>
+          <span class="sound-badge">Headphones required</span>
         </div>
         <div class="sound-grid" id="snd-wave-grid"></div>
 
@@ -22759,7 +23337,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Focus Music</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">🎯 Built for deep work</span>
+          <span class="sound-badge">Built for deep work</span>
         </div>
         <div class="sound-grid" id="snd-music-grid"></div>
 
@@ -22767,7 +23345,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Relaxing Music</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">🎵 Melodic</span>
+          <span class="sound-badge">Melodic</span>
         </div>
         <div class="sound-grid" id="snd-relax-grid"></div>
 
@@ -22782,7 +23360,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Lofi for Study</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">📚 No lyrics</span>
+          <span class="sound-badge">No lyrics</span>
         </div>
         <div class="sound-grid" id="snd-lofi-grid"></div>
 
@@ -22790,7 +23368,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Nature Soundscapes</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">🌊 Immersive</span>
+          <span class="sound-badge">Immersive</span>
         </div>
         <div class="sound-grid" id="snd-nature-grid"></div>
 
@@ -22798,7 +23376,7 @@ a:not(.nav-item):not(.tab-btn):not(.btn):not([class*="btn"]):not(.skip-link):hov
         <div class="sound-section-hdr">
           <span class="sound-section-label">Ambient Focus</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">✨ Endel-inspired</span>
+          <span class="sound-badge">Generative</span>
         </div>
         <div class="sound-grid" id="snd-ambient-grid"></div>
 
@@ -26206,7 +26784,7 @@ function setView(v,sideEl,opts){
     try{ if(typeof ofcCommitEdit==='function')ofcCommitEdit(); }catch(e){}
     try{ if(typeof ofcFlushDocSave==='function')ofcFlushDocSave(); }catch(e){}
   }
-  ['dashboard','home','blocks','tasks','focus','rules','tracker','notes','calendar','sound','settings','aihub','assistant','tools','office'].forEach(n=>{
+  ['dashboard','home','blocks','tasks','focus','rules','tracker','notes','calendar','sound','settings','aihub','assistant','tools','office','legal'].forEach(n=>{
     const el=document.getElementById('view-'+n);
     if(!el)return;
     if(n===v){
@@ -32297,7 +32875,7 @@ function renderTools(){
       var initial=(t.name||'?').trim().charAt(0).toUpperCase();
       const _delay2=_anim?Math.min(_cardIdx*35,600):0;
       _cardIdx++;
-      html+='<div class="tool-card'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation-delay:'+_delay2+'ms;position:relative"':' style="position:relative"')+' data-external="1" onclick="window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\')}">'+
+      html+='<div class="tool-card'+(_anim?'':' no-anim')+'"'+(_anim?' style="animation-delay:'+_delay2+'ms;position:relative"':' style="position:relative"')+' data-external="1" onclick="window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\',\'noopener,noreferrer\')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.open(\''+esc(t.url).replace(/'/g,'\\\'')+'\',\'_blank\',\'noopener,noreferrer\')}">'+
         '<div class="tool-icon"><span style="font-family:var(--font-head);font-weight:800;font-size:1.05rem">'+esc(initial)+'</span></div>'+
         '<div class="tool-name'+toolNameCls(t.name)+'">'+esc(t.name)+'</div>'+
         '<div class="tool-desc">'+esc(host)+'</div>'+
@@ -34991,7 +35569,7 @@ TOOL_RENDERERS.translator=function(){
     '<div class="tool-field"><label>Text to translate</label><textarea id="trInput" placeholder="Type or paste text…" oninput="trTranslate()"></textarea></div>'+
     '<div class="tool-field"><label>Translation</label><div class="tool-output" id="trOutput"><span class="tool-output-empty">Translation will appear here…</span></div></div>'+
     '<div class="tool-actions"><button class="tool-btn-ghost tool-btn" onclick="trSwap()">⇄ Swap</button><button class="tool-btn-ghost tool-btn" onclick="trCopy()">Copy</button></div>'+
-    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px">Powered by Google Translate · same quality as translate.google.com</div>'
+    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px">Your text is sent to Google Translate / MyMemory to produce the translation. Avoid entering sensitive information.</div>'
   );
 };
 function trTranslate(){
@@ -35466,7 +36044,8 @@ TOOL_RENDERERS.qrcode=function(){
       '<div class="tool-field"><label>Size</label><select id="qrSize" onchange="qrGen()"><option value="150">150×150</option><option value="200" selected>200×200</option><option value="300">300×300</option><option value="400">400×400</option></select></div>'+
       '<div class="tool-field"><label>&nbsp;</label><button class="tool-btn" onclick="qrDownload()">Download</button></div>'+
     '</div>'+
-    '<div class="tool-qr-preview" id="qrPreview"><span class="tool-output-empty">Enter text to generate QR…</span></div>'
+    '<div class="tool-qr-preview" id="qrPreview"><span class="tool-output-empty">Enter text to generate QR…</span></div>'+
+    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px">QR images are generated by the goqr.me API — the text you enter is sent to that service to build the code.</div>'
   );
 };
 function qrGen(){
@@ -36541,7 +37120,12 @@ const BACKUP_KEYS = ['ft_global_tasks_v1','ft_rules_v1','ft_habits_v1','ft_habit
 const AI_BACKUP_KEYS = [
   'motion_asst_convs','motion_asst_settings','motion_asst_websearch',
   'motion_asst_memories','motion_asst_actions','motion_asst_sidebar',
-  'motion_removed_models','motion_api_keys','motionSleepLog',
+  'motion_removed_models','motionSleepLog',
+  // SECURITY: 'motion_api_keys' (user's AI provider API keys) is deliberately
+  // NOT in this list. Keys are device-local credentials: they must never be
+  // uploaded to Firestore or written into exported backup files. They are
+  // preserved locally across cloud applies (see preservedKeys in
+  // fbApplyCloudData) and stripped from any legacy cloud payload.
   // Office suite (spreadsheets + documents + mind maps)
   'motion_office_v1',
   // Focus page session state
@@ -36652,7 +37236,10 @@ function doRestore(event){
       const PRESERVE_KEYS = new Set([
         'ft_device_id',
         'ft_cloud_email','ft_cloud_uid','ft_cloud_lastsync',
-        'ft_cloud_autosync'
+        'ft_cloud_autosync',
+        // SECURITY: API keys are device-local credentials — never exported
+        // into backup files, so a restore must never wipe them either.
+        'motion_api_keys'
       ]);
       const keysToRemove = [];
       for(let i=0;i<localStorage.length;i++){
@@ -40224,9 +40811,13 @@ function animateCount(el,target,unit=''){
     if(card) card.classList.toggle('playing',playing);
     if(btn){
       btn.classList.toggle('on',playing);
+      const name=btn.dataset.name||'';
+      btn.title=(playing?'Stop ':'Play ')+name;
+      btn.setAttribute('aria-label',(playing?'Stop ':'Play ')+name);
+      btn.setAttribute('aria-pressed',playing?'true':'false');
       btn.innerHTML=playing
-        ?'<span class="sound-play-icon sound-playing-pulse">■</span> Playing'
-        :'<span class="sound-play-icon">▶</span> Play';
+        ?'<svg class="sound-play-icon sound-playing-pulse" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>'
+        :'<svg class="sound-play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.4v13.2c0 .8.9 1.3 1.6.9l10.1-6.6c.6-.4.6-1.4 0-1.8L9.8 4.5c-.7-.4-1.6.1-1.6.9z"/></svg>';
     }
   }
 
@@ -40241,10 +40832,10 @@ function animateCount(el,target,unit=''){
       <div class="sound-vol-row">
         <input type="range" min="0" max="100" value="${volDef}" step="1" id="snd-vol-${s.id}" class="sound-range" oninput="document.getElementById('snd-volval-${s.id}').textContent=this.value+'%';(window._sndVolChange&&window._sndVolChange('${s.id}',this.value))"/>
         <span class="sound-vol-val" id="snd-volval-${s.id}">${volDef}%</span>
+        <button class="sound-play-btn" id="snd-btn-${s.id}" data-name="${s.name}" onclick="window._sndToggle('${s.id}')" title="Play ${s.name}" aria-label="Play ${s.name}" aria-pressed="false">
+          <svg class="sound-play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.4v13.2c0 .8.9 1.3 1.6.9l10.1-6.6c.6-.4.6-1.4 0-1.8L9.8 4.5c-.7-.4-1.6.1-1.6.9z"/></svg>
+        </button>
       </div>
-      <button class="sound-play-btn" id="snd-btn-${s.id}" onclick="window._sndToggle('${s.id}')">
-        <span class="sound-play-icon">▶</span> Play
-      </button>
     </div>`;
   }
 
@@ -43392,9 +43983,13 @@ function initAssistant(skipDirtyMark){
     });
   }
 
-  // Periodic auto-cleanup: run every 5 minutes to auto-delete old images
+  // Periodic auto-cleanup: run every 5 minutes to auto-delete old images.
+  // PERF: skipped while the tab is hidden (nothing to clean that the user
+  // can see, and the pass touches localStorage + JSON parse of all
+  // conversations); the next visible tick picks it up.
   if(!window._asstCleanupInterval){
     window._asstCleanupInterval = setInterval(function(){
+      if(document.hidden) return;
       try {
         var sizeBefore = asstCalcImageStorage();
         asstAutoCleanupImages();
@@ -51214,6 +51809,11 @@ function cloudUpdateUI(signedIn, email){
 
 // ── Update Sync Time Label ──
 function cloudUpdateSyncLabel(){
+  // PERF: skip DOM-label writes while the tab is backgrounded — nobody
+  // sees them. A visibilitychange listener (by the second 60s interval,
+  // below) refreshes the label immediately on return, so staleness is
+  // zero rather than up-to-60s.
+  if(document.hidden) return;
   var label = document.getElementById('cloudSyncStatusLabel');
   var desc = document.getElementById('cloudSyncDesc');
   if(!label) return;
@@ -51759,7 +52359,8 @@ setInterval(cloudUpdateSyncLabel, 60000);
    2. Create a new project (or use existing Google Cloud project)
    3. Enable Authentication → Google sign-in provider
    4. Enable Cloud Firestore → start in PRODUCTION MODE (locked down), then
-      deploy the rules in /firestore.rules (next to this file). Those rules
+      deploy the rules in firestore.rules (shipped in the app's /public
+      folder). Those rules
       restrict every document under users/{uid} so a signed-in user can ONLY
       read/write their own document — never anyone else's. Do NOT leave the
       database in open "test mode" (30-day open access) — that lets anyone
@@ -51993,6 +52594,12 @@ function showAuthOverlay(){
   _fbClearAuthPrehide();
   var el = document.getElementById('auth-overlay');
   if(el) el.classList.remove('auth-hidden');
+  /* Replay the card entrance so re-shows (sign-out, legal-doc back)
+     feel alive instead of snapping in cold. */
+  try{
+    var card = el && el.querySelector('.auth-card');
+    if(card){ card.style.animation='none'; void card.offsetWidth; card.style.animation=''; }
+  }catch(e){/* non-fatal */}
 }
 function hideAuthOverlay(){
   _fbClearAuthPrehide();
@@ -52057,13 +52664,28 @@ function _authFriendlyError(error){
 var _authRetryCount = 0;
 var _authMaxRetries = 2;
 function authSignInGoogle(){
+  /* DPDP / GDPR: affirmative consent must be given before Google
+     account data is requested. The checkbox on the auth card is the
+     consent record; sign-in is blocked until it is ticked. */
+  var _cb=document.getElementById('authConsentCheck');
+  if(_cb && !_cb.checked){
+    _authSetStatus('Please tick the consent box below before continuing with Google.', true);
+    try{
+      var _lbl=document.getElementById('authConsentLabel');
+      if(_lbl){_lbl.classList.remove('consent-shake');void _lbl.offsetWidth;_lbl.classList.add('consent-shake');}
+      _cb.focus();
+    }catch(e){}
+    return;
+  }
   if(!fbAuth){
     _authSetStatus('Firebase not configured. See setup instructions.', true);
     return;
   }
   _authSetStatus('Signing in...', false);
   var provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/drive.file');
+  /* Data minimisation: the old drive.file scope was never used by the
+     Firebase session (Drive sync has its own separate token client with
+     its own scopes), so it is no longer requested at sign-in. */
   // Set custom parameters so the picker shows the last-used account
   provider.setCustomParameters({ prompt: 'select_account' });
   fbAuth.signInWithPopup(provider).then(function(result){
@@ -52219,6 +52841,9 @@ function fbMarkDirty(){
 function fbApplyCloudData(parsedData){
   fbIsApplyingCloudData = true;
   try {
+    // SECURITY: never import API keys from a cloud doc (a legacy doc created
+    // before this fix may still contain them). Keys are device-local only.
+    try { if(parsedData && parsedData['motion_api_keys']) delete parsedData['motion_api_keys']; } catch(e){}
     // Preserve these local-only keys that are NOT part of cloud sync data
     var preservedKeys = {
       'ft_device_id': localStorage.getItem('ft_device_id'),
@@ -52226,6 +52851,10 @@ function fbApplyCloudData(parsedData){
       'ft_cloud_uid': localStorage.getItem('ft_cloud_uid'),
       'ft_cloud_lastsync': localStorage.getItem('ft_cloud_lastsync'),
       'ft_cloud_autosync': localStorage.getItem('ft_cloud_autosync'),
+      // SECURITY: AI provider API keys never leave this browser — preserve them
+      // across cloud applies so the sync wipe below can't destroy them, while
+      // also never accepting key data that may exist in an old cloud doc.
+      'motion_api_keys': localStorage.getItem('motion_api_keys'),
       // AUTO-LOGOUT FIX (per-account data isolation): preserve the last
       // signed-in uid across real-time cloud-data applications too, so
       // an onSnapshot update from another device doesn't wipe our
@@ -52297,6 +52926,9 @@ function fbApplyCloudData(parsedData){
 function fbMergeAndApplyCloudData(cloudDataObj){
   fbIsApplyingCloudData = true;
   try {
+    // SECURITY: strip API keys from any legacy cloud payload — keys are
+    // device-local credentials and are never merged back in.
+    try { if(cloudDataObj && cloudDataObj['motion_api_keys']) delete cloudDataObj['motion_api_keys']; } catch(e){}
     // Step 1: Build a map of current local data for merge lookups
     var localData = {};
     var localKeys = [];
@@ -53189,6 +53821,8 @@ function updateFirebaseSyncUI(signedIn){
 }
 
 function updateFirebaseSyncLabel(){
+  // PERF: same hidden-tab guard as cloudUpdateSyncLabel() above.
+  if(document.hidden) return;
   var label = document.getElementById('cloudSyncStatusLabel');
   var desc = document.getElementById('cloudSyncDesc');
   if(!label) return;
@@ -53272,6 +53906,18 @@ cloudToggleAutoSync = function(enabled){
 
 // ── Periodically update sync label ──
 setInterval(updateFirebaseSyncLabel, 60000);
+
+// ── Tab becomes visible: refresh sync labels immediately ──
+// Companion to the hidden-tab guards inside cloudUpdateSyncLabel() /
+// updateFirebaseSyncLabel(): those 60s intervals now skip their DOM writes
+// while backgrounded, so on return we refresh both labels at once instead
+// of showing a stale one for up to a minute.
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden){
+    try { cloudUpdateSyncLabel(); } catch(e){}
+    try { updateFirebaseSyncLabel(); } catch(e){}
+  }
+});
 
 // ── Tab becomes visible: push unsynced changes ──
 // AUTO-LOGOUT FIX (3/4): Also proactively refresh the Firebase ID token
@@ -95707,6 +96353,989 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 @media (max-width:440px){
   .home-day-arc{ display:none; }
   .home-hero-top{ margin-bottom:14px; }
+}
+</style>
+
+<style id="logo-home-affordance">
+/* ── Clickable logo → Dashboard ──────────────────────────────────────────
+   The sidebar logo was purely decorative. It now acts as a "home" affordance
+   (same target as the Dashboard tab: setView('dashboard', null)). This block
+   only adds the pointer affordances — the keyboard ring comes from the global
+   :focus-visible rule in motion-hardening-v1. */
+.logo[role="button"]{
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  border-radius:10px;
+  outline-offset:-2px;
+}
+.logo[role="button"]:hover .logo-name{ filter:brightness(1.12); }
+.logo[role="button"]:active .logo-icon{ transform:scale(.97); }
+</style>
+
+<style id="premium-refinements-v2">
+/* ════════════════════════════════════════════════════════════════════════
+   PREMIUM REFINEMENTS v2 — perf-verified polish layer (final in cascade)
+
+   Only four things, all token-based (adapt to every theme) and all
+   verified against the layers beneath (specificity listed per rule):
+   1. Empty-state texture — a faint dot-grid makes empty panels read as
+      intentional instead of as voids (flagged in light theme especially,
+      where tinted surfaces vanish against white).
+   2. Native checkbox/radio accent-color — zero-specificity :where(), so
+      existing per-control styling still wins where present; this only
+      lifts the default-styled controls (habit lists, settings toggles)
+      from OS-default blue to the theme accent.
+   3. Add-block button — accent-tinted border + icon so the primary
+      "create" affordance stops reading as a legacy dashed wireframe.
+   4. Consent banner — respect the iOS safe-area inset so it never sits
+      on the home-indicator.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* 1 · Empty-state texture — #view-dashboard .db-empty is (1,1,0) in the
+   layer at ~17111, so we match it; .task-empty sits under #view-tasks. */
+#view-dashboard .db-empty,
+.db-talloc-empty{
+  background-image:radial-gradient(
+    color-mix(in srgb, var(--text3) 22%, transparent) 1px,
+    transparent 1.2px
+  ) !important;
+  background-size:13px 13px !important;
+  background-position:center;
+}
+#view-tasks .task-empty,
+.rule-empty-hint{
+  background-image:radial-gradient(
+    color-mix(in srgb, var(--text3) 14%, transparent) 1px,
+    transparent 1.2px
+  );
+  background-size:13px 13px;
+  background-position:center;
+}
+/* Light themes: soften the dots a touch more against bright surfaces. */
+html[data-theme="light"] .db-empty,
+html[data-theme="pure-light"] .db-empty,
+html[data-theme="light"] .task-empty,
+html[data-theme="pure-light"] .task-empty{
+  background-image:radial-gradient(
+    color-mix(in srgb, var(--text3) 11%, transparent) 1px,
+    transparent 1.2px
+  ) !important;
+}
+
+/* 2 · Theme-accented native controls — zero specificity, no !important. */
+:where(input[type="checkbox"], input[type="radio"]){
+  accent-color:var(--accent);
+}
+
+/* 3 · Add-block button — from utilitarian dashed box to a tinted
+       invitation. (.add-btn layers end at 7382; this block is later.) */
+.add-btn{
+  border-color:color-mix(in srgb, var(--accent) 20%, var(--border2));
+  background:color-mix(in srgb, var(--accent) 3%, transparent);
+}
+.add-btn svg{
+  color:var(--accent);
+  opacity:.8;
+  transition:opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.add-btn:hover svg{
+  opacity:1;
+  transform:scale(1.15);
+}
+.add-btn:active{
+  transform:scale(.985);
+}
+
+/* 4 · Consent banner — never park on the iOS home-indicator. */
+.legal-consent-banner{
+  bottom:max(18px, env(safe-area-inset-bottom));
+}
+
+/* Reduced motion: none of the above animate continuously (only hover
+   micro-transforms), so no extra guard is needed beyond the global net. */
+</style>
+
+<style id="auth-pro-v2">
+/* ════════════════════════════════════════════════════════════════════════
+   AUTH SIGN-IN — PRO REDESIGN v2 (final layer in cascade)
+
+   The old overlay was a single glassmorphic card. This layer rebuilds it
+   as the split-screen pattern used by the best SaaS auth pages (Linear,
+   Notion, Stripe, Raycast):
+
+   · Desktop ≥ 960px — left brand showcase (logo lockup, editorial
+     headline, three feature rows, trust footer, dot-grid texture +
+     accent glows), right form pane with a crisp bordered card.
+   · Mobile < 960px  — showcase collapses; a compact brand lockup sits
+     inside the card instead.
+   · Button hierarchy — Google is the unmistakable primary action
+     (Google's own SSO button spec: white surface, near-black text,
+     neutral hairline — intentionally theme-independent, exactly like
+     every production Google sign-in button). Guest is a quiet ghost.
+   · Consent sits directly under the Google CTA (DPDP adjacency), legal
+     micro-links live under the card.
+   · Everything else is token-based (var(--bg/--text/--accent…)) so all
+     six themes — and light/pure-light — adapt automatically.
+
+   This block intentionally overrides the earlier auth layers (base at
+   ~11173, glass-premium at ~14778, micro-polish at ~61221, light-theme
+   at ~66599) by being LAST in the document; !important is used only
+   where those layers already use it.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 0 · Retire legacy ornaments (ambient drift, glass hairline, sheens,
+       hover shimmer, card hover lift) — replaced by this layer ── */
+#auth-overlay::before{content:none !important;animation:none !important}
+#auth-overlay .auth-card::before,
+#auth-overlay .auth-card::after{content:none !important}
+#auth-overlay .auth-btn::before{content:none !important}
+html.micro-polish-on #auth-overlay .auth-card{transition:none !important}
+html.micro-polish-on #auth-overlay .auth-card:hover{transform:none !important;transition:none !important;box-shadow:inherit !important}
+html.micro-polish-on #auth-overlay .auth-logo{animation:none !important}
+
+/* ── 1 · Overlay + stage ── */
+#auth-overlay{
+  flex-direction:row !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  padding:0 !important;
+  background:var(--bg) !important;   /* panes carry their own treatment */
+}
+.auth-stage{display:flex;width:100%;min-height:100%}
+
+/* ── 2 · Showcase panel (desktop) ── */
+.auth-showcase{
+  flex:1.08;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+  padding:clamp(36px,4.2vw,60px) clamp(36px,4.6vw,72px);
+  padding-bottom:clamp(40px,4.8vw,66px);
+  border-right:1px solid var(--border);
+  background:
+    radial-gradient(880px 540px at -12% -12%, var(--accent-glow3), transparent 62%),
+    radial-gradient(720px 520px at 108% 114%, var(--accent-glow2), transparent 58%),
+    var(--bg2);
+}
+/* Fine dot-grid canvas, faded toward the edges */
+.auth-showcase::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(
+    color-mix(in srgb,var(--text3) 15%,transparent) 1px,
+    transparent 1.2px);
+  background-size:22px 22px;background-position:center;
+  -webkit-mask-image:radial-gradient(ellipse 88% 84% at 36% 44%,#000 0%,transparent 76%);
+  mask-image:radial-gradient(ellipse 88% 84% at 36% 44%,#000 0%,transparent 76%);
+}
+.as-brand{display:flex;align-items:center;gap:12px;position:relative}
+.as-mark{width:38px;height:38px;display:block;border-radius:11px;overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.32),0 0 0 1px rgba(255,255,255,.05) inset}
+.as-mark svg{width:100%;height:100%;display:block}
+.as-name{font-family:var(--font-head);font-size:19px;font-weight:800;
+  letter-spacing:-.02em;color:var(--text)}
+
+.as-main{max-width:520px;margin:auto 0;padding:36px 0;position:relative}
+.as-title{
+  font-family:var(--font-head);font-size:clamp(30px,3.3vw,43px);font-weight:800;
+  line-height:1.07;letter-spacing:-.035em;color:var(--text);
+  margin:0 0 16px;text-wrap:balance;
+}
+.as-title em{
+  font-style:normal;
+  background:linear-gradient(100deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.as-sub{font-size:14.5px;line-height:1.7;color:var(--text2);
+  margin:0 0 32px;max-width:42ch}
+.as-feats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
+.as-feat{display:flex;gap:14px;align-items:flex-start}
+.as-feat-ico{
+  flex-shrink:0;width:38px;height:38px;border-radius:11px;
+  display:grid;place-items:center;color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 9%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);
+}
+.as-feat-ico svg{width:18px;height:18px}
+.as-feat-body strong{display:block;font-family:var(--font-head);font-size:14px;
+  font-weight:700;letter-spacing:-.01em;color:var(--text);margin-bottom:2px}
+.as-feat-body span{display:block;font-size:12.5px;line-height:1.5;color:var(--text3)}
+
+.as-foot{position:relative;font-family:var(--font-mono);font-size:10.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--text3)}
+
+/* ── 3 · Form pane ── */
+.auth-pane{
+  flex:1;display:flex;flex-direction:column;position:relative;overflow-y:auto;
+  background:radial-gradient(720px 480px at 88% 110%, var(--accent-glow2), transparent 60%),var(--bg);
+}
+.auth-pane-inner{
+  margin:auto;width:100%;max-width:400px;
+  display:flex;flex-direction:column;align-items:center;
+  padding:44px 24px;
+}
+
+/* ── 4 · Card — crisp bordered surface (no glass, no gradient hairline).
+       NOTE the html prefix: earlier theme layers style this same rule
+       shape at (1,2,1) — e.g. html[data-theme="light"] #auth-overlay
+       .auth-card — so we match it and win by document order. The extra
+       .auth-card-pro marker class ties the class-count. ── */
+html #auth-overlay .auth-card.auth-card-pro{
+  width:100% !important;
+  padding:32px 30px 22px !important;
+  background:var(--bg2) !important;
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  border:1px solid var(--border) !important;
+  border-radius:18px !important;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.09),
+    0 14px 44px -10px rgba(0,0,0,.30) !important;
+  text-align:center;
+  animation:authProCard .6s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes authProCard{
+  from{opacity:0;transform:translateY(16px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+/* Mobile brand lockup (shown only < 960px) */
+.auth-mobile-brand{display:none}
+
+#auth-overlay .auth-heading{
+  font-family:var(--font-head);font-size:22px;font-weight:800;
+  letter-spacing:-.022em;color:var(--text);margin:0 0 6px;
+}
+#auth-overlay .auth-sub{
+  font-size:13px;line-height:1.6;color:var(--text2);margin:0 0 24px;
+}
+
+/* ── 5 · Buttons — html prefix for the same (1,2,1) tie-break reason ── */
+html #auth-overlay .auth-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:48px;padding:12px 18px !important;
+  border-radius:12px !important;
+  font-family:inherit;font-size:14.5px !important;font-weight:600 !important;
+  letter-spacing:-.005em !important;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .18s var(--prem-silk,ease),box-shadow .18s var(--prem-silk,ease),
+             background .18s ease,border-color .18s ease,color .18s ease !important;
+}
+#auth-overlay .auth-btn:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+
+/* Google — the industry-standard SSO button (Google brand spec, theme-independent) */
+html #auth-overlay .auth-btn.auth-btn-google{
+  background:#ffffff !important;
+  border:1px solid #c9cedb !important;
+  color:#1f2328 !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.14) !important;
+}
+html #auth-overlay .auth-btn.auth-btn-google:hover{
+  background:#f6f7f9 !important;
+  border-color:#b4bac7 !important;
+  transform:translateY(-1px);
+  box-shadow:0 2px 5px rgba(16,24,40,.13),0 8px 22px -6px rgba(16,24,40,.20) !important;
+}
+html #auth-overlay .auth-btn.auth-btn-google:active{
+  transform:translateY(0) scale(.985) !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.18) !important;
+}
+html #auth-overlay .auth-btn.auth-btn-google svg{width:19px;height:19px;flex-shrink:0}
+
+/* Guest — quiet ghost, but with a whisper of fill so it never reads
+       as disabled next to the high-contrast Google button */
+html #auth-overlay .auth-btn.auth-btn-guest{
+  background:color-mix(in srgb,var(--text) 3%,transparent) !important;
+  border:1px solid var(--border2) !important;
+  color:var(--text2) !important;
+  box-shadow:none !important;
+}
+html #auth-overlay .auth-btn.auth-btn-guest:hover{
+  background:var(--accent-glow3) !important;
+  border-color:var(--accent-glow5) !important;
+  color:var(--text) !important;
+  transform:translateY(-1px);
+}
+html #auth-overlay .auth-btn.auth-btn-guest:active{
+  transform:translateY(0) scale(.985) !important;
+}
+html #auth-overlay .auth-btn.auth-btn-guest svg{width:17px;height:17px;flex-shrink:0;opacity:.9}
+
+/* ── 6 · Divider / consent / status / notes ── */
+#auth-overlay .auth-divider{
+  margin:18px 0 16px !important;gap:14px;
+  color:var(--text3);font-size:11px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;
+}
+#auth-overlay .auth-divider::before,
+#auth-overlay .auth-divider::after{
+  background:color-mix(in srgb,var(--text3) 22%,var(--border)) !important;
+}
+#auth-overlay .auth-consent{
+  margin:14px 2px 0;display:flex;align-items:flex-start;gap:9px;
+  text-align:left;cursor:pointer;
+  font-size:11.5px;line-height:1.6;color:var(--text3);
+}
+#auth-overlay .auth-consent input[type="checkbox"]{
+  width:16px;height:16px;margin:2px 0 0;flex-shrink:0;
+  accent-color:var(--accent);cursor:pointer;
+}
+/* Softer, hairline link underlines inside the card (1px, tinted) so they
+   read as quiet affordances at 11px sizes */
+#auth-overlay .auth-link{
+  text-decoration-thickness:1px;
+  text-underline-offset:2.5px;
+  text-decoration-color:color-mix(in srgb,var(--accent2) 60%,transparent);
+}
+#auth-overlay .auth-link:hover{text-decoration-color:currentColor}
+
+#auth-overlay .auth-status{
+  margin-top:16px !important;min-height:18px;
+  font-size:12px !important;
+}
+#auth-overlay .auth-privacy-note{
+  margin-top:13px;padding-top:12px;
+  border-top:1px solid var(--border);
+  font-size:10.5px;line-height:1.6;color:var(--text3);text-align:center;
+}
+
+/* Legal micro-links under the card — quiet footer status: no underline
+   at rest, revealed on hover (the in-consent links keep their underline
+   for DPDP clarity) */
+.auth-legal-micro{
+  display:flex;align-items:center;gap:11px;
+  margin:14px 0 0;font-size:11px;color:var(--text3);
+}
+.auth-legal-micro .auth-link{font-size:11px;font-weight:600;
+  text-decoration:none;opacity:.85}
+.auth-legal-micro .auth-link:hover{color:var(--text2);opacity:1;
+  text-decoration:underline;text-underline-offset:3px}
+
+/* ── 7 · Showcase entrance stagger (desktop only) ── */
+@keyframes authProUp{
+  from{opacity:0;transform:translateY(10px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+.auth-showcase .as-brand{animation:authProUp .55s .05s cubic-bezier(.22,1,.36,1) both}
+.auth-showcase .as-title{animation:authProUp .55s .12s cubic-bezier(.22,1,.36,1) both}
+.auth-showcase .as-sub{animation:authProUp .55s .19s cubic-bezier(.22,1,.36,1) both}
+.auth-showcase .as-feat{animation:authProUp .55s cubic-bezier(.22,1,.36,1) both}
+.auth-showcase .as-feat:nth-child(1){animation-delay:.26s}
+.auth-showcase .as-feat:nth-child(2){animation-delay:.33s}
+.auth-showcase .as-feat:nth-child(3){animation-delay:.40s}
+.auth-showcase .as-foot{animation:authProUp .55s .48s cubic-bezier(.22,1,.36,1) both}
+
+/* ── 8 · Mobile ── */
+@media (max-width:959px){
+  #auth-overlay{flex-direction:column !important;overflow-y:auto}
+  .auth-stage{flex-direction:column;min-height:100%}
+  .auth-showcase{display:none}
+  .auth-mobile-brand{
+    display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;
+  }
+  .auth-mobile-brand .as-mark{width:32px;height:32px;border-radius:9px;
+    box-shadow:0 1px 6px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.05) inset}
+  .auth-mobile-brand .as-name{font-size:17px}
+  .auth-pane{
+    background:
+      radial-gradient(560px 380px at 50% -14%, var(--accent-glow3), transparent 62%),
+      var(--bg);
+  }
+  .auth-pane-inner{padding:28px 16px calc(30px + env(safe-area-inset-bottom))}
+  html #auth-overlay .auth-card.auth-card-pro{padding:26px 20px 18px !important;border-radius:16px !important}
+  #auth-overlay .auth-heading{font-size:20px}
+  #auth-overlay .auth-sub{margin-bottom:22px}
+}
+
+/* ── 9 · Reduced motion ── */
+@media (prefers-reduced-motion:reduce){
+  .auth-showcase .as-brand,.auth-showcase .as-title,.auth-showcase .as-sub,
+  .auth-showcase .as-feat,.auth-showcase .as-foot,
+  html #auth-overlay .auth-card.auth-card-pro{
+    animation-duration:.001s !important;animation-delay:0s !important;
+  }
+}
+</style>
+
+<style id="pro-polish-v3">
+/* ══════════════════════════════════════════════════════════════════
+   PRO POLISH v3 — app-wide professional pass on the remaining views
+   ─────────────────────────────────────────────────────────────────
+   Follows premium-refinements-v2 / auth-pro-v2 and is the LAST style
+   layer in the document, so it wins every cascade tie it mirrors.
+   Scope, per section:
+     1 · Tasks      — typographic composer (mono eyebrows, solid CTA)
+     2 · Dashboard  — hero stats join the section-card surface family
+     3 · Focus      — ambient stage halo + segmented preset control
+     4 · Tracker    — filled check state (dark themes showed a hollow
+                      glow ring), tabular stats
+     5 · Notes      — tactile notebook tabs, focus lift on the capture
+     6 · Sound      — corner play button (Spotify pattern), quieter desc
+     7 · Assistant  — suggestion chips that look pressable
+     8 · Tools      — category labels as quiet mono eyebrows
+     9 · AI Hub     — one outline-pill tier system, ghost favorite,
+                      hover border
+    10 · Settings   — muted helper text, flat inputs (light inset gone)
+    11 · Consent    — slimmer, calmer banner
+    12 · Global     — tabular numerals on readouts
+   Everything is token-based (var()/color-mix) so all six themes plus
+   light/pure-light adapt. Remove this <style> to revert the whole pass.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · TASKS — typographic composer ─────────────────────────────── */
+
+/* Composer section label ("Add new task") — a quiet mono eyebrow */
+#view-tasks .task-composer-label{
+  font-family:var(--font-mono) !important;
+  font-size:10px !important;
+  font-weight:600 !important;
+  letter-spacing:.14em !important;
+  text-transform:uppercase !important;
+  color:var(--text3) !important;
+}
+#view-tasks .task-composer-label svg{display:none}
+
+/* Meta-field labels — same eyebrow system, icons retired
+   (selector mirrors tasks-microtype so the tie resolves by order) */
+#view-tasks .task-meta-field .task-meta-label{
+  font-family:var(--font-mono) !important;
+  font-size:9.5px !important;
+  font-weight:600 !important;
+  letter-spacing:.13em !important;
+  text-transform:uppercase !important;
+  color:var(--text3) !important;
+}
+#view-tasks .task-meta-field .task-meta-label svg{display:none}
+
+/* Hint pills ("free text") join the mono system */
+#view-tasks .task-meta-hint{
+  font-family:var(--font-mono) !important;
+  font-size:9px !important;
+  letter-spacing:.08em !important;
+  opacity:.75 !important;
+}
+
+/* Add button — one solid, confident accent (no gradient) */
+#view-tasks .task-add-btn{
+  background:var(--accent) !important;
+  border-radius:var(--radius-xs) !important;
+  font-weight:600 !important;
+  box-shadow:0 2px 10px -3px var(--accent-glow4) !important;
+}
+#view-tasks .task-add-btn:hover{
+  transform:translateY(-1px) scale(1.01) !important;
+  filter:none !important;
+  box-shadow:0 5px 18px -5px var(--accent-glow5) !important;
+}
+#view-tasks .task-add-btn:active{transform:translateY(0) scale(.97) !important}
+
+/* ── 2 · DASHBOARD — one surface family ───────────────────────────── */
+
+/* Hero stats row: was the heavier --bg3 slab while every card below it
+   sits on --bg2. Same surface now; the dividers do the separating. */
+#view-dashboard .db-hero-stats{
+  background:var(--bg2) !important;
+}
+/* Stat labels join the mono eyebrow system; values align in columns */
+#view-dashboard .db-hero-stat-label{
+  font-family:var(--font-mono) !important;
+  font-size:9.5px !important;
+  letter-spacing:.12em !important;
+}
+#view-dashboard .db-hero-stat-val{
+  font-variant-numeric:tabular-nums !important;
+}
+
+/* ── 3 · FOCUS — ambient stage + segmented presets ─────────────────── */
+
+/* Soft accent halo centers the eye on the timer */
+#view-focus .focus-hero .focus-main{
+  background:radial-gradient(ellipse 52% 38% at 50% 30%,
+    color-mix(in srgb,var(--accent) 9%,transparent),
+    transparent 72%);
+}
+
+/* Presets read as ONE segmented control, not three loose buttons */
+#view-focus .focus-presets{
+  background:color-mix(in srgb,var(--bg2) 72%,transparent) !important;
+  border:1px solid var(--border) !important;
+  border-radius:12px !important;
+  padding:4px !important;
+  gap:3px !important;
+}
+#view-focus .preset-btn{
+  border-color:transparent !important;
+  background:transparent !important;
+  border-radius:8px !important;
+  box-shadow:none !important;
+}
+#view-focus .preset-btn:hover{
+  background:color-mix(in srgb,var(--text) 6%,transparent) !important;
+  border-color:transparent !important;
+  color:var(--text) !important;
+}
+#view-focus .preset-custom-wrap{
+  background:transparent !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+#view-focus .preset-custom-wrap:focus-within{
+  border-color:var(--accent) !important;
+  background:color-mix(in srgb,var(--accent) 5%,transparent) !important;
+  box-shadow:0 0 0 3px var(--accent-glow2) !important;
+}
+#view-focus .preset-custom-go{border-radius:7px !important}
+
+/* ── 4 · TRACKER — a check you can see ────────────────────────────── */
+
+/* Done cells: solid accent fill + check glyph (the dark-theme parity
+   sheet rendered a faint glow ring that read as an error state) */
+.habit-check.done{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:var(--btn-text) !important;
+  font-weight:800 !important;
+}
+html[data-theme="deep"] #view-tracker .habit-check.done,
+html[data-theme="dark"] #view-tracker .habit-check.done,
+html[data-theme="aot"] #view-tracker .habit-check.done,
+html[data-theme="matcha"] #view-tracker .habit-check.done,
+html[data-theme="bleach"] #view-tracker .habit-check.done{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 0 10px var(--accent-glow2) !important;
+}
+#view-tracker .sc-value{font-variant-numeric:tabular-nums !important}
+
+/* ── 5 · NOTES — tactile tabs ─────────────────────────────────────── */
+
+#view-notes .nb-item{border-radius:8px 8px 0 0}
+#view-notes .nb-item:hover{background:color-mix(in srgb,var(--text) 4%,transparent)}
+#view-notes .nb-item.active{
+  border-bottom-color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 10%,transparent);
+}
+#view-notes .nb-item.active .nb-item-name{font-weight:600;color:var(--text)}
+#view-notes .nb-item.active .nb-item-icon{opacity:.9}
+/* Capture card answers focus with a border + whisper ring */
+#view-notes .nb-capture-inner:focus-within{
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border2));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent);
+}
+#view-notes .nb-empty-title{font-weight:700;letter-spacing:-.01em}
+/* VLM QA: icon at .18 was nearly invisible on white — lift to .28 */
+#view-notes .nb-empty-icon{opacity:.28}
+
+/* ── 6 · SOUND — corner play, calmer card ──────────────────────────── */
+
+#view-sound .sound-card{position:relative}
+/* Play button rides IN the volume row: [slider][%][▶] — one control
+   cluster per card, nothing floating (VLM round 2 verdict). */
+#view-sound .sound-vol-row{align-items:center;gap:10px}
+#view-sound .sound-play-btn{
+  flex-shrink:0;
+  width:38px;height:38px;padding:0 !important;
+  border-radius:50% !important;
+  font-size:0 !important;
+  gap:0 !important;
+  background:color-mix(in srgb,var(--text) 7%,transparent) !important;
+  border:1px solid var(--border2);
+  color:var(--text2);
+}
+#view-sound .sound-play-btn .sound-play-icon{font-size:12px;line-height:1}
+#view-sound .sound-play-btn:hover{transform:scale(1.08);color:var(--text)}
+#view-sound .sound-play-btn.on{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 0 14px var(--accent-glow2) !important;
+}
+#view-sound .sound-card-desc{color:var(--text3);font-size:11.5px;line-height:1.5}
+#view-sound .sound-vol-val{font-variant-numeric:tabular-nums}
+
+/* ── 7 · ASSISTANT — chips that look pressable ─────────────────────── */
+
+#view-assistant .asst-suggestion{
+  border:1px solid var(--border2) !important;
+  background:color-mix(in srgb,var(--bg2) 65%,transparent) !important;
+  border-radius:10px !important;
+  transition:border-color .2s ease,background .2s ease,transform .2s ease !important;
+}
+#view-assistant .asst-suggestion:hover{
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border2)) !important;
+  background:color-mix(in srgb,var(--accent) 6%,var(--bg2)) !important;
+  transform:translateY(-1px) !important;
+}
+
+/* ── 8 · TOOLS — quiet category eyebrows ───────────────────────────── */
+
+#view-tools .tools-cat-label{
+  font-family:var(--font-mono) !important;
+  font-size:10px !important;
+  font-weight:600 !important;
+  letter-spacing:.14em !important;
+  color:var(--text3) !important;
+}
+#view-tools .tools-cat-label::before{
+  width:2px !important;
+  height:11px !important;
+  border-radius:2px !important;
+  opacity:.85 !important;
+}
+#view-tools .tool-desc{color:var(--text3) !important}
+
+/* ── 9 · AI HUB — one tier system, ghost favorite ──────────────────── */
+
+/* Tier badges: outline pills of one size in every theme */
+#view-aihub .aih-tier{
+  font-family:var(--font-mono) !important;
+  font-size:9px !important;
+  font-weight:700 !important;
+  letter-spacing:.1em !important;
+  text-transform:uppercase !important;
+  padding:3px 8px !important;
+  border-radius:99px !important;
+  background:transparent !important;
+  border:1px solid color-mix(in srgb,var(--green) 45%,transparent) !important;
+  color:var(--green) !important;
+}
+#view-aihub .aih-tier.paid{
+  border-color:color-mix(in srgb,var(--orange) 45%,transparent) !important;
+  color:var(--orange) !important;
+}
+#view-aihub .aih-tier.freemium{
+  border-color:color-mix(in srgb,var(--accent) 45%,transparent) !important;
+  color:var(--accent) !important;
+}
+/* Favorite: ghost until the card is hovered (or already a favorite) */
+#view-aihub .aih-fav-btn{
+  opacity:.3;
+  transition:opacity .2s ease,transform .2s ease,color .2s ease;
+}
+#view-aihub .aih-card:hover .aih-fav-btn,
+#view-aihub .aih-fav-btn.fav{opacity:1}
+@media (hover:none){
+  #view-aihub .aih-fav-btn{opacity:.75}
+}
+/* Card hover: the border tells the story */
+#view-aihub .aih-card:hover{
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
+  transform:translateY(-2px) !important;
+}
+#view-aihub .aih-card-name{font-weight:700 !important;letter-spacing:-.01em !important}
+
+/* ── 10 · SETTINGS — muted helpers, flat inputs ───────────────────── */
+
+#view-settings .settings-row-desc{
+  font-size:11.5px !important;
+  color:var(--text3) !important;
+  line-height:1.55 !important;
+}
+#view-settings .settings-time-input,
+#view-settings .settings-number,
+#view-settings .settings-select{
+  box-shadow:none !important;
+}
+
+/* ── 11 · CONSENT BANNER — slimmer, calmer ─────────────────────────── */
+
+.legal-consent-banner{width:min(600px,calc(100vw - 28px))}
+.lcb-inner{
+  gap:12px;padding:12px 14px;border-radius:12px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:color-mix(in srgb,var(--bg2) 92%,transparent);
+}
+.lcb-text{font-size:11.5px}
+.lcb-accept{padding:8px 16px;border-radius:8px;font-size:11.5px}
+
+/* ── 12 · GLOBAL — aligned numerals ────────────────────────────────── */
+
+.db-hero-stat-val,.hds-value,.sc-value,.sound-vol-val,
+.habit-streak,.task-meta-badge{font-variant-numeric:tabular-nums}
+
+/* ── 12b · GRID DISCIPLINE — equal card rows, pinned feet ────────────
+   VLM QA: variable-length descriptions left ragged bottoms and
+   wandering "Open" buttons across Sound + AI Hub grids. Cards become
+   flex columns, descriptions clamp to two lines, footers/volume rows
+   pin to the bottom so every card in a row aligns. */
+
+#view-sound .sound-card{display:flex;flex-direction:column}
+#view-sound .sound-card-desc{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;min-height:2.9em;
+}
+#view-sound .sound-vol-row{margin-top:auto;padding-top:10px}
+
+#view-aihub .aih-card{display:flex;flex-direction:column}
+#view-aihub .aih-card-desc{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;min-height:2.9em;
+}
+#view-aihub .aih-card-foot{margin-top:auto;padding-top:10px}
+
+/* Focus custom minutes input — a real invitation, not an em dash */
+#view-focus .preset-custom-input{min-width:42px;text-align:center}
+
+/* ── 12c · TIER BADGE READABILITY — hue kept, contrast raised ───────
+   9px mono on white was ~2.8:1 for orange/green. Mixing 35% of the
+   theme text color into the hue keeps identity while clearing 4.5:1. */
+#view-aihub .aih-tier{
+  color:color-mix(in srgb,var(--green) 65%,var(--text)) !important;
+}
+#view-aihub .aih-tier.paid{
+  color:color-mix(in srgb,var(--orange) 60%,var(--text)) !important;
+}
+#view-aihub .aih-tier.freemium{
+  border-color:color-mix(in srgb,var(--text2) 40%,transparent) !important;
+  color:color-mix(in srgb,var(--text2) 75%,var(--text)) !important;
+}
+
+/* ── 13 · LIGHT-THEME PARITY MIRRORS ─────────────────────────────────
+   The light sheets (today-page-dark-depth-v1, light-mode-from-motion-
+   focus, tasks-page-polish…) restyle these same elements with
+   (1,2,1)/!important selectors that outrank the #view-scoped rules
+   above. Mirroring them here ties specificity and this layer's
+   document order decides. Dark themes need no mirrors — nothing
+   above (0,2,1) opposes them there. */
+
+/* Tasks — composer eyebrows + solid accent CTA in light too */
+html[data-theme="light"] #view-tasks .task-composer-label,
+html[data-theme="pure-light"] #view-tasks .task-composer-label{
+  color:var(--text3) !important;
+}
+html[data-theme="light"] #view-tasks .task-meta-label,
+html[data-theme="pure-light"] #view-tasks .task-meta-label{
+  color:var(--text3) !important;
+}
+html[data-theme="light"] #view-tasks .task-add-btn.task-add-btn,
+html[data-theme="pure-light"] #view-tasks .task-add-btn.task-add-btn{
+  background:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 2px 10px -3px var(--accent-glow4) !important;
+}
+html[data-theme="light"] #view-tasks .task-add-btn.task-add-btn:hover,
+html[data-theme="pure-light"] #view-tasks .task-add-btn.task-add-btn:hover{
+  box-shadow:0 5px 18px -5px var(--accent-glow5) !important;
+}
+
+/* Notes — active tab */
+html[data-theme="light"] #view-notes .nb-item.active,
+html[data-theme="pure-light"] #view-notes .nb-item.active{
+  border-bottom-color:var(--accent) !important;
+  background:color-mix(in srgb,var(--accent) 10%,transparent) !important;
+}
+html[data-theme="light"] #view-notes .nb-item.active .nb-item-name,
+html[data-theme="pure-light"] #view-notes .nb-item.active .nb-item-name{
+  font-weight:600 !important;
+  color:var(--text) !important;
+}
+
+/* Settings — muted helpers */
+html[data-theme="light"] #view-settings .settings-row-desc,
+html[data-theme="pure-light"] #view-settings .settings-row-desc{
+  color:var(--text3) !important;
+}
+
+/* Tools — category eyebrows */
+html[data-theme="light"] #view-tools .tools-cat-label,
+html[data-theme="pure-light"] #view-tools .tools-cat-label{
+  font-family:var(--font-mono) !important;
+  font-size:10px !important;
+  letter-spacing:.14em !important;
+  color:var(--text3) !important;
+}
+html[data-theme="light"] #view-tools .tools-cat-label::before,
+html[data-theme="pure-light"] #view-tools .tools-cat-label::before{
+  width:2px !important;
+  height:11px !important;
+  opacity:.85 !important;
+}
+
+/* AI Hub — outline-pill tiers + hover border in light */
+html[data-theme="light"] #view-aihub .aih-tier,
+html[data-theme="pure-light"] #view-aihub .aih-tier{
+  background:transparent !important;
+  color:color-mix(in srgb,var(--green) 65%,var(--text)) !important;
+  border:1px solid color-mix(in srgb,var(--green) 45%,transparent) !important;
+}
+html[data-theme="light"] #view-aihub .aih-tier.paid,
+html[data-theme="pure-light"] #view-aihub .aih-tier.paid{
+  background:transparent !important;
+  color:color-mix(in srgb,var(--orange) 60%,var(--text)) !important;
+  border-color:color-mix(in srgb,var(--orange) 45%,transparent) !important;
+}
+html[data-theme="light"] #view-aihub .aih-tier.freemium,
+html[data-theme="pure-light"] #view-aihub .aih-tier.freemium{
+  background:transparent !important;
+  color:color-mix(in srgb,var(--text2) 75%,var(--text)) !important;
+  border-color:color-mix(in srgb,var(--text2) 40%,transparent) !important;
+}
+html[data-theme="light"] #view-aihub .aih-card:hover,
+html[data-theme="pure-light"] #view-aihub .aih-card:hover{
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
+  transform:translateY(-2px) !important;
+}
+
+/* Notes — capture focus lift */
+html[data-theme="light"] #view-notes .nb-capture-inner:focus-within,
+html[data-theme="pure-light"] #view-notes .nb-capture-inner:focus-within{
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border2)) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent) !important;
+}
+
+/* Assistant — chips */
+html[data-theme="light"] #view-assistant .asst-suggestion,
+html[data-theme="pure-light"] #view-assistant .asst-suggestion{
+  background:color-mix(in srgb,var(--bg2) 65%,transparent) !important;
+  border:1px solid var(--border2) !important;
+  border-radius:10px !important;
+}
+html[data-theme="light"] #view-assistant .asst-suggestion:hover,
+html[data-theme="pure-light"] #view-assistant .asst-suggestion:hover{
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border2)) !important;
+  background:color-mix(in srgb,var(--accent) 6%,var(--bg2)) !important;
+  transform:translateY(-1px) !important;
+}
+
+/* Settings — flat inputs (drop the light inner lid) */
+html[data-theme="light"] #view-settings .settings-select,
+html[data-theme="light"] #view-settings .settings-time-input,
+html[data-theme="light"] #view-settings .settings-number,
+html[data-theme="pure-light"] #view-settings .settings-select,
+html[data-theme="pure-light"] #view-settings .settings-time-input,
+html[data-theme="pure-light"] #view-settings .settings-number{
+  box-shadow:none !important;
+}
+</style>
+
+<style id="sound-settings-v5">
+/* ════════════════════════════════════════════════════════════════════
+   SOUND + OPERATOR POLISH v5
+   (1) Play button — the ghost-circle fix. Idle state was rgba(15,17,33,.03)
+       glass + 12px text glyph: read as part of the slider, not a button.
+       Now a real accent-tinted circular control with an SVG play/stop
+       glyph, solid accent fill while playing, lift + soft ring on hover.
+   (2) Master row + Stop-all — emoji glyphs → SVG; inline-flex alignment.
+   (3) Section badges — emoji-prefixed pills → quiet mono chips.
+   (4) Section labels — restored eyebrow tracking (ux-refinement had
+       flattened it to .04em sans-800).
+   (5) Settings operator block markup/CSS (TIHAM 777) lives in the legal
+       layer at 20698 — nothing contested there.
+   CASCADE: dark rules are (1,1,0) with !important only where pro-polish-v3
+   used it (tie → this later block wins). Light mirrors mirror the
+   today-page-dark-depth-v1 sheet's exact (1,2,1)+!important and win by
+   document order. `.on` rules are declared AFTER `:hover` rules so a
+   playing button stays solid-accent under the cursor. Remove to revert.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · Play button — a real, visible control ─────────────────────── */
+#view-sound .sound-play-btn{
+  width:40px;height:40px;
+  background:color-mix(in srgb,var(--accent) 13%,transparent) !important;
+  border:1px solid color-mix(in srgb,var(--accent) 38%,var(--border2));
+  color:var(--accent) !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.14);
+  transition:transform .22s cubic-bezier(.22,1,.36,1),background .18s ease,
+             border-color .18s ease,box-shadow .18s ease,color .18s ease;
+}
+#view-sound .sound-play-btn .sound-play-icon{
+  width:15px;height:15px;display:block;margin:0;
+}
+#view-sound .sound-play-btn:hover{
+  transform:translateY(-1px);
+  background:color-mix(in srgb,var(--accent) 20%,transparent) !important;
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border2));
+  color:var(--accent) !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.18),
+             0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);
+}
+#view-sound .sound-play-btn:active{transform:scale(.94)}
+#view-sound .sound-play-btn.on{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 4px 16px var(--accent-glow2),
+             inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+#view-sound .sound-play-btn.on:hover{
+  transform:translateY(-1px);
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:var(--btn-text) !important;
+  box-shadow:0 6px 20px var(--accent-glow2),
+             inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+
+/* Light mirrors — beat the (1,2,1)!important sheets by tie + order */
+html[data-theme="light"] #view-sound .sound-play-btn,
+html[data-theme="pure-light"] #view-sound .sound-play-btn{
+  background:color-mix(in srgb,var(--accent) 8%,#ffffff) !important;
+  border:1px solid color-mix(in srgb,var(--accent) 26%,rgba(15,17,33,.10)) !important;
+  color:var(--accent) !important;
+  box-shadow:0 1px 3px rgba(15,17,33,.08),
+             inset 0 1px 0 rgba(255,255,255,.85) !important;
+}
+html[data-theme="light"] #view-sound .sound-play-btn:hover,
+html[data-theme="pure-light"] #view-sound .sound-play-btn:hover{
+  background:color-mix(in srgb,var(--accent) 13%,#ffffff) !important;
+  border-color:color-mix(in srgb,var(--accent) 45%,rgba(15,17,33,.10)) !important;
+  color:var(--accent) !important;
+  box-shadow:0 4px 12px rgba(15,17,33,.12),
+             0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent) !important;
+}
+html[data-theme="light"] #view-sound .sound-play-btn.on,
+html[data-theme="pure-light"] #view-sound .sound-play-btn.on{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:#ffffff !important;
+  box-shadow:0 2px 10px color-mix(in srgb,var(--accent) 35%,transparent),
+             inset 0 1px 0 rgba(255,255,255,.28) !important;
+}
+html[data-theme="light"] #view-sound .sound-play-btn.on:hover,
+html[data-theme="pure-light"] #view-sound .sound-play-btn.on:hover{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:#ffffff !important;
+  box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 40%,transparent),
+             inset 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+/* ── 2 · Master row + Stop-all — SVG alignment ─────────────────────── */
+#view-sound .sound-master-label{gap:7px}
+#view-sound .sound-master-label .sound-master-label-icon{flex-shrink:0;opacity:.9}
+#view-sound .sound-stopall{
+  display:inline-flex;align-items:center;gap:6px;
+}
+#view-sound .sound-stopall svg{flex-shrink:0;opacity:.85}
+
+/* ── 2b · THE visibility fix ─────────────────────────────────────────
+   The vol-row children couldn't fit a 180px-min card: the range input
+   has min-width:auto (intrinsic ≈129px) + a fixed 30% readout + a
+   flex-shrink:0 40px button → the button was pushed fully outside the
+   overflow:hidden card and rendered invisible on desktop grids.
+   Let the slider flex below its intrinsic floor — it is the row's
+   designated flexible element. */
+#view-sound .sound-vol-row .sound-range{min-width:0}
+#view-sound .sound-vol-row{gap:8px}
+
+/* ── 3 · Section badges — quiet mono chips (eyebrow system) ───────── */
+#view-sound .sound-badge{
+  font-family:var(--font-mono) !important;
+  font-size:9.5px !important;
+  font-weight:600 !important;
+  letter-spacing:.08em !important;
+  text-transform:uppercase;
+  padding:3px 10px;
+}
+
+/* ── 4 · Section labels — restored eyebrow tracking ────────────────── */
+#view-sound .sound-section-label{
+  font-family:var(--font-mono) !important;
+  font-size:9.5px !important;
+  font-weight:600 !important;
+  letter-spacing:.14em !important;
 }
 </style>
 
