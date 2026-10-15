@@ -23290,6 +23290,20 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
           </div>
         </div>
 
+        <!-- Sticky toolbar: search, category filter, now playing -->
+        <div class="sound-toolbar" id="snd-toolbar">
+          <div class="sound-search">
+            <svg class="sound-search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+            <input type="search" id="snd-search" class="sound-search-input" placeholder="Search 47 sounds" aria-label="Search sounds" autocomplete="off" spellcheck="false"/>
+            <button type="button" class="sound-search-clear" id="snd-search-clear" aria-label="Clear search" hidden>&times;</button>
+          </div>
+          <div class="sound-chips" id="snd-chips" role="group" aria-label="Show one category at a time"></div>
+          <div class="sound-now" id="snd-now">
+            <span class="sound-now-text" id="snd-now-text">Nothing playing</span>
+            <button type="button" class="sound-stopall sound-stopall-sm" id="snd-stopall2" hidden><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> Stop all</button>
+          </div>
+        </div>
+
         <!-- Brainwave (top — the page's headline feature) -->
         <div class="sound-section-hdr">
           <span class="sound-section-label">Brainwave Entrainment</span>
@@ -40782,7 +40796,7 @@ function animateCount(el,target,unit=''){
 
   function buildCard(s){
     const volDef=60;
-    return`<div class="sound-card" id="snd-card-${s.id}">
+    return`<div class="sound-card" id="snd-card-${s.id}" style="--sc:${s.dot}">
       <div class="sound-card-head">
         <div class="sound-dot" id="snd-dot-${s.id}" style="background:${s.dot}"></div>
         <div class="sound-card-name">${s.name}</div>
@@ -40870,7 +40884,9 @@ function animateCount(el,target,unit=''){
   function syncRangeFill(el){
     const min=parseFloat(el.min)||0,max=parseFloat(el.max)||100,val=parseFloat(el.value)||0;
     const pct=((val-min)/(max-min)*100).toFixed(1)+'%';
-    el.style.background=`linear-gradient(90deg,var(--accent) 0%,var(--accent) ${pct},var(--border2) ${pct},var(--border2) 100%)`;
+    /* --snd-fill resolves per card: neutral while a sound is idle, the
+       sound's own identity colour while it plays (set in the rework sheet). */
+    el.style.background=`linear-gradient(90deg,var(--snd-fill,var(--accent)) 0%,var(--snd-fill,var(--accent)) ${pct},var(--border2) ${pct},var(--border2) 100%)`;
   }
   document.addEventListener('input',function(e){
     if(e.target && e.target.classList.contains('sound-range')){syncRangeFill(e.target);}
@@ -97487,6 +97503,508 @@ html[data-theme="pure-light"] #view-sound .sound-play-btn.on:hover{
     if(r.left < s.left) tabs.scrollLeft -= (s.left - r.left) + 12;
     else if(r.right > s.right) tabs.scrollLeft += (r.right - s.right) + 12;
   });
+})();
+</script>
+
+<style id="sound-studio-rework">
+/* ════════════════════════════════════════════════════════════════════
+   SOUND STUDIO — REWORK
+   ──────────────────────────────────────────────────────────────────
+   WHY: the page had accreted ~15 independent polish sheets, each fixing
+   one nit, so nothing owned its composition. 47 identical cards, no way
+   to find one, no readout of what was running, and Stop-all buried in a
+   hero you have to scroll back to. This sheet decides the page's
+   structure; earlier sheets still own colour tokens and app-wide tiers.
+
+   THE BRIEF: find a sound in 47 cards, layer it, set levels, leave it
+   running. The hero stays a hero; the toolbar carries the work.
+
+   CASCADE: every selector is prefixed `html[data-theme] #view-sound`,
+   tying the per-theme sheets at (1,2,1)+!important; being last in the
+   document, this block wins every tie. One deliberate exception:
+   `.sound-range` background is NEVER declared here — JS paints it in
+   syncRangeFill(), and an !important background would freeze the sliders.
+
+   COLOUR: no new hue and no new font. Each card carries an identity
+   colour from its own sound dot (`--sc`, set in buildCard) and only
+   spends it while playing; everything else is existing tokens, so all
+   11 themes follow without a light-mode mirror sheet.
+
+   Remove this <style> and <script id="sound-studio-rework-js"> to revert.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · PAGE RHYTHM ─────────────────────────────────────────────── */
+/* --snd-bleed = .sound-page padding + .content padding, so the sticky
+   toolbar can span the full scrollport. JS measures it at runtime and
+   overwrites this default, which is what keeps it correct at every
+   breakpoint and zoom level. */
+/* Padding-top pulled in from 28px: the page opened with 44px of dead
+   air between the tab bar and the hero before any content started. */
+html[data-theme] #view-sound .sound-page{
+  --snd-bleed:56px;
+  padding-top:12px !important;
+}
+html[data-theme] #view-sound .sound-hero{ margin-bottom:18px !important; padding:24px 26px 22px !important; }
+
+/* ── 2 · HERO — identity only; the toolbar below carries the work ── */
+html[data-theme] #view-sound .sound-hero-eyebrow{
+  font-size:10.5px !important;letter-spacing:.16em !important;
+  opacity:.9 !important;margin-bottom:9px !important;
+}
+html[data-theme] #view-sound .sound-hero-title{
+  font-size:32px !important;letter-spacing:-.045em !important;
+  line-height:1 !important;margin-bottom:7px !important;
+}
+html[data-theme] #view-sound .sound-hero-sub{
+  font-size:13px !important;margin-bottom:20px !important;
+  opacity:.9 !important;max-width:52ch;
+}
+
+/* ── 3 · STICKY TOOLBAR — search, category, now playing ───────────── */
+html[data-theme] #view-sound .sound-toolbar{
+  position:sticky;top:0;z-index:8;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 calc(-1 * var(--snd-bleed)) 18px;
+  padding:11px var(--snd-bleed);
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(16px) saturate(1.15);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+  border-bottom:1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+html[data-theme] #view-sound .sound-search{
+  position:relative;display:flex;align-items:center;
+  flex:0 1 216px;min-width:150px;
+}
+html[data-theme] #view-sound .sound-search-icon{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--text3);pointer-events:none;
+}
+html[data-theme] #view-sound .sound-search-input{
+  width:100%;
+  padding:8px 30px 8px 32px;
+  font-family:var(--font-body);font-size:12.5px;font-weight:500;
+  color:var(--text);
+  background:var(--bg2);
+  border:1px solid color-mix(in srgb, var(--text) 12%, transparent);
+  border-radius:9px;outline:none;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+html[data-theme] #view-sound .sound-search-input::placeholder{color:var(--text3);font-weight:500}
+html[data-theme] #view-sound .sound-search-input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+html[data-theme] #view-sound .sound-search-input:focus{
+  background:var(--bg2);
+  border-color:color-mix(in srgb, var(--accent) 55%, var(--border2));
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+html[data-theme] #view-sound .sound-search-clear{
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;padding:0;line-height:1;
+  border:none;border-radius:50%;background:transparent;
+  color:var(--text3);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+html[data-theme] #view-sound .sound-search-clear:hover{color:var(--text);background:var(--glass2)}
+html[data-theme] #view-sound .sound-search-clear[hidden]{display:none}
+
+html[data-theme] #view-sound .sound-chips{
+  display:flex;gap:6px;align-items:center;
+  flex:1 1 auto;min-width:0;
+  overflow-x:auto;scrollbar-width:none;
+  padding:2px 0;
+}
+html[data-theme] #view-sound .sound-chips::-webkit-scrollbar{display:none}
+html[data-theme] #view-sound .sound-chip{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;
+  padding:6px 11px;border-radius:8px;cursor:pointer;
+  font-family:var(--font-body);font-size:11.5px;font-weight:600;
+  letter-spacing:.01em;color:var(--text2);
+  background:transparent;border:1px solid color-mix(in srgb, var(--text) 11%, transparent);
+  transition:background .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
+}
+html[data-theme] #view-sound .sound-chip:hover{
+  color:var(--text);
+  border-color:color-mix(in srgb, var(--text) 24%, transparent);
+  background:color-mix(in srgb, var(--text) 5%, transparent);
+}
+html[data-theme] #view-sound .sound-chip:active{transform:scale(.97)}
+html[data-theme] #view-sound .sound-chip.active{
+  color:var(--btn-text);background:var(--accent);border-color:var(--accent);
+  box-shadow:0 2px 10px -4px var(--accent-glow2);
+}
+html[data-theme] #view-sound .sound-chip-count{
+  font-family:var(--font-mono);font-size:9.5px;font-weight:600;opacity:.75;
+  font-variant-numeric:tabular-nums;
+}
+html[data-theme] #view-sound .sound-now{
+  display:flex;align-items:center;gap:10px;flex:0 0 auto;margin-left:auto;
+}
+html[data-theme] #view-sound .sound-now-text{
+  font-size:11.5px;color:var(--text3);max-width:32ch;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+html[data-theme] #view-sound .sound-now.is-playing .sound-now-text{
+  color:var(--text);font-weight:600;
+}
+html[data-theme] #view-sound .sound-stopall-sm{
+  padding:6px 12px;font-size:11px;letter-spacing:.01em;
+}
+html[data-theme] #view-sound .sound-stopall[hidden]{display:none}
+
+/* ── 4 · EMPTY STATE (no search matches) ─────────────────────────── */
+html[data-theme] #view-sound .sound-empty{
+  display:none;
+  margin:6px 0 4px;
+  padding:40px 24px;
+  text-align:center;
+  background:color-mix(in srgb, var(--bg2) 70%, transparent);
+  border:1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius:14px;
+}
+html[data-theme] #view-sound .sound-empty.show{display:block}
+html[data-theme] #view-sound .sound-empty-title{
+  font-family:var(--font-head);font-size:16px;font-weight:700;
+  color:var(--text);letter-spacing:-.015em;margin-bottom:7px;
+}
+html[data-theme] #view-sound .sound-empty-sub{
+  font-size:12.5px;color:var(--text3);line-height:1.6;margin-bottom:16px;
+}
+html[data-theme] #view-sound .sound-empty-clear{
+  padding:7px 15px;border-radius:8px;cursor:pointer;
+  font-family:var(--font-body);font-size:12.5px;font-weight:600;
+  color:var(--text);background:var(--glass2);
+  border:1px solid var(--border2);
+  transition:background .16s ease, transform .16s ease;
+}
+html[data-theme] #view-sound .sound-empty-clear:hover{
+  background:color-mix(in srgb, var(--accent) 12%, var(--glass2));
+  transform:translateY(-1px);
+}
+
+/* ── 5 · SECTION HEADERS — label + rule ───────────────────────────── */
+html[data-theme] #view-sound .sound-section-hdr{
+  margin-top:30px !important;margin-bottom:13px !important;gap:10px !important;
+}
+html[data-theme] #view-sound .sound-section-label{
+  font-family:var(--font-mono) !important;
+  font-size:10.5px !important;font-weight:600 !important;
+  letter-spacing:.14em !important;color:var(--text2) !important;
+  opacity:1 !important;
+}
+html[data-theme] #view-sound .sound-section-line{
+  background:linear-gradient(90deg, color-mix(in srgb, var(--text) 14%, transparent), transparent) !important;
+  opacity:1 !important;
+}
+
+/* ── 6 · CARDS — quiet at rest, lit by their own colour when playing ─ */
+html[data-theme] #view-sound .sound-card{
+  /* At rest the slider is the app's accent. Only while a sound plays does
+     the card spend its own identity colour — the slider fill included. */
+  --snd-fill:var(--accent);
+  animation:none !important;
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--bg2) 92%, var(--bg3)) 0%,
+    var(--bg2) 100%) !important;
+  border:1px solid color-mix(in srgb, var(--text) 9%, transparent) !important;
+  box-shadow:none !important;
+  transition:border-color .2s ease, box-shadow .2s ease,
+             transform .2s cubic-bezier(.22,1,.36,1),
+             background .35s ease !important;
+}
+html[data-theme] #view-sound .sound-card:hover{
+  transform:translateY(-2px) !important;
+  border-color:color-mix(in srgb, var(--text) 18%, transparent) !important;
+  box-shadow:0 16px 30px -22px rgba(0,0,0,.9) !important;
+}
+html[data-theme] #view-sound .sound-card.playing{
+  --snd-fill:var(--sc, var(--accent));
+  border-color:color-mix(in srgb, var(--sc, var(--accent)) 55%, var(--border)) !important;
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--sc, var(--accent)) 13%, var(--bg2)) 0%,
+    var(--bg2) 72%) !important;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--sc, var(--accent)) 30%, transparent),
+             0 18px 34px -24px color-mix(in srgb, var(--sc, var(--accent)) 85%, transparent) !important;
+}
+/* The 1px accent shimmer becomes a 2px identity-colour bar */
+html[data-theme] #view-sound .sound-card.playing::after{
+  height:2px !important;
+  background:linear-gradient(90deg,transparent, var(--sc, var(--accent)), transparent) !important;
+}
+/* Dot: halo in the sound's colour, so the breathing animation is its own */
+html[data-theme] #view-sound .sound-dot{
+  width:9px;height:9px;
+  color:var(--sc, var(--accent));
+  box-shadow:0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}
+html[data-theme] #view-sound .sound-card.playing .sound-dot{
+  transform:scale(1.3);
+}
+@keyframes dotBreath{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb, currentColor 20%, transparent),
+                       0 0 7px color-mix(in srgb, currentColor 55%, transparent)}
+  50%   {box-shadow:0 0 0 5px color-mix(in srgb, currentColor 14%, transparent),
+                       0 0 16px color-mix(in srgb, currentColor 85%, transparent)}
+}
+html[data-theme] #view-sound .sound-card-name{
+  font-size:14.5px !important;font-weight:700 !important;
+  letter-spacing:-.015em !important;line-height:1.25 !important;
+}
+html[data-theme] #view-sound .sound-card-desc{
+  font-size:11.5px !important;line-height:1.55 !important;color:var(--text3) !important;
+}
+html[data-theme] #view-sound .sound-vol-val{
+  color:var(--text3) !important;font-size:10.5px !important;
+  transition:color .2s ease;
+}
+html[data-theme] #view-sound .sound-card.playing .sound-vol-val{color:var(--accent2) !important}
+html[data-theme] #view-sound .sound-vol-row{gap:9px}
+
+/* ── 7 · HIDING (search + category filter) ────────────────────────── */
+html[data-theme] #view-sound .sound-hidden{display:none !important}
+
+/* ── 8 · FOCUS VISIBILITY — every control is reachable by keyboard ── */
+html[data-theme] #view-sound .sound-chip:focus-visible,
+html[data-theme] #view-sound .sound-stopall:focus-visible,
+html[data-theme] #view-sound .sound-search-clear:focus-visible,
+html[data-theme] #view-sound .sound-empty-clear:focus-visible,
+html[data-theme] #view-sound .sound-play-btn:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;
+}
+html[data-theme] #view-sound .sound-range:focus-visible,
+html[data-theme] #view-sound .sound-master-range:focus-visible{
+  outline:2px solid var(--accent);outline-offset:3px;
+}
+
+/* ── 9 · NARROW VIEWPORTS ────────────────────────────────────────── */
+@media (max-width:860px){
+  html[data-theme] #view-sound .sound-toolbar{row-gap:8px}
+  html[data-theme] #view-sound .sound-search{flex:1 1 100%}
+  html[data-theme] #view-sound .sound-now{
+    margin-left:0;flex:1 1 100%;justify-content:space-between;
+  }
+  html[data-theme] #view-sound .sound-now-text{max-width:none}
+}
+@media (max-width:640px){
+  html[data-theme] #view-sound .sound-hero-title{font-size:26px !important}
+  html[data-theme] #view-sound .sound-hero-eyebrow{letter-spacing:.12em !important}
+  html[data-theme] #view-sound .sound-grid{
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr)) !important;
+  }
+  html[data-theme] #view-sound .sound-section-label{letter-spacing:.1em !important}
+}
+
+/* ── 10 · REDUCED MOTION ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce){
+  html[data-theme] #view-sound .sound-card{transition:border-color .01ms, background .01ms !important}
+  html[data-theme] #view-sound .sound-card:hover{transform:none !important}
+}
+</style>
+
+<script id="sound-studio-rework-js">
+/* ════════════════════════════════════════════════════════════════════
+   SOUND STUDIO — REWORK, behaviour layer
+   Two additions, both real state rather than decoration:
+     1. Category chips + text search — 47 cards across 7 sections had no
+        way to be found except scrolling.
+     2. A now-playing readout in the sticky bar — the only place that
+        answers "what is actually running" from anywhere on the page.
+   Everything is idempotent: initSoundStudio() runs on every visit.
+   ════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var $=function(s,r){return (r||document).querySelector(s)};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var CHIP_ORDER=[['snd-wave-grid','Brainwave'],['snd-music-grid','Focus'],
+                  ['snd-relax-grid','Relax'],['snd-noise-grid','Noise'],
+                  ['snd-lofi-grid','Lofi'],['snd-nature-grid','Nature'],
+                  ['snd-ambient-grid','Ambient']];
+
+  var chrome=false, sections=[], filter='all', query='';
+  var chipsEl,searchEl,clearEl,nowEl,nowText,nowBtn,emptyEl,pageEl;
+
+  function view(){return document.getElementById('view-sound')}
+  function onScreen(el){return !!el && el.offsetParent!==null}
+
+  /* ── Build the chrome once; recount + reapply on every visit ── */
+  function ensure(){
+    if(chrome) return true;
+    var v=view(); if(!v) return false;
+    chipsEl=$('#snd-chips'); searchEl=$('#snd-search'); clearEl=$('#snd-search-clear');
+    nowEl=$('#snd-now'); nowText=$('#snd-now-text'); nowBtn=$('#snd-stopall2');
+    pageEl=$('.sound-page',v);
+    if(!chipsEl||!searchEl||!nowEl) return false;
+
+    sections=$$('.sound-section-hdr',v).map(function(h){
+      var grid=h.nextElementSibling;
+      return {hdr:h,grid:grid,total:grid?grid.children.length:0};
+    });
+
+    emptyEl=document.createElement('div');
+    emptyEl.className='sound-empty';
+    emptyEl.innerHTML='<div class="sound-empty-title">No sounds match</div>'+
+      '<div class="sound-empty-sub">Try a shorter word — rain, waves, lofi, cafe — or clear the search to see everything.</div>'+
+      '<button type="button" class="sound-empty-clear">Clear search</button>';
+    $('#snd-toolbar').insertAdjacentElement('afterend',emptyEl);
+
+    searchEl.addEventListener('input',function(){
+      query=this.value; clearEl.hidden=!query; apply();
+    });
+    clearEl.addEventListener('click',function(){resetSearch();});
+    emptyEl.addEventListener('click',function(e){
+      if(e.target && e.target.closest && e.target.closest('.sound-empty-clear')) resetSearch();
+    });
+    nowBtn.addEventListener('click',function(){
+      if(window._sndStopAll) window._sndStopAll();
+      syncNow();
+    });
+    /* Play buttons are rebuilt by updateCardUI(), so listen by delegation
+       for an instant now-playing update instead of polling alone. */
+    v.addEventListener('click',function(e){
+      if(e.target && e.target.closest && e.target.closest('.sound-play-btn')) setTimeout(syncNow,0);
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key!=='/'||e.ctrlKey||e.metaKey||e.altKey) return;
+      if(!onScreen(view())) return;
+      var t=document.activeElement;
+      if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)) return;
+      e.preventDefault(); searchEl.focus(); searchEl.select();
+    });
+    chrome=true;
+    return true;
+  }
+
+  function resetSearch(){
+    searchEl.value=''; query=''; clearEl.hidden=true; apply(); searchEl.focus();
+  }
+
+  function buildChips(){
+    if(!chipsEl) return;
+    var byId={};
+    var total=0;
+    sections.forEach(function(s){
+      total+=s.total;
+      if(s.grid) byId[s.grid.id]=s.total;
+    });
+    var items=[['all','All']].concat(CHIP_ORDER);
+    chipsEl.innerHTML='';
+    items.forEach(function(it){
+      var key=it[0], label=it[1], n=(key==='all')?total:(byId[key]||0);
+      if(!n && key!=='all') return;
+      var b=document.createElement('button');
+      b.type='button'; b.className='sound-chip'+(key===filter?' active':'');
+      b.dataset.key=key;
+      b.setAttribute('aria-pressed', key===filter?'true':'false');
+      b.appendChild(document.createTextNode(label));
+      var c=document.createElement('span');
+      c.className='sound-chip-count'; c.textContent=String(n);
+      b.appendChild(c);
+      b.addEventListener('click',function(){
+        filter=key;
+        $$('.sound-chip',chipsEl).forEach(function(x){
+          var on=x.dataset.key===filter;
+          x.classList.toggle('active',on);
+          x.setAttribute('aria-pressed',on?'true':'false');
+        });
+        apply();
+      });
+      chipsEl.appendChild(b);
+    });
+    searchEl.placeholder='Search '+total+' sounds';
+  }
+
+  /* ── Apply search + category to every section ── */
+  function apply(){
+    var q=(query||'').trim().toLowerCase();
+    var matched=0, any=false;
+    sections.forEach(function(s){
+      if(!s.grid) return;
+      var chipOK=(filter==='all'||filter===s.grid.id);
+      var cards=s.grid.children, shown=0;
+      for(var i=0;i<cards.length;i++){
+        var hit=!q || cards[i].textContent.toLowerCase().indexOf(q)>-1;
+        cards[i].classList.toggle('sound-hidden',!hit);
+        if(hit) shown++;
+      }
+      var show=chipOK && shown>0;
+      s.hdr.classList.toggle('sound-hidden',!show);
+      s.grid.classList.toggle('sound-hidden',!show);
+      if(show){any=true; matched+=shown;}
+    });
+    if(emptyEl){
+      emptyEl.classList.toggle('show',!any);
+      if(!any){
+        emptyEl.querySelector('.sound-empty-title').textContent = q
+          ? 'No sounds match \u201C'+query.trim()+'\u201D'
+          : 'Nothing in this category';
+      }
+    }
+    return matched;
+  }
+
+  /* ── Now playing ── */
+  function syncNow(){
+    if(!nowText) return;
+    var ids = window._sndActiveIds ? window._sndActiveIds() : [];
+    if(!ids.length){
+      nowText.textContent='Nothing playing';
+      nowEl.classList.remove('is-playing');
+      nowBtn.hidden=true;
+      return;
+    }
+    var names=ids.map(function(id){
+      var c=document.getElementById('snd-card-'+id);
+      var n=c&&c.querySelector('.sound-card-name');
+      return n?n.textContent:id;
+    });
+    var head=names.slice(0,2).join(', ');
+    if(names.length>2) head+=' +'+(names.length-2);
+    nowText.textContent=names.length+' playing \u00B7 '+head;
+    nowEl.classList.add('is-playing');
+    nowBtn.hidden=false;
+  }
+  setInterval(function(){ if(onScreen(view())) syncNow(); },900);
+
+  /* ── Sticky toolbar needs the true scrollport width at runtime ── */
+  function syncBleed(){
+    if(!pageEl) return;
+    var content=$('.content');
+    if(!content) return;
+    var a=parseFloat(getComputedStyle(pageEl).paddingLeft)||0;
+    var b=parseFloat(getComputedStyle(content).paddingLeft)||0;
+    var px=Math.round(a+b);
+    if(px>0) pageEl.style.setProperty('--snd-bleed',px+'px');
+  }
+
+  /* ── Entry point: idempotent, runs on every visit to the view ── */
+  function boot(){
+    if(!ensure()) return;
+    buildChips();
+    apply();
+    syncNow();
+    syncBleed();
+    /* Cards are built after DOMContentLoaded, so their sliders have no
+       inline fill yet — dispatch input to run syncRangeFill() on them
+       (it now paints var(--snd-fill), the neutral / identity colour). */
+    $$('.sound-range',view()).forEach(function(el){
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+    });
+  }
+
+  var orig=window.initSoundStudio;
+  if(orig && !window.__sndReworkWrapped){
+    window.__sndReworkWrapped=true;
+    window.initSoundStudio=function(){
+      var r=orig.apply(this,arguments);
+      try{boot();}catch(e){console.warn('[SoundStudio rework]',e);}
+      return r;
+    };
+  }
+  window.addEventListener('resize',function(){ if(chrome) syncBleed(); });
+  function ready(){
+    try{ if(onScreen(view())) boot(); }catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready);
+  else ready();
 })();
 </script>
 
