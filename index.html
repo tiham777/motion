@@ -4658,44 +4658,42 @@ select.form-input option{background:var(--bg2);color:var(--text);padding:8px 12p
   overscroll-behavior:contain;
 }
 
-/* Fade-edge mask on main content area — content fades at top/bottom edges */
+/* Fade-edge mask on main content area.
+   Was a two-sided 28/32px gradient, which dimmed the top of every page as
+   it scrolled — and the top band of a page is where the fixed chrome sits
+   (page header, view switchers, toolbars), so the "fade" read as a shadow
+   over controls rather than as a scroll affordance. Kept for the bottom
+   edge only, where it genuinely signals "more below". */
 .content{
   --fade-size:28px;
   -webkit-mask-image:linear-gradient(
     to bottom,
-    transparent 0px,
-    black var(--fade-size),
+    black 0px,
     black calc(100% - var(--fade-size)),
     transparent 100%
-  );
+  ) !important;
   mask-image:linear-gradient(
     to bottom,
-    transparent 0px,
-    black var(--fade-size),
+    black 0px,
     black calc(100% - var(--fade-size)),
     transparent 100%
-  );
+  ) !important;
 }
+/* Pages that opt out of the fade entirely. Their edges are drawn chrome or
+   edge-to-edge grids (calendar, focus fullscreen, the chat workspace), so
+   even the bottom fade clipped something that was meant to run to the
+   edge. */
 .content.blocks-cal-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.habits-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.focus-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.settings-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.blocks-list-active{mask-image:none!important;-webkit-mask-image:none!important}
 .content.tasks-active{mask-image:none!important;-webkit-mask-image:none!important}
-.content.dashboard-active{
-  mask-image:linear-gradient(
-    to bottom,
-    black 0px,
-    black calc(100% - var(--fade-size)),
-    transparent 100%
-  ) !important;
-  -webkit-mask-image:linear-gradient(
-    to bottom,
-    black 0px,
-    black calc(100% - var(--fade-size)),
-    transparent 100%
-  ) !important;
-}
+/* Assistant opts out too. The chat is a full-height workspace whose top
+   (header + model controls) and bottom (composer) edges are permanent
+   chrome, not scrollable content — the fade erased the top of the thread
+   and the composer's own edges as they passed under it. */
+.content.assistant-active{mask-image:none!important;-webkit-mask-image:none!important}
 
 
 /* Sidebar fade mask */
@@ -96807,9 +96805,16 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
 
 #view-notes .nb-item{border-radius:8px 8px 0 0}
 #view-notes .nb-item:hover{background:color-mix(in srgb,var(--text) 4%,transparent)}
-#view-notes .nb-item.active{
-  border-bottom-color:var(--accent);
-  background:color-mix(in srgb,var(--accent) 10%,transparent);
+/* The active topic is its notebook's own colour and nothing else — the
+   underline alone. The 10% accent wash that used to sit behind it read as
+   a grey "pressed" pill (--accent is near-white in every dark theme), and
+   the underline was being reset to --accent by the per-theme mirrors
+   further down the file. html[data-theme] ties those mirrors on
+   specificity and this rule's later document order settles it, so the
+   topic colour wins in all seven themes. */
+html[data-theme] #view-notes .nb-item.active{
+  border-bottom-color:var(--nb-item-color,var(--accent)) !important;
+  background:transparent !important;
 }
 #view-notes .nb-item.active .nb-item-name{font-weight:600;color:var(--text)}
 #view-notes .nb-item.active .nb-item-icon{opacity:.9}
@@ -96933,12 +96938,10 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
    document order decides. Dark themes need no mirrors — nothing
    above (0,2,1) opposes them there. */
 
-/* Notes — active tab */
-html[data-theme="light"] #view-notes .nb-item.active,
-html[data-theme="pure-light"] #view-notes .nb-item.active{
-  border-bottom-color:var(--accent) !important;
-  background:color-mix(in srgb,var(--accent) 10%,transparent) !important;
-}
+/* Notes — active tab. The underline and the (now removed) background wash
+   are settled by the base .nb-item.active rule further up; only the text
+   emphasis needs a mirror, because the light sheets set the name colour
+   with !important. */
 html[data-theme="light"] #view-notes .nb-item.active .nb-item-name,
 html[data-theme="pure-light"] #view-notes .nb-item.active .nb-item-name{
   font-weight:600 !important;
@@ -97304,6 +97307,186 @@ html[data-theme="pure-light"] #view-sound .sound-play-btn.on:hover{
   if(window.MutationObserver){
     new MutationObserver(syncFocusable).observe(sb, {attributes:true, attributeFilter:['class']});
   }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     WAYFINDING & NARROW-SCREEN COHERENCE (v1)
+
+     Scope: three measured layout defects plus the navigation strip's
+     reachability. Nothing here restyles a surface that was already correct,
+     and nothing overrides a decision an earlier pass made deliberately
+     (the collapsed-by-default sidebar, the unnoticeable reopen handle, the
+     dashed "placeholder" border language and the tab edge-fades all stay
+     exactly as they are).
+
+     Measured before/after, Chrome, 390x844 and 800x582:
+
+       1. Time Blocks (Today) pushed 96px past the right edge — the four
+          KPI cards plus the date navigator do not fit once .bvt-btns and
+          the 120px-min .day-info share one row. `.content` scrollWidth was
+          449 against a 360px clientWidth, so the page itself scrolled
+          sideways.
+
+       2. Each KPI card clipped its own text. .stat-card is a 72px column
+          inside `repeat(4,1fr)` at 390px while "COMPLETED" (10px, .14em
+          tracking, uppercase) needs 90px — `overflow:hidden` then cut the
+          word, which is why the strip read "COMPLET / REMAIN".
+
+       3. AI Hub's 12 filter pills wrapped into six rows above the content
+          on a phone — ~230px of chrome before the first card.
+
+     and 4: the tab strip is the only navigation while the sidebar is
+     collapsed (its default), but at 800px it carried 1286px of tabs inside
+     a 761px viewport. Edge fades and view-switch centring already existed
+     (elevation-pass); what was missing was any way for a mouse or keyboard
+     user to reach the five sections parked off the right edge.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="wayfinding-coherence">
+/* ── 1. Time Blocks toolbar: wrap instead of overflowing ────────────────
+   Two rows on a phone: the Today/Week/Month segmented control, then the
+   date navigator full-width beneath it. The arrow + label + arrow group is
+   already `space-between`-able, so it just needs the 120px min-width floor
+   lifted off .day-info — that floor is what made the row un-shrinkable. */
+@media (max-width:560px){
+  #view-blocks .blocks-view-toggle-bar{
+    flex-wrap:wrap;
+    row-gap:8px;
+    padding-bottom:7px;
+  }
+  .bvt-date-clock{
+    margin-left:0;
+    flex:1 1 100%;
+    justify-content:space-between;
+  }
+  .bvt-date-clock .day-info{
+    min-width:0;
+    flex:1;
+    text-align:center;
+  }
+  .bvt-date-clock .day-name{font-size:15px !important}
+}
+
+/* ── 2. KPI strip: 2x2 rather than four 72px slivers ────────────────────
+   Matches the 2x2 grid the home page already uses for the same four
+   figures (.home-day-stats) and the .da-kpis 2-column phone rule. Four
+   ~160px cards hold "PLANNED TIME" and "all blocks today" on one line
+   each; the numbers stay on the same visual row count as before. */
+@media (max-width:560px){
+  .summary-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-card{min-width:0}
+  .sc-label{letter-spacing:.1em !important}
+  .sc-value{font-size:23px !important}
+}
+
+/* ── 3. AI Hub filters: one horizontal rail, not a six-row wall ─────────
+   The chips keep their size and order; they just live on a single
+   scroll-snapped line that bleeds into the page gutters, which is the same
+   pattern the app already uses for every other tab strip. */
+@media (max-width:640px){
+  .aihub-filters{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    margin:0 -22px;
+    padding:2px 22px;
+  }
+  .aihub-filters::-webkit-scrollbar{display:none}
+  .aih-filter-btn{flex:0 0 auto;scroll-snap-align:start}
+}
+
+/* ── 4. KPI numerals: no glow at rest ───────────────────────────────────
+   Every stat card painted `text-shadow:0 0 18px var(--accent-glow)` behind
+   its number, so four figures glowed simultaneously and each one lost
+   contrast against its own background — the same "glow for glow's sake"
+   the design-system layer removed from the toast. The hover glow stays; it
+   now reads as feedback rather than ambient decoration. */
+.sc-value{text-shadow:none !important}
+</style>
+
+<script id="wayfinding-coherence-js">
+(function(){
+  'use strict';
+  if(window.__motionWayfinding) return;
+  window.__motionWayfinding = true;
+
+  var tabs = document.querySelector('.tabs');
+  var sidebar = document.querySelector('.sidebar');
+
+  /* ── Landmarks ────────────────────────────────────────────────────────
+     The app shipped with no landmark regions at all: the sidebar rows are
+     the wide-screen nav (per sidebar-nav-a11y) and .tabs is the narrow one,
+     but both were bare <div>s, so screen-reader and shortcut users had no
+     "jump to navigation" target. Labels disambiguate the two rails. */
+  if(tabs && !tabs.getAttribute('role')){
+    tabs.setAttribute('role','navigation');
+    tabs.setAttribute('aria-label','Sections');
+  }
+  if(sidebar && !sidebar.getAttribute('role')){
+    sidebar.setAttribute('role','navigation');
+    sidebar.setAttribute('aria-label','Main');
+  }
+
+  if(!tabs) return;
+
+  function scrollable(){
+    return tabs.scrollWidth - tabs.clientWidth > 4;
+  }
+
+  /* ── Wheel → sideways ─────────────────────────────────────────────────
+     A vertical wheel over the strip pages it horizontally. The gesture is
+     only claimed when it actually moves the strip, so normal page scrolling
+     resumes at either end and shift+wheel is left to the browser. */
+  tabs.addEventListener('wheel', function(e){
+    if(!scrollable() || e.shiftKey || e.ctrlKey) return;
+    var d = e.deltaY || 0;
+    if(!d) return;
+    var max = tabs.scrollWidth - tabs.clientWidth;
+    var next = tabs.scrollLeft + d;
+    if(next <= 0){ tabs.scrollLeft = 0; return; }
+    if(next >= max){ tabs.scrollLeft = max; return; }
+    e.preventDefault();
+    tabs.scrollLeft = next;
+  }, { passive:false });
+
+  /* ── Arrow keys ───────────────────────────────────────────────────────
+     Left/Right step through sections, Home/End jump to the ends. The
+     buttons stay individually tabbable (this is a navigation landmark, not
+     a tab widget), so this is an accelerator layered on top of Tab order,
+     and Enter/Space still activate natively. Without it, thirteen Tab
+     presses were the only way to walk the bar. */
+  tabs.addEventListener('keydown', function(e){
+    if(e.altKey || e.ctrlKey || e.metaKey) return;
+    var key = e.key;
+    if(key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
+    var items = Array.prototype.slice.call(tabs.querySelectorAll('.tab-btn'));
+    if(!items.length) return;
+    var i = items.indexOf(document.activeElement);
+    var next;
+    if(key === 'ArrowRight')      next = i < 0 ? 0 : (i + 1) % items.length;
+    else if(key === 'ArrowLeft')  next = i < 0 ? items.length - 1 : (i - 1 + items.length) % items.length;
+    else if(key === 'Home')       next = 0;
+    else                          next = items.length - 1;
+    e.preventDefault();
+    items[next].focus();
+  }, true);
+
+  /* Keep the arrow-key target on screen. setView() already centres the
+     ACTIVE tab; this covers the case where focus moves without a view
+     switch (arrow keys over sections that are scrolled out of view). */
+  tabs.addEventListener('focusin', function(e){
+    var el = e.target;
+    if(!el || !el.classList || !el.classList.contains('tab-btn')) return;
+    if(!scrollable()) return;
+    var r = el.getBoundingClientRect();
+    var s = tabs.getBoundingClientRect();
+    if(r.left < s.left) tabs.scrollLeft -= (s.left - r.left) + 12;
+    else if(r.right > s.right) tabs.scrollLeft += (r.right - s.right) + 12;
+  });
 })();
 </script>
 
