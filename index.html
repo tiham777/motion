@@ -21313,7 +21313,7 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <div class="task-meta-field task-meta-field--grow">
               <label class="task-meta-label" for="taskDur">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Duration <span class="task-meta-hint task-meta-hint--free-text">free text</span>
+                Duration
               </label>
               <input class="task-dur-inp" id="taskDur" type="text" placeholder="30m · 2h · 1d" maxlength="32"/>
             </div>
@@ -21379,14 +21379,14 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             <div class="task-meta-field task-meta-field--grow">
               <label class="task-meta-label" for="dailyTaskDur">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Duration <span class="task-meta-hint task-meta-hint--free-text">free text</span>
+                Duration
               </label>
               <input class="task-dur-inp" id="dailyTaskDur" type="text" placeholder="30m · 2h · 1d" maxlength="32"/>
             </div>
             <div class="task-meta-field">
               <label class="task-meta-label" for="dailyTaskTime">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Due by <span class="task-meta-hint">AM/PM</span>
+                Due by
               </label>
               <input class="task-time-inp" id="dailyTaskTime" type="text" placeholder="2:30 PM or 14:00" maxlength="16"/>
             </div>
@@ -23329,7 +23329,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Brainwave Entrainment</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">Headphones required</span>
         </div>
         <div class="sound-grid" id="snd-wave-grid"></div>
 
@@ -23337,7 +23336,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Focus Music</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">Built for deep work</span>
         </div>
         <div class="sound-grid" id="snd-music-grid"></div>
 
@@ -23345,7 +23343,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Relaxing Music</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">Melodic</span>
         </div>
         <div class="sound-grid" id="snd-relax-grid"></div>
 
@@ -23360,7 +23357,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Lofi for Study</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">No lyrics</span>
         </div>
         <div class="sound-grid" id="snd-lofi-grid"></div>
 
@@ -23368,7 +23364,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Nature Soundscapes</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">Immersive</span>
         </div>
         <div class="sound-grid" id="snd-nature-grid"></div>
 
@@ -23376,7 +23371,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
         <div class="sound-section-hdr">
           <span class="sound-section-label">Ambient Focus</span>
           <span class="sound-section-line"></span>
-          <span class="sound-badge">Generative</span>
         </div>
         <div class="sound-grid" id="snd-ambient-grid"></div>
 
@@ -96764,8 +96758,6 @@ html #auth-overlay .auth-btn.auth-btn-guest svg{width:17px;height:17px;flex-shri
    Follows premium-refinements-v2 / auth-pro-v2 and is the LAST style
    layer in the document, so it wins every cascade tie it mirrors.
    Scope, per section:
-     1 · Tasks      — typographic composer (mono eyebrows, solid CTA)
-     2 · Dashboard  — hero stats join the section-card surface family
      3 · Focus      — ambient stage halo + segmented preset control
      4 · Tracker    — filled check state (dark themes showed a hollow
                       glow ring), tabular stats
@@ -96773,78 +96765,12 @@ html #auth-overlay .auth-btn.auth-btn-guest svg{width:17px;height:17px;flex-shri
      6 · Sound      — corner play button (Spotify pattern), quieter desc
      7 · Assistant  — suggestion chips that look pressable
      8 · Tools      — category labels as quiet mono eyebrows
-     9 · AI Hub     — one outline-pill tier system, ghost favorite,
-                      hover border
     10 · Settings   — muted helper text, flat inputs (light inset gone)
     11 · Consent    — slimmer, calmer banner
     12 · Global     — tabular numerals on readouts
    Everything is token-based (var()/color-mix) so all six themes plus
    light/pure-light adapt. Remove this <style> to revert the whole pass.
    ══════════════════════════════════════════════════════════════════ */
-
-/* ── 1 · TASKS — typographic composer ─────────────────────────────── */
-
-/* Composer section label ("Add new task") — a quiet mono eyebrow */
-#view-tasks .task-composer-label{
-  font-family:var(--font-mono) !important;
-  font-size:10px !important;
-  font-weight:600 !important;
-  letter-spacing:.14em !important;
-  text-transform:uppercase !important;
-  color:var(--text3) !important;
-}
-#view-tasks .task-composer-label svg{display:none}
-
-/* Meta-field labels — same eyebrow system, icons retired
-   (selector mirrors tasks-microtype so the tie resolves by order) */
-#view-tasks .task-meta-field .task-meta-label{
-  font-family:var(--font-mono) !important;
-  font-size:9.5px !important;
-  font-weight:600 !important;
-  letter-spacing:.13em !important;
-  text-transform:uppercase !important;
-  color:var(--text3) !important;
-}
-#view-tasks .task-meta-field .task-meta-label svg{display:none}
-
-/* Hint pills ("free text") join the mono system */
-#view-tasks .task-meta-hint{
-  font-family:var(--font-mono) !important;
-  font-size:9px !important;
-  letter-spacing:.08em !important;
-  opacity:.75 !important;
-}
-
-/* Add button — one solid, confident accent (no gradient) */
-#view-tasks .task-add-btn{
-  background:var(--accent) !important;
-  border-radius:var(--radius-xs) !important;
-  font-weight:600 !important;
-  box-shadow:0 2px 10px -3px var(--accent-glow4) !important;
-}
-#view-tasks .task-add-btn:hover{
-  transform:translateY(-1px) scale(1.01) !important;
-  filter:none !important;
-  box-shadow:0 5px 18px -5px var(--accent-glow5) !important;
-}
-#view-tasks .task-add-btn:active{transform:translateY(0) scale(.97) !important}
-
-/* ── 2 · DASHBOARD — one surface family ───────────────────────────── */
-
-/* Hero stats row: was the heavier --bg3 slab while every card below it
-   sits on --bg2. Same surface now; the dividers do the separating. */
-#view-dashboard .db-hero-stats{
-  background:var(--bg2) !important;
-}
-/* Stat labels join the mono eyebrow system; values align in columns */
-#view-dashboard .db-hero-stat-label{
-  font-family:var(--font-mono) !important;
-  font-size:9.5px !important;
-  letter-spacing:.12em !important;
-}
-#view-dashboard .db-hero-stat-val{
-  font-variant-numeric:tabular-nums !important;
-}
 
 /* ── 3 · FOCUS — ambient stage + segmented presets ─────────────────── */
 
@@ -96985,46 +96911,6 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
 }
 #view-tools .tool-desc{color:var(--text3) !important}
 
-/* ── 9 · AI HUB — one tier system, ghost favorite ──────────────────── */
-
-/* Tier badges: outline pills of one size in every theme */
-#view-aihub .aih-tier{
-  font-family:var(--font-mono) !important;
-  font-size:9px !important;
-  font-weight:700 !important;
-  letter-spacing:.1em !important;
-  text-transform:uppercase !important;
-  padding:3px 8px !important;
-  border-radius:99px !important;
-  background:transparent !important;
-  border:1px solid color-mix(in srgb,var(--green) 45%,transparent) !important;
-  color:var(--green) !important;
-}
-#view-aihub .aih-tier.paid{
-  border-color:color-mix(in srgb,var(--orange) 45%,transparent) !important;
-  color:var(--orange) !important;
-}
-#view-aihub .aih-tier.freemium{
-  border-color:color-mix(in srgb,var(--accent) 45%,transparent) !important;
-  color:var(--accent) !important;
-}
-/* Favorite: ghost until the card is hovered (or already a favorite) */
-#view-aihub .aih-fav-btn{
-  opacity:.3;
-  transition:opacity .2s ease,transform .2s ease,color .2s ease;
-}
-#view-aihub .aih-card:hover .aih-fav-btn,
-#view-aihub .aih-fav-btn.fav{opacity:1}
-@media (hover:none){
-  #view-aihub .aih-fav-btn{opacity:.75}
-}
-/* Card hover: the border tells the story */
-#view-aihub .aih-card:hover{
-  border-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
-  transform:translateY(-2px) !important;
-}
-#view-aihub .aih-card-name{font-weight:700 !important;letter-spacing:-.01em !important}
-
 /* ── 10 · SETTINGS — muted helpers, flat inputs ───────────────────── */
 
 #view-settings .settings-row-desc{
@@ -97051,14 +96937,14 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
 
 /* ── 12 · GLOBAL — aligned numerals ────────────────────────────────── */
 
-.db-hero-stat-val,.hds-value,.sc-value,.sound-vol-val,
-.habit-streak,.task-meta-badge{font-variant-numeric:tabular-nums}
+.hds-value,.sc-value,.sound-vol-val,
+.habit-streak{font-variant-numeric:tabular-nums}
 
 /* ── 12b · GRID DISCIPLINE — equal card rows, pinned feet ────────────
    VLM QA: variable-length descriptions left ragged bottoms and
-   wandering "Open" buttons across Sound + AI Hub grids. Cards become
-   flex columns, descriptions clamp to two lines, footers/volume rows
-   pin to the bottom so every card in a row aligns. */
+   wandering play buttons across the Sound grid. Cards become flex
+   columns, descriptions clamp to two lines, volume rows pin to the
+   bottom so every card in a row aligns. */
 
 #view-sound .sound-card{display:flex;flex-direction:column}
 #view-sound .sound-card-desc{
@@ -97067,29 +96953,8 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
 }
 #view-sound .sound-vol-row{margin-top:auto;padding-top:10px}
 
-#view-aihub .aih-card{display:flex;flex-direction:column}
-#view-aihub .aih-card-desc{
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-  overflow:hidden;min-height:2.9em;
-}
-#view-aihub .aih-card-foot{margin-top:auto;padding-top:10px}
-
 /* Focus custom minutes input — a real invitation, not an em dash */
 #view-focus .preset-custom-input{min-width:42px;text-align:center}
-
-/* ── 12c · TIER BADGE READABILITY — hue kept, contrast raised ───────
-   9px mono on white was ~2.8:1 for orange/green. Mixing 35% of the
-   theme text color into the hue keeps identity while clearing 4.5:1. */
-#view-aihub .aih-tier{
-  color:color-mix(in srgb,var(--green) 65%,var(--text)) !important;
-}
-#view-aihub .aih-tier.paid{
-  color:color-mix(in srgb,var(--orange) 60%,var(--text)) !important;
-}
-#view-aihub .aih-tier.freemium{
-  border-color:color-mix(in srgb,var(--text2) 40%,transparent) !important;
-  color:color-mix(in srgb,var(--text2) 75%,var(--text)) !important;
-}
 
 /* ── 13 · LIGHT-THEME PARITY MIRRORS ─────────────────────────────────
    The light sheets (today-page-dark-depth-v1, light-mode-from-motion-
@@ -97098,26 +96963,6 @@ html[data-theme="bleach"] #view-tracker .habit-check.done{
    above. Mirroring them here ties specificity and this layer's
    document order decides. Dark themes need no mirrors — nothing
    above (0,2,1) opposes them there. */
-
-/* Tasks — composer eyebrows + solid accent CTA in light too */
-html[data-theme="light"] #view-tasks .task-composer-label,
-html[data-theme="pure-light"] #view-tasks .task-composer-label{
-  color:var(--text3) !important;
-}
-html[data-theme="light"] #view-tasks .task-meta-label,
-html[data-theme="pure-light"] #view-tasks .task-meta-label{
-  color:var(--text3) !important;
-}
-html[data-theme="light"] #view-tasks .task-add-btn.task-add-btn,
-html[data-theme="pure-light"] #view-tasks .task-add-btn.task-add-btn{
-  background:var(--accent) !important;
-  color:var(--btn-text) !important;
-  box-shadow:0 2px 10px -3px var(--accent-glow4) !important;
-}
-html[data-theme="light"] #view-tasks .task-add-btn.task-add-btn:hover,
-html[data-theme="pure-light"] #view-tasks .task-add-btn.task-add-btn:hover{
-  box-shadow:0 5px 18px -5px var(--accent-glow5) !important;
-}
 
 /* Notes — active tab */
 html[data-theme="light"] #view-notes .nb-item.active,
@@ -97150,32 +96995,6 @@ html[data-theme="pure-light"] #view-tools .tools-cat-label::before{
   width:2px !important;
   height:11px !important;
   opacity:.85 !important;
-}
-
-/* AI Hub — outline-pill tiers + hover border in light */
-html[data-theme="light"] #view-aihub .aih-tier,
-html[data-theme="pure-light"] #view-aihub .aih-tier{
-  background:transparent !important;
-  color:color-mix(in srgb,var(--green) 65%,var(--text)) !important;
-  border:1px solid color-mix(in srgb,var(--green) 45%,transparent) !important;
-}
-html[data-theme="light"] #view-aihub .aih-tier.paid,
-html[data-theme="pure-light"] #view-aihub .aih-tier.paid{
-  background:transparent !important;
-  color:color-mix(in srgb,var(--orange) 60%,var(--text)) !important;
-  border-color:color-mix(in srgb,var(--orange) 45%,transparent) !important;
-}
-html[data-theme="light"] #view-aihub .aih-tier.freemium,
-html[data-theme="pure-light"] #view-aihub .aih-tier.freemium{
-  background:transparent !important;
-  color:color-mix(in srgb,var(--text2) 75%,var(--text)) !important;
-  border-color:color-mix(in srgb,var(--text2) 40%,transparent) !important;
-}
-html[data-theme="light"] #view-aihub .aih-card:hover,
-html[data-theme="pure-light"] #view-aihub .aih-card:hover{
-  border-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
-  border-top-color:color-mix(in srgb,var(--accent) 32%,var(--border)) !important;
-  transform:translateY(-2px) !important;
 }
 
 /* Notes — capture focus lift */
