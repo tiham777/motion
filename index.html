@@ -97800,6 +97800,185 @@ html[data-theme] #view-sound .sound-master-range:focus-visible{
 }
 </style>
 
+<style id="light-mode-refresh">
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT MODE — REFRESH (refined neutral)
+   Target: html[data-theme="light"] only. Dark/deep/matcha/bleach/aot and
+   the legacy pure-light theme are untouched.
+
+   WHY: light mode had accumulated ~50 near-identical per-view blocks, each
+   re-declaring the same "premium card" treatment —
+       background:linear-gradient(160deg,#ffffff,#fbfbfd)
+       border-top:1px solid color-mix(accent 10-14%)
+       box-shadow: … color-mix(accent NN%) …
+   Repeating that template on every surface is what made the theme read as
+   generic: a violet-tinted wash and glow on every card, every chip and
+   every button. This block replaces the template with ONE card language and
+   reserves the accent for what actually needs it (primary actions, focus,
+   active state), which is how Linear/Notion/Vercel-shaped light UIs behave.
+
+   Declared LAST in the document so it wins specificity ties, and scoped
+   with :is(#view-…) + the view ids so it can out-specify the per-view
+   html[data-theme="light"] #view-x rules it supersedes.
+   Remove this <style> to revert.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · PALETTE & DEPTH TOKENS ──────────────────────────────────────
+   Cool-neutral canvas, pure-white cards, crisper hairlines, a flatter
+   text ramp, and a deeper indigo so the accent reads as ink rather than
+   candy. Every shadow is now neutral and tight — the accent-tinted glows
+   are gone. */
+html[data-theme="light"]{
+  color-scheme:light;
+
+  --bg:#f6f7f9;            /* page canvas — cool neutral */
+  --bg2:#ffffff;           /* card / primary surface */
+  --bg3:#f0f1f4;           /* recessed fill (tracks, wells, table heads) */
+  --surface:#ffffff;
+  --surface2:#f6f7f9;
+
+  --border:rgba(16,18,24,.08);   /* hairline */
+  --border2:rgba(16,18,24,.15);  /* separator / control edge */
+
+  --text:#101114;          /* near-black, neutral (not blue-black) */
+  --text2:#454851;         /* secondary — reads clearly, still recessive */
+  --text3:#63666f;         /* tertiary / captions — 5.5:1 on white */
+
+  --accent:#4338ca;        /* brand indigo, deepened for contrast on white */
+  --accent2:#4f46e5;
+
+  --orange:#b45309;        /* deeper so it holds contrast on white */
+  --gold:#a16207;
+
+  /* Neutral, layered depth — the whole "glow" language removed. */
+  --shadow:0 1px 2px rgba(16,18,24,.04),0 4px 12px -4px rgba(16,18,24,.08);
+  --shadow-sm:0 1px 2px rgba(16,18,24,.05);
+  --shadow-xs:0 1px 2px rgba(16,18,24,.035);
+  --card-depth:0 1px 2px rgba(16,18,24,.04),0 2px 6px -2px rgba(16,18,24,.05);
+  --card-depth-hover:0 2px 4px rgba(16,18,24,.05),0 10px 24px -8px rgba(16,18,24,.10);
+  --glow-accent:0 1px 2px rgba(16,18,24,.05);
+  --edge-glow:0 0 0 1px rgba(16,18,24,.05);
+
+  --glass:rgba(255,255,255,.86);
+  --glass2:rgba(255,255,255,.62);
+}
+
+/* ── 2 · ONE CARD LANGUAGE — solid surfaces ──────────────────────────
+   Drops the white→grey gradient wash and the violet top hairline, then
+   gives every card the same flat surface, hairline edge and neutral
+   lift. */
+html[data-theme="light"] :is(#view-dashboard,#view-tasks,#view-focus,#view-blocks,#view-blocks-list,#view-blocks-cal,#view-blocks-month,#view-blocks-progress,#view-calendar,#view-notes,#view-tracker,#view-rules,#view-sound,#view-tools,#view-aihub,#view-settings,#view-assistant,#view-office,#view-home,#view-legal,#overlay) :is(.db-section,.db-kpi,.db-hero,.db-goals,.db-goal-card,.stat-card,.block-card,.task-item,.task-composer,.task-empty,.habit-card,.habit-table-wrap,.settings-section,.settings-card,.settings-about-card,.sound-card,.tool-card,.tool-modal,.aih-card,.aih-source-card,.aihub-search-wrap,.nb-capture-inner,.nb-note-card,.rule-accordion,.asst-action-card,.asst-composer-inner){
+  /* NOTE: .home-quick-btn (dashboard quick actions) is deliberately NOT here —
+     it is a button, not a card, and its own accent-tinted hover is intended. */
+  background-color:var(--bg2) !important;
+  background-image:none !important;
+  border-top-color:var(--border) !important;
+  border-color:var(--border) !important;
+  box-shadow:var(--card-depth) !important;
+}
+/* Hover: a hair crisper edge and a slightly deeper neutral lift — no glow.
+   .task-item is excluded (a list row should not float). */
+html[data-theme="light"] :is(#view-dashboard,#view-tasks,#view-focus,#view-blocks,#view-blocks-list,#view-blocks-cal,#view-blocks-month,#view-blocks-progress,#view-calendar,#view-notes,#view-tracker,#view-rules,#view-sound,#view-tools,#view-aihub,#view-settings,#view-assistant,#view-office,#view-home,#view-legal,#overlay) :is(.db-section,.db-kpi,.db-hero,.db-goals,.db-goal-card,.stat-card,.block-card,.task-composer,.habit-card,.settings-section,.settings-card,.settings-about-card,.sound-card,.tool-card,.aih-card,.aih-source-card,.nb-capture-inner,.nb-note-card,.rule-accordion):hover{
+  border-color:var(--border2) !important;
+  box-shadow:var(--card-depth-hover) !important;
+}
+
+/* ── 3 · FROSTED / INSET PANELS ──────────────────────────────────────
+   These keep their own (glass / recessed) fill; they only lose the wash,
+   the violet top hairline and the accent glow. */
+html[data-theme="light"] :is(#view-dashboard,#view-tasks,#view-focus,#view-blocks,#view-blocks-list,#view-blocks-cal,#view-blocks-month,#view-blocks-progress,#view-calendar,#view-notes,#view-tracker,#view-rules,#view-sound,#view-tools,#view-aihub,#view-settings,#view-assistant,#view-office,#view-home,#view-legal,#overlay) :is(.db-eisen-cell,.db-eisen-pool,.db-week-grid,.db-year-bar,.da-pulse-card,.focus-stat-card,.focus-ambient-card,.focus-section-inner,.focus-intention-row,.focus-log-strip-reveal,.focus-distraction-wrap,.focus-energy-wrap,.focus-goal-wrap,.focus-dump-row,.db-goal-add-form,.preset-btn,.db-pomo,.db-pomo-btn,.trk-card,.ch-card,.tv-card,.fit-active,.fit-rest,.fit-tpl-card,.fn-budget,.nut-add-bar,.nut-macro,.pr-detail,.sound-hero,.sound-tip,.aihub-hero,.asst-model-picker){
+  background-image:none !important;
+  border-top-color:var(--border) !important;
+  box-shadow:var(--shadow-xs) !important;
+}
+
+/* ── 4 · ACCENT SPENT ONLY WHERE IT MEANS SOMETHING ──────────────────
+   Primary buttons keep the accent fill but lose the violet halo, and the
+   accent→accent2 gradient wash becomes one flat, confident fill (the
+   half-tone gradient under a 12px label was reading as haze). The
+   segmented "add" control and the mode toggle stop glowing too.
+   NOTE: .db-action-btn (the dashboard Quick Actions tiles) is deliberately
+   absent — those are neutral tiles that take the accent on hover, not solid
+   primary buttons, so forcing an accent fill would invert their intent. */
+html[data-theme="light"] :is(#view-tasks,#view-rules,#view-tracker,#view-dashboard,#view-blocks,#view-blocks-list,#view-notes,#view-aihub,#view-sound,#view-tools,#view-settings,#view-assistant,#view-focus,#overlay) :is(.task-add-btn,.cat-add-btn,.habit-add-btn,.rule-entry-add-btn,.btn-save,.aih-open-btn,.aih-add-btn,.preset-custom-go){
+  background-color:var(--accent) !important;
+  background-image:none !important;
+  box-shadow:0 1px 2px rgba(16,18,24,.12) !important;
+}
+html[data-theme="light"] :is(.task-add-btn,.cat-add-btn,.habit-add-btn,.rule-entry-add-btn,.btn-save,.aih-open-btn):hover{
+  box-shadow:0 2px 6px rgba(16,18,24,.16) !important;
+}
+/* Dashed "add" affordances — neutral edge, accent only on hover. */
+html[data-theme="light"] :is(#view-tasks,#view-blocks,#view-blocks-list,#view-tracker,#view-rules,#view-notes,#view-settings) .add-btn{
+  border-color:var(--border2) !important;
+  color:var(--text2) !important;
+  box-shadow:none !important;
+}
+html[data-theme="light"] :is(#view-tasks,#view-blocks,#view-blocks-list,#view-tracker,#view-rules,#view-notes,#view-settings) .add-btn:hover{
+  background:var(--bg3) !important;
+  border-color:var(--accent) !important;
+  border-style:solid !important;
+  color:var(--text) !important;
+}
+html[data-theme="light"] .task-mode-btn.active{
+  background:var(--accent) !important;
+  background-image:none !important;
+  box-shadow:0 1px 2px rgba(16,18,24,.14) !important;
+}
+
+/* ── 5 · SECTION ICON CHIPS — neutral tile, accent glyph ───────────── */
+html[data-theme="light"] :is(#view-dashboard,#view-blocks,#view-tracker,#view-notes,#view-sound,#view-tools,#view-aihub,#view-settings,#view-assistant) :is(.db-section-ico,.db-section-icon,.nb-sec-ico,.sound-sec-ico){
+  background:var(--bg3) !important;
+  background-image:none !important;
+  color:var(--accent) !important;
+  box-shadow:none !important;
+}
+
+/* ── 6 · FORM FIELDS — crisp, bordered, accent focus ─────────────────
+   The old treatment was a 4%-black fill, which read as a muddy grey box
+   floating on white. A bordered field is the convention on the reference
+   products and reads sharper. */
+html[data-theme="light"] :is(.task-input,.task-pri-sel,.cat-name-inp,.form-input,.rule-entry-input,.habit-name-inp,.habit-emoji-inp,.db-goal-input,.db-goal-select,.db-eisen-input,.settings-select,.settings-input,.task-daily-date){
+  background:#ffffff !important;
+  border:1px solid var(--border2) !important;
+  box-shadow:0 1px 1px rgba(16,18,24,.03) !important;
+}
+html[data-theme="light"] :is(.task-input,.task-pri-sel,.cat-name-inp,.form-input,.rule-entry-input,.habit-name-inp,.habit-emoji-inp,.db-goal-input,.db-goal-select,.db-eisen-input,.settings-select,.settings-input):focus{
+  background:#ffffff !important;
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent) !important;
+}
+
+/* ── 7 · FOCUS VISIBILITY ────────────────────────────────────────────
+   A single, consistent accent ring so keyboard focus is never left to a
+   faint grey halo. */
+html[data-theme="light"] :is(a,button,select,textarea,input,[tabindex]):focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+/* ── 8 · DECORATIVE TEXTURE ──────────────────────────────────────────
+   The fine dot-grid on the welcome screen was loud enough in light mode
+   to read as a template flourish; dialled back to a whisper. */
+/* ── 9 · RESIDUAL MUTED LABELS ───────────────────────────────────────
+   A few captions were pinned to a hardcoded #6b7280, which lands at
+   4.2:1 on the recessed grey — a hair under the 4.5:1 AA floor for text
+   this size. They resolve to the tertiary token instead, which clears AA
+   while still reading as muted. */
+html[data-theme="light"] :is(.sb-backup-btn,.kbd,.sound-stopall,.task-mode-btn:not(.active),.sc-sub,.db-empty){
+  color:var(--text3) !important;
+}
+html[data-theme="light"] :is(#view-dashboard,#view-tasks,#view-focus,#view-blocks,#view-blocks-list,#view-blocks-cal,#view-blocks-month,#view-blocks-progress,#view-calendar,#view-notes,#view-tracker,#view-rules,#view-sound,#view-tools,#view-aihub,#view-settings,#view-assistant,#view-office,#view-home,#view-legal,#overlay) :is(.kbd,.sound-stopall,.task-mode-btn:not(.active),.sc-sub,.db-empty){
+  color:var(--text3) !important;
+}
+
+html[data-theme="light"] .auth-showcase::before{ opacity:.28 !important; }
+html[data-theme="light"] .auth-showcase{
+  background-image:none !important;
+  background-color:var(--bg2) !important;
+}
+</style>
+
 <script id="sound-studio-rework-js">
 /* ════════════════════════════════════════════════════════════════════
    SOUND STUDIO — REWORK, behaviour layer
