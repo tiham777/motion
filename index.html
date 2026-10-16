@@ -223,7 +223,7 @@ body>:not(#motion-splash-screen){visibility:visible!important}
 <!-- jsPDF is fetched on demand by _loadJsPDF() when the user actually exports
      a PDF. Preloading it cost ~350KB on every visit for a feature most sessions
      never touch, and Chrome logged a "preloaded but not used" warning. -->
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <!-- PERF (v21): Outfit is served as a single variable woff2 covering every
      weight the app and the splash brand word use. Preloading it closes the
      stylesheet→font discover gap, so first text paint (the "Motion" splash
@@ -232,7 +232,7 @@ body>:not(#motion-splash-screen){visibility:visible!important}
 <!-- Consolidated into a single Google Fonts request (was two: Bebas Neue
      fetched separately from Inter/Outfit/DM Mono). One CSS fetch, one less
      round trip; the preload above warms this exact URL so it still applies. -->
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"></noscript>
 <!-- Subresource Integrity (SRI): the Firebase compat SDK files are immutable
      at pinned version 10.12.2, so each tag carries a sha384 integrity hash —
      if the CDN is ever compromised and serves different bytes, the browser
@@ -13821,6 +13821,38 @@ html[data-theme="aot"] .fn-balance-value.savings{color:#d4af37}
   gap:10px !important;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   DRAG & DROP — move an unscheduled task onto "Today's List"
+   ════════════════════════════════════════════════════════════════════
+   Active unscheduled task cards are draggable. The Tasks page shows the
+   Unscheduled and Today panels one at a time, so the drop target is the
+   always-visible "Today's List" mode button, which pulses while a task is
+   being dragged. Dropping moves the task into today's list. */
+#taskPanelAnytime .task-item[draggable="true"]{cursor:grab}
+#taskPanelAnytime .task-item[draggable="true"]:active{cursor:grabbing}
+#taskPanelAnytime .task-item.dragging{
+  opacity:.4;
+  transform:scale(.985);
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 1px var(--accent-glow4),0 0 18px var(--accent-glow5) !important;
+}
+@keyframes tdndPulse{
+  0%,100%{box-shadow:0 0 0 1.5px var(--accent) inset,0 0 8px var(--accent-glow3)}
+  50%{box-shadow:0 0 0 2px var(--accent) inset,0 0 20px var(--accent-glow5)}
+}
+body.task-drag-active #taskModeDaily{
+  color:var(--accent) !important;
+  background:var(--accent-glow3) !important;
+  animation:tdndPulse 1.15s ease-in-out infinite;
+}
+#taskModeDaily.drop-hover{
+  color:var(--btn-text) !important;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)) !important;
+  box-shadow:0 3px 16px var(--accent-glow5),0 0 0 2px var(--accent) !important;
+  transform:scale(1.05);
+  animation:none !important;
+}
+
 
 /* ════════════════════════════════════════════════════════════════════
    SETTINGS PAGE — WEBAPP COMFORT SPACING
@@ -20972,13 +21004,13 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
 
   <div class="tabs">
     <button class="tab-btn active" id="tab-dashboard" onclick="setView('dashboard',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</button>
-    <button class="tab-btn" id="tab-blocks" onclick="setView('blocks',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Time Blocks</button>
     <button class="tab-btn" id="tab-tasks"  onclick="setView('tasks',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Tasks</button>
+    <button class="tab-btn" id="tab-blocks" onclick="setView('blocks',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Time Blocks</button>
     <button class="tab-btn" id="tab-focus"  onclick="setView('focus',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Focus</button>
     <button class="tab-btn" id="tab-tracker" onclick="setView('tracker',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg> Tracker</button>
     <button class="tab-btn" id="tab-notes"  onclick="setView('notes',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Notes</button>
-    <button class="tab-btn" id="tab-office" onclick="setView('office',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Office</button>
     <button class="tab-btn" id="tab-assistant" onclick="setView('assistant',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg> Assistant</button>
+    <button class="tab-btn" id="tab-office" onclick="setView('office',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg> Office</button>
     <button class="tab-btn" id="tab-rules"  onclick="setView('rules',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Guidelines</button>
     <button class="tab-btn" id="tab-tools" onclick="setView('tools',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Tools</button>
     <button class="tab-btn" id="tab-aihub" onclick="setView('aihub',null)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg> AI Hub</button>
@@ -24206,7 +24238,7 @@ function taskHTML(t,i){
   if(t.category && String(t.category).trim()){ 
     catBadge=`<span class="task-meta-badge task-cat-badge" title="Category">${esc(t.category)}</span>`;
   }
-  return`<div class="task-item${t.done?' done':''}">
+  return`<div class="task-item${t.done?' done':''}"${!t.done?` draggable="true" data-task-id="${t.id!=null?t.id:''}" data-task-idx="${i}"`:''}>
     <button class="task-check${t.done?' checked':''}" onclick="toggleTask(${i})" title="${t.done?'Mark active':'Mark done'}">${t.done?'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>
     <span class="task-text">${esc(t.text)}</span>
     <div class="task-meta-badges">${catBadge}${durBadge}${dlBadge}</div>
@@ -24567,6 +24599,100 @@ function clearDailyDone() {
   doneIds.forEach(id=>clearStaleTaskRefs(id, 'daily'));
   renderDailyTasks();
 }
+
+/* ═══ DRAG & DROP: unscheduled task → Today's List ═══
+   The Tasks page shows the Unscheduled and Today panels one at a time, so
+   the drop target is the always-visible "Today's List" mode button (it
+   pulses while a task is being dragged). Dropping moves the task from the
+   anytime store (K_TASKS) into the daily store (K_DAILY_TASKS). */
+let _tdndItem = null;
+function moveAnytimeTaskToDaily(taskId, idx){
+  const tasks = loadTasks();
+  let pos = -1;
+  // Prefer the stable task id; fall back to the render-time index for any
+  // legacy task that predates the `id` field.
+  if(taskId!==null && taskId!==undefined && taskId!==''){
+    pos = tasks.findIndex(t => String(t.id) === String(taskId));
+  }
+  if(pos < 0 && idx!==null && idx!==undefined && idx>=0 && idx<tasks.length) pos = idx;
+  if(pos < 0) return false;
+  const moved = tasks.splice(pos,1)[0];
+  if(!moved) return false;
+  const daily = loadDailyTasks();
+  // Daily tasks carry text / priority / duration / category. A "deadline" has
+  // no daily equivalent (daily uses an explicit dueTime), so it is dropped.
+  const nt = {
+    text: moved.text,
+    priority: moved.priority || 'med',
+    done:false,
+    id: moved.id!=null ? moved.id : Date.now()
+  };
+  if(moved.durationSec>0){ nt.durationSec=moved.durationSec; if(moved.durationText) nt.durationText=moved.durationText; }
+  if(moved.category) nt.category=moved.category;
+  daily.unshift(nt);
+  saveTasks(tasks);
+  saveDailyTasks(daily);
+  renderTasks();
+  renderDailyTasks();
+  if(typeof showUndoToast==='function'){
+    showUndoToast('Moved to Today\'s List', function(){
+      const d = loadDailyTasks();
+      const i = d.findIndex(x => String(x.id) === String(nt.id));
+      if(i < 0) return;
+      const back = d.splice(i,1)[0];
+      const a = loadTasks();
+      a.splice(Math.min(pos, a.length), 0, back);
+      saveTasks(a); saveDailyTasks(d); renderTasks(); renderDailyTasks();
+    });
+  }
+  return true;
+}
+(function initTaskDragDrop(){
+  const anytimePanel = document.getElementById('taskPanelAnytime');
+  if(!anytimePanel) return;
+  const dropBtn = document.getElementById('taskModeDaily');
+  anytimePanel.addEventListener('dragstart', function(e){
+    const item = e.target && e.target.closest ? e.target.closest('.task-item[draggable="true"]') : null;
+    if(!item || item.classList.contains('done')) return;
+    _tdndItem = item;
+    try{
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.dataset.taskId || '');
+    }catch(_){}
+    item.classList.add('dragging');
+    document.body.classList.add('task-drag-active');
+  });
+  anytimePanel.addEventListener('dragend', function(){
+    if(_tdndItem) _tdndItem.classList.remove('dragging');
+    _tdndItem = null;
+    document.body.classList.remove('task-drag-active');
+    if(dropBtn) dropBtn.classList.remove('drop-hover');
+  });
+  if(dropBtn){
+    const over = function(e){
+      if(!_tdndItem) return;
+      e.preventDefault();
+      try{ e.dataTransfer.dropEffect = 'move'; }catch(_){}
+      dropBtn.classList.add('drop-hover');
+    };
+    dropBtn.addEventListener('dragover', over);
+    dropBtn.addEventListener('dragenter', over);
+    dropBtn.addEventListener('dragleave', function(){ dropBtn.classList.remove('drop-hover'); });
+    dropBtn.addEventListener('drop', function(e){
+      e.preventDefault();
+      dropBtn.classList.remove('drop-hover');
+      const item = _tdndItem;
+      const id = item ? item.dataset.taskId : '';
+      const idx = item ? parseInt(item.dataset.taskIdx,10) : NaN;
+      // Clean up eagerly: the drop re-renders the list, which detaches the
+      // source node, so the panel-level dragend may never fire.
+      if(item) item.classList.remove('dragging');
+      _tdndItem = null;
+      document.body.classList.remove('task-drag-active');
+      moveAnytimeTaskToDaily(id, isNaN(idx)?null:idx);
+    });
+  }
+})();
 
 /* ═══ RULES (global, persistent) ═══ */
 const DEFAULT_RULES=[
@@ -29372,7 +29498,7 @@ function escAndLink(s){const e=esc(s);return e.replace(/(https?:\/\/[^\s]+)/g,fu
 // digit shortcuts are mapped separately below. 'habits' deliberately
 // absent — it has no view of its own (it lives in Tracker) and cycling
 // into it blank-screened the app.
-const TAB_ORDER = ['dashboard','blocks','tasks','focus','tracker','notes','office','assistant','rules','tools','aihub','sound','settings'];
+const TAB_ORDER = ['dashboard','tasks','blocks','focus','tracker','notes','assistant','office','rules','tools','aihub','sound','settings'];
 
 function _syncImmersiveZoom(){
   const sidebarHidden = (_cachedSidebar||document.querySelector('.sidebar')).classList.contains('hidden');
@@ -30749,6 +30875,7 @@ function fitDiscardActive(){
 function fitStartClock(){
   fitStopClock();
   fitActiveTick=setInterval(function(){
+    if(document.hidden)return; /* PERF: don't tick the clock in a hidden tab */
     const el=document.getElementById('fitClock');
     if(!el){fitStopClock();return;}
     const d=fitLoad();
@@ -37210,6 +37337,10 @@ function doRestore(event){
         'ft_device_id',
         'ft_cloud_email','ft_cloud_uid','ft_cloud_lastsync',
         'ft_cloud_autosync',
+        // Consent acknowledgment is device-local and is NOT part of a backup,
+        // so a restore must never wipe it — otherwise the first-visit banner
+        // would reappear for an existing user after every restore.
+        'ft_legal_ack_v1',
         // SECURITY: API keys are device-local credentials — never exported
         // into backup files, so a restore must never wipe them either.
         'motion_api_keys'
@@ -41063,7 +41194,7 @@ function confirmClearAll(){
     }
   } catch(e){ console.warn('[ClearAll] could not move data to trash:', e); }
   const keys = [];
-  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && (k.startsWith('ft_') || k.startsWith('motion_'))) keys.push(k); }
+  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k!=='ft_legal_ack_v1' && (k.startsWith('ft_') || k.startsWith('motion_'))) keys.push(k); }
   keys.forEach(k=>localStorage.removeItem(k));
   if(savedTrash) localStorage.setItem('ft_trash', savedTrash);
   if(savedDeviceId) localStorage.setItem('ft_device_id', savedDeviceId); // restore
@@ -52721,7 +52852,7 @@ function authEndGuest(){
   try {
     for(var i = 0; i < localStorage.length; i++){
       var k = localStorage.key(i);
-      if(k && (k.startsWith('ft_') || k.startsWith('motion_'))){
+      if(k && k !== 'ft_legal_ack_v1' && (k.startsWith('ft_') || k.startsWith('motion_'))){
         keysToRemove.push(k);
       }
     }
@@ -52773,7 +52904,7 @@ function fbSignOut(){
     var keysToRemove = [];
     for(var i = 0; i < localStorage.length; i++){
       var k = localStorage.key(i);
-      if(k && (k.startsWith('ft_') || k.startsWith('motion_'))){
+      if(k && k !== 'ft_legal_ack_v1' && (k.startsWith('ft_') || k.startsWith('motion_'))){
         keysToRemove.push(k);
       }
     }
@@ -52826,6 +52957,10 @@ function fbApplyCloudData(parsedData){
       'ft_cloud_uid': localStorage.getItem('ft_cloud_uid'),
       'ft_cloud_lastsync': localStorage.getItem('ft_cloud_lastsync'),
       'ft_cloud_autosync': localStorage.getItem('ft_cloud_autosync'),
+      // Consent acknowledgment is device-local (NOT cloud data). Preserve it
+      // across cloud applies so a sign-in / sync from another device can't
+      // make the first-visit banner reappear for an existing user.
+      'ft_legal_ack_v1': localStorage.getItem('ft_legal_ack_v1'),
       // SECURITY: AI provider API keys never leave this browser — preserve them
       // across cloud applies so the sync wipe below can't destroy them, while
       // also never accepting key data that may exist in an old cloud doc.
@@ -53299,7 +53434,10 @@ function _fbClearLocalUserData(reason){
     'ft_cloud_email': localStorage.getItem('ft_cloud_email'),
     'ft_cloud_uid': localStorage.getItem('ft_cloud_uid'),
     'ft_cloud_lastsync': localStorage.getItem('ft_cloud_lastsync'),
-    'ft_cloud_autosync': localStorage.getItem('ft_cloud_autosync')
+    'ft_cloud_autosync': localStorage.getItem('ft_cloud_autosync'),
+    // Consent acknowledgment is device-local — keep it across account switches
+    // so the banner only ever shows once per browser, not per account.
+    'ft_legal_ack_v1': localStorage.getItem('ft_legal_ack_v1')
   };
   var keysToRemove = [];
   for(var i = 0; i < localStorage.length; i++){
@@ -60494,7 +60632,19 @@ html[data-theme="pure-light"] #view-blocks-cal .bcal-brake-dot{
   // behaviorally identical. Re-declaring it would just create a
   // maintenance hazard (two copies to keep in sync).
   function statusColor(s){if(s==='completed')return getCss('--green');if(s==='in-progress')return getCss('--accent');if(s==='available')return '#7eaeff';if(s==='skipped')return getCss('--orange');return getCss('--text3')}
-  function getCss(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#888'}
+  var _getCssCache={theme:null,vals:{}};
+function getCss(v){
+  /* PERF: cache computed custom-property reads per theme. Each raw
+     getComputedStyle().getPropertyValue() forces a full style
+     recalculation (this document has 10k+ CSS rules), so memoising avoids
+     repeated recalcs during list rendering. Invalidates automatically when
+     the theme attribute changes. */
+  var th=document.documentElement.getAttribute('data-theme')||'dark';
+  if(_getCssCache.theme!==th){_getCssCache={theme:th,vals:{}};}
+  if(v in _getCssCache.vals)return _getCssCache.vals[v];
+  var val=getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#888';
+  _getCssCache.vals[v]=val;return val;
+}
   function computeProgress(nodes){
     if(!nodes.length)return 0;
     var done=nodes.filter(function(n){return n.status==='completed'}).length;
@@ -60554,10 +60704,11 @@ html[data-theme="pure-light"] #view-blocks-cal .bcal-brake-dot{
   // Redraw snaky path on resize (beacon positions shift)
   var _rmResizeT=null;
   window.addEventListener('resize',function(){
-    if(!document.getElementById('rmOverlay').classList.contains('open'))return;
+    var ov=document.getElementById('rmOverlay');
+    if(!ov||!ov.classList.contains('open'))return;
     if(_rmResizeT)clearTimeout(_rmResizeT);
     _rmResizeT=setTimeout(function(){if(typeof RM_drawPath==='function')RM_drawPath()},150);
-  });
+  }, { passive:true });
 
   // ── Persist ──
   function persist(){
@@ -92665,7 +92816,7 @@ function renderOffice(){
       fadeTick = true;
       raf(function(){ fadeTick = false; updTabFades(); });
     }, { passive: true });
-    window.addEventListener('resize', updTabFades);
+    window.addEventListener('resize', function(){ if(fadeTick) return; fadeTick = true; raf(function(){ fadeTick = false; updTabFades(); }); }, { passive: true });
     /* Re-check after boot: fonts settle, sidebar state changes, and the
        splash dismissal can all change the strip width. */
     setTimeout(updTabFades, 150);
@@ -94496,6 +94647,7 @@ function renderOffice(){
      else has claimed focus — activeElement === body) */
   var wasOpen = false;
   setInterval(function () {
+    if (document.hidden) return; /* PERF: skip focus-restore polling in a hidden tab */
     var open = openOverlays().length > 0;
     if (wasOpen && !open) {
       setTimeout(function () {
@@ -95914,9 +96066,16 @@ html[data-theme] :is(.nav-item, .tab-btn){
       return r;
     };
   }
-  /* announce whichever view we booted into */
+  /* announce whichever view we booted into — deferred off the critical path.
+     announce() → authOrSplashUp() reads getComputedStyle, which forces a full
+     style recalculation (this document has 10k+ CSS rules). Running it inline
+     during parse delays first paint, so schedule it for the first idle slot. */
   try {
-    if (typeof currentView !== 'undefined') announce(currentView);
+    if (typeof currentView !== 'undefined') {
+      var _announceBoot = function () { try { announce(currentView); } catch (e) {} };
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(_announceBoot, { timeout: 1200 });
+      else setTimeout(_announceBoot, 220);
+    }
   } catch (e) {}
 
   /* ══════════════════════════════════════════════════════════════════
@@ -98141,7 +98300,7 @@ html[data-theme="light"] .auth-showcase{
     nowEl.classList.add('is-playing');
     nowBtn.hidden=false;
   }
-  setInterval(function(){ if(onScreen(view())) syncNow(); },900);
+  setInterval(function(){ if(document.hidden||!onScreen(view())) return; syncNow(); },900);
 
   /* ── Sticky toolbar needs the true scrollport width at runtime ── */
   function syncBleed(){
@@ -98178,7 +98337,8 @@ html[data-theme="light"] .auth-showcase{
       return r;
     };
   }
-  window.addEventListener('resize',function(){ if(chrome) syncBleed(); });
+  var _bleedRAF=0;
+  window.addEventListener('resize',function(){ if(_bleedRAF)return; _bleedRAF=requestAnimationFrame(function(){ _bleedRAF=0; if(chrome) syncBleed(); }); }, { passive:true });
   function ready(){
     try{ if(onScreen(view())) boot(); }catch(e){}
   }
