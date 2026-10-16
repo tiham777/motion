@@ -50329,6 +50329,15 @@ var asstVoiceTarget = 0.18;
 var asstMicPermState = 'unknown';   // 'granted' | 'denied' | 'prompt' | 'unknown'
 var asstVoiceQuickEnds = 0;         // consecutive instant ends → restart-loop guard
 var asstVoiceNeedRestart = false;   // recognition stopped while the tab was hidden
+var asstVoiceMode = 'idle';         // 'idle' | 'speech' | 'recording' | 'transcribing'
+var asstVoiceFallbackTimer = null;  // Web Speech produced nothing → switch to AI
+var asstVoiceMedia = null;          // MediaStream (recording mode)
+var asstVoiceRecorder = null;       // MediaRecorder
+var asstVoiceChunks = [];
+var asstVoiceAudioCtx = null;
+var asstVoiceAnalyser = null;
+var asstVoiceDataArr = null;
+var asstVoiceDiscard = false;       // true → abort recording without transcribing
 
 function asstVoiceSR(){
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -50382,7 +50391,16 @@ function asstVoiceEqTick(){
   var eq = document.getElementById('asstVoiceEq');
   if(!eq || !asstVoicePillVisible) return;
   if(document.hidden){ asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick); return; }
-  asstVoiceTarget += (0.18 - asstVoiceTarget) * 0.05;   // decay toward idle
+  if(asstVoiceAnalyser && asstVoiceDataArr){
+    // Recording mode → drive the bars from the real microphone signal.
+    asstVoiceAnalyser.getByteFrequencyData(asstVoiceDataArr);
+    var _sum = 0;
+    for(var _k=0;_k<asstVoiceDataArr.length;_k++) _sum += asstVoiceDataArr[_k];
+    var _avg = _sum / asstVoiceDataArr.length / 255;
+    asstVoiceTarget = Math.max(0.16, Math.min(1, _avg * 3.4));
+  } else {
+    asstVoiceTarget += (0.18 - asstVoiceTarget) * 0.05;   // decay toward idle
+  }
   asstVoiceLevel  += (asstVoiceTarget - asstVoiceLevel) * 0.22;
   var bars = eq.children, n = bars.length, t = performance.now()/1000;
   for(var i=0;i<n;i++){
@@ -50425,7 +50443,7 @@ function asstVoiceRender(interim){
     tEl.scrollTop = tEl.scrollHeight;
   }
   var input = document.getElementById('asstInput');
-  if(input){
+  if(input && full){
     input.value = asstVoicePrefix + full + asstVoiceSuffix;
     if(typeof autoGrowTextarea === 'function') autoGrowTextarea(input);
     if(typeof asstHandleInput === 'function') asstHandleInput();
@@ -50448,21 +50466,43 @@ function asstStartRecognitionEngine(){
     asstVoiceSetStatus('Listening');
     var micBtn = document.getElementById('asstMicBtn');
     if(micBtn) micBtn.classList.add('listening');
+    // If the engine goes quiet without ever producing a word, hand off to the
+    // AI-transcription recorder. Brave blocks Google's speech service, so on
+    // some machines this is the only path that ever yields text.
+    if(asstVoiceFallbackTimer) clearTimeout(asstVoiceFallbackTimer);
+    asstVoiceFallbackTimer = setTimeout(function(){
+      if(!asstVoiceSession || asstVoiceStopping) return;
+      if(asstVoiceMode !== 'speech' || asstRecognition !== rec) return;
+      if(rec._gotResult) return;
+      if(asstPickSttConfig()) asstVoiceFallbackToRecording('speech-none');
+    }, 4000);
   };
+  rec._finalSeen = {};   // index → true, so a final result is never appended twice
+  rec._gotResult = false;
   rec.onresult = function(e){
+    var results = (e && e.results) || [];
+    // Prefer the standard e.resultIndex, but fall back to walking from 0 if an
+    // engine omits it or sends a bogus value — walking from 0 while
+    // de-duplicating finals by index is safe either way.
+    var start = (typeof e.resultIndex === 'number' && e.resultIndex >= 0 && e.resultIndex <= results.length)
+      ? e.resultIndex : 0;
     var interim = '';
-    // Only read NEW results (e.resultIndex …). Walking from 0 every event
-    // re-appended already-finalised text and duplicated the transcript.
-    for(var i=e.resultIndex;i<e.results.length;i++){
-      var r = e.results[i];
-      if(r.isFinal) asstVoiceFinal += r[0].transcript;
-      else interim += r[0].transcript;
+    for(var i=start;i<results.length;i++){
+      var r = results[i];
+      if(!r || !r.length) continue;
+      var txt = (r[0] && r[0].transcript) || '';
+      if(r.isFinal){
+        if(!rec._finalSeen[i]){ rec._finalSeen[i] = 1; asstVoiceFinal += txt; }
+      } else {
+        interim += txt;
+      }
     }
+    rec._gotResult = true;
     asstVoiceTarget = 1;
     asstVoiceRender(interim);
   };
-  var markSpeaking = function(){ asstVoiceTarget = 1; var p=document.getElementById('asstVoicePill'); if(p) p.classList.add('speaking'); };
-  var markIdle = function(){ asstVoiceTarget = Math.max(asstVoiceTarget, 0.35); var p=document.getElementById('asstVoicePill'); if(p) p.classList.remove('speaking'); };
+  var markSpeaking = function(){ asstVoiceTarget = 1; asstVoiceSetStatus('Hearing you\u2026'); var p=document.getElementById('asstVoicePill'); if(p) p.classList.add('speaking'); };
+  var markIdle = function(){ asstVoiceTarget = Math.max(asstVoiceTarget, 0.35); asstVoiceSetStatus('Listening'); var p=document.getElementById('asstVoicePill'); if(p) p.classList.remove('speaking'); };
   if('onsoundstart'  in rec){ rec.onsoundstart  = markSpeaking; rec.onsoundend  = markIdle; }
   if('onspeechstart' in rec){ rec.onspeechstart = markSpeaking; rec.onspeechend = markIdle; }
 
@@ -50480,12 +50520,21 @@ function asstStartRecognitionEngine(){
     }
   };
   rec.onend = function(){
+    if(rec._watchdog){ clearTimeout(rec._watchdog); rec._watchdog = null; }
     if(!asstVoiceSession) return;
     if(asstVoiceStopping){ asstFinishVoice(); return; }
     if(!rec._startedAt){
-      // Recognition never actually began capturing. This is exactly what
-      // happens while the microphone permission popup is still open — and
-      // re-calling start() here is what made the popup reappear over and over.
+      // Recognition never actually began capturing. Two cases:
+      //  (a) the microphone permission popup is still open — re-calling start()
+      //      here is exactly what made the popup reappear over and over, so we
+      //      must not retry;
+      //  (b) the browser has no working speech service at all (e.g. Brave
+      //      blocks Google's, or Web Speech is switched off) — in that case
+      //      hand the session over to the AI-transcription recorder instead.
+      if(asstMicPermState !== 'prompt' && asstPickSttConfig()){
+        asstVoiceFallbackToRecording('speech-unavailable');
+        return;
+      }
       asstVoiceStopping = true;
       asstVoiceSetStatus('Mic not ready');
       if(typeof showToast === 'function') showToast('Microphone isn\'t ready. Allow access in the popup (or un-block it in the address bar), then tap the mic again.','🎙️',5200);
@@ -50497,6 +50546,7 @@ function asstStartRecognitionEngine(){
     if(Date.now() - rec._startedAt < 1200){
       asstVoiceQuickEnds++;
       if(asstVoiceQuickEnds >= 3){
+        if(asstPickSttConfig()){ asstVoiceFallbackToRecording('speech-flaky'); return; }
         asstVoiceStopping = true;
         asstVoiceSetStatus('Mic stopped');
         if(typeof showToast === 'function') showToast('Voice input keeps stopping. Check your microphone and permissions, then try again.','🎙️',4600);
@@ -50514,6 +50564,21 @@ function asstStartRecognitionEngine(){
     asstVoiceScheduleRestart(rec);
   };
 
+  // If the browser never sends a single result while we're supposedly
+  // listening, say so plainly instead of leaving the user staring at a
+  // "Listening" pill that never fills in.
+  rec._watchdog = setTimeout(function(){
+    if(!asstVoiceSession || asstVoiceStopping || asstRecognition !== rec) return;
+    if(rec._startedAt && !rec._gotResult){
+      if(asstPickSttConfig()){ asstVoiceFallbackToRecording('speech-none'); return; }
+      asstVoiceSetStatus('No words heard');
+      if(!rec._hintedNoWords){
+        rec._hintedNoWords = true;
+        if(typeof showToast === 'function') showToast('I\'m listening but not catching any words. Add an OpenAI / Groq / Mistral / Gemini API key to transcribe with AI instead.','🎙️',5600);
+      }
+    }
+  }, 8000);
+
   asstRecognition = rec;
   try{ rec.start(); }catch(_){}
 }
@@ -50521,8 +50586,9 @@ function asstStartRecognitionEngine(){
 function asstToggleVoiceInput(){
   if(asstVoiceSession){ asstStopVoice(); return; }
   var SR = asstVoiceSR();
-  if(!SR){
-    if(typeof showToast === 'function') showToast('Voice input needs Chrome, Edge, or Safari (Web Speech API).','🎙️',4200);
+  var sttReady = !!asstPickSttConfig();
+  if(!SR && !sttReady){
+    if(typeof showToast === 'function') showToast('Voice input needs Chrome, Edge or Safari — or add an OpenAI / Groq / Mistral / Gemini API key to dictate with AI.','🎙️',5200);
     return;
   }
   var input = document.getElementById('asstInput');
@@ -50542,11 +50608,18 @@ function asstToggleVoiceInput(){
   asstVoiceSession = true;
   asstVoiceStopping = false;
   asstVoiceQuickEnds = 0;
+  asstVoiceMode = 'idle';
+  asstVoiceDiscard = false;
   var micBtn = document.getElementById('asstMicBtn');
   if(micBtn) micBtn.classList.add('listening');
   asstVoiceShowPill();
   asstVoiceRender('');
   if(input) input.focus();
+  if(!SR){
+    // No Web Speech implementation at all → record and transcribe with AI.
+    asstVoiceFallbackToRecording('no-webspeech');
+    return;
+  }
   // Resolve the mic permission once, then start. Checking first means we never
   // spin up recognition just to have it bounce off an unanswered popup.
   asstQueryMicPerm(function(state){
@@ -50560,6 +50633,7 @@ function asstToggleVoiceInput(){
     if(location.protocol === 'file:' && state !== 'granted'){
       if(typeof showToast === 'function') showToast('Tip: open the app from http://localhost instead of a file:// path — browsers can\'t remember mic permission for local files.','💡',6200);
     }
+    asstVoiceMode = 'speech';
     asstStartRecognitionEngine();
   });
 }
@@ -50568,6 +50642,16 @@ function asstStopVoice(){
   if(!asstVoiceSession){ asstVoiceHidePill(); return; }
   asstVoiceStopping = true;
   if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+  if(asstVoiceFallbackTimer){ clearTimeout(asstVoiceFallbackTimer); asstVoiceFallbackTimer = null; }
+  if(asstVoiceMode === 'recording'){
+    // Stopping the recorder fires onstop, which transcribes then finishes.
+    try{
+      if(asstVoiceRecorder && asstVoiceRecorder.state !== 'inactive'){ asstVoiceRecorder.stop(); }
+      else { asstFinishVoice(); }
+    }catch(e){ asstFinishVoice(); }
+    return;
+  }
+  if(asstVoiceMode === 'transcribing') return;   // already wrapping up
   var rec = asstRecognition;
   if(rec){ try{ rec.stop(); }catch(_){ try{ rec.abort(); }catch(__){} } }
   // Safety net in case onend never fires.
@@ -50578,12 +50662,15 @@ function asstFinishVoice(){
   asstVoiceSession = false;
   asstVoiceStopping = false;
   asstVoiceNeedRestart = false;
+  asstVoiceMode = 'idle';
   if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+  if(asstVoiceFallbackTimer){ clearTimeout(asstVoiceFallbackTimer); asstVoiceFallbackTimer = null; }
   var micBtn = document.getElementById('asstMicBtn');
   if(micBtn) micBtn.classList.remove('listening');
   var rec = asstRecognition;
   asstRecognition = null;
-  if(rec){ try{ rec.onend = null; rec.abort(); }catch(_){} }
+  if(rec){ try{ if(rec._watchdog) clearTimeout(rec._watchdog); rec.onend = null; rec.abort(); }catch(_){} }
+  asstVoiceCleanupMedia();
   asstVoiceHidePill();
 }
 
@@ -50591,7 +50678,15 @@ function asstFinishVoice(){
 function asstVoiceCancel(){
   if(asstVoiceSession){
     asstVoiceStopping = true;
+    asstVoiceDiscard = true;
     if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+    if(asstVoiceFallbackTimer){ clearTimeout(asstVoiceFallbackTimer); asstVoiceFallbackTimer = null; }
+    if(asstVoiceMode === 'recording'){
+      // Stop the recorder; its onstop sees the discard flag and just tears down.
+      try{
+        if(asstVoiceRecorder && asstVoiceRecorder.state !== 'inactive'){ asstVoiceRecorder.stop(); return; }
+      }catch(e){}
+    }
     var rec = asstRecognition;
     if(rec){ try{ rec.abort(); }catch(_){} }
   }
@@ -50629,6 +50724,258 @@ document.addEventListener('keydown', function(e){
     asstStopVoice();
   }
 }, true);
+
+/* ── AI transcription fallback ─────────────────────────────────────────────
+   Web Speech is free and instant, but it silently produces nothing in some
+   browsers (Brave blocks Google's speech service; Firefox desktop ships no
+   engine at all). When that happens — or when no Web Speech exists — we
+   record with MediaRecorder and transcribe through the user's own AI key.
+
+   The provider is auto-selected: whatever the assistant is currently using if
+   it can transcribe, otherwise the first active key that can. */
+
+// Providers exposing an OpenAI-compatible /audio/transcriptions endpoint.
+var ASST_STT_OPENAI = {
+  openai:  { base:'https://api.openai.com/v1',       model:'whisper-1' },
+  groq:    { base:'https://api.groq.com/openai/v1',  model:'whisper-large-v3-turbo' },
+  mistral: { base:'https://api.mistral.ai/v1',       model:'voxtral-mini-latest' }
+};
+
+function asstPickSttConfig(){
+  var order = [];
+  try{
+    if(typeof asstCurrentModel !== 'undefined' && asstCurrentModel){
+      var cur = asstCurrentModel.providerId || (window.asstProviderIdMap && asstProviderIdMap[asstCurrentModel.provider]) || '';
+      if(cur) order.push(cur);
+    }
+  }catch(e){}
+  ['openai','groq','mistral','google','custom'].forEach(function(p){ if(order.indexOf(p) === -1) order.push(p); });
+
+  for(var i=0;i<order.length;i++){
+    var pid = order[i];
+    var entry = null;
+    try{ entry = getActiveApiKey(pid); }catch(e){ entry = null; }
+    if(!entry || !entry.key) continue;
+
+    if(pid === 'google'){
+      return { provider:'google', style:'gemini', key:entry.key, model:(entry.modelId || 'gemini-2.5-flash') };
+    }
+    if(ASST_STT_OPENAI[pid]){
+      return { provider:pid, style:'openai', key:entry.key, base:ASST_STT_OPENAI[pid].base, model:ASST_STT_OPENAI[pid].model };
+    }
+    if(pid === 'custom' && entry.baseUrl){
+      var b = String(entry.baseUrl).replace(/\/+$/,'');
+      if(/\/messages$/.test(b)) continue;               // Anthropic-style → no STT
+      b = b.replace(/\/chat\/completions$/,'');         // OpenAI-compatible proxy
+      return { provider:'custom', style:'openai', key:entry.key, base:b, model:'whisper-1' };
+    }
+  }
+  return null;
+}
+
+// Hand the live session over from Web Speech to the recorder.
+function asstVoiceFallbackToRecording(reason){
+  if(!asstVoiceSession) return;
+  if(asstVoiceMode === 'recording' || asstVoiceMode === 'transcribing') return;
+  if(!asstPickSttConfig()) return;          // nothing to transcribe with → stay put
+  if(asstRecognition){
+    try{ if(asstRecognition._watchdog) clearTimeout(asstRecognition._watchdog); asstRecognition.onend = null; asstRecognition.abort(); }catch(e){}
+    asstRecognition = null;
+  }
+  if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+  if(asstVoiceFallbackTimer){ clearTimeout(asstVoiceFallbackTimer); asstVoiceFallbackTimer = null; }
+  if(reason === 'speech-unavailable' && typeof showToast === 'function'){
+    showToast('Browser speech isn\'t available here — switching to AI transcription.','🎙️',3400);
+  }
+  asstVoiceStartRecording();
+}
+
+function asstVoiceCleanupMedia(){
+  try{ if(asstVoiceMedia) asstVoiceMedia.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); }catch(e){}
+  asstVoiceMedia = null;
+  try{ if(asstVoiceAudioCtx && asstVoiceAudioCtx.state !== 'closed') asstVoiceAudioCtx.close(); }catch(e){}
+  asstVoiceAudioCtx = null;
+  asstVoiceAnalyser = null;
+  asstVoiceDataArr = null;
+  asstVoiceRecorder = null;
+}
+
+function asstVoiceStartRecording(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined'){
+    if(typeof showToast === 'function') showToast('This browser can\'t record audio, so AI transcription isn\'t available.','🎙️',4600);
+    asstFinishVoice();
+    return;
+  }
+  asstVoiceMode = 'recording';
+  asstVoiceSetStatus('Recording');
+  asstVoiceRender('');
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+    if(!asstVoiceSession || asstVoiceMode !== 'recording'){
+      try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+      return;
+    }
+    asstVoiceMedia = stream;
+    // Real level meter so the pill's bars actually follow the user's voice.
+    try{
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(AC){
+        asstVoiceAudioCtx = new AC();
+        var src = asstVoiceAudioCtx.createMediaStreamSource(stream);
+        asstVoiceAnalyser = asstVoiceAudioCtx.createAnalyser();
+        asstVoiceAnalyser.fftSize = 512;
+        asstVoiceAnalyser.smoothingTimeConstant = 0.6;
+        asstVoiceDataArr = new Uint8Array(asstVoiceAnalyser.frequencyBinCount);
+        src.connect(asstVoiceAnalyser);
+      }
+    }catch(e){ asstVoiceAudioCtx = null; asstVoiceAnalyser = null; asstVoiceDataArr = null; }
+
+    var mime = '';
+    try{
+      var types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
+      for(var i=0;i<types.length;i++){
+        if(MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])){ mime = types[i]; break; }
+      }
+    }catch(e){}
+
+    asstVoiceChunks = [];
+    try{ asstVoiceRecorder = mime ? new MediaRecorder(stream, { mimeType:mime }) : new MediaRecorder(stream); }
+    catch(e){ try{ asstVoiceRecorder = new MediaRecorder(stream); }catch(e2){ asstVoiceRecorder = null; } }
+    if(!asstVoiceRecorder){
+      if(typeof showToast === 'function') showToast('Couldn\'t start audio recording in this browser.','🎙️',4200);
+      asstFinishVoice();
+      return;
+    }
+
+    var r = asstVoiceRecorder;
+    r.ondataavailable = function(e){ if(e.data && e.data.size) asstVoiceChunks.push(e.data); };
+    r.onstop = function(){
+      if(asstVoiceRecorder !== r) return;             // session already torn down
+      var blob = null;
+      try{ blob = new Blob(asstVoiceChunks, { type: r.mimeType || 'audio/webm' }); }catch(e){}
+      asstVoiceCleanupMedia();
+      if(asstVoiceDiscard){ asstVoiceDiscard = false; asstFinishVoice(); return; }
+      if(!blob || !blob.size){
+        if(typeof showToast === 'function') showToast('Didn\'t catch any audio — please try again.','🎙️',3200);
+        asstFinishVoice();
+        return;
+      }
+      asstVoiceMode = 'transcribing';
+      asstVoiceSetStatus('Transcribing\u2026');
+      asstVoiceRender('');
+      asstVoiceTranscribe(blob, function(text){
+        if(text){
+          asstVoiceFinal = asstVoiceFinal + ((asstVoiceFinal && !/\s$/.test(asstVoiceFinal)) ? ' ' : '') + text;
+          asstVoiceRender('');
+        } else if(typeof showToast === 'function'){
+          showToast('Couldn\'t make out any speech — try again.','🎙️',3200);
+        }
+        asstFinishVoice();
+      }, function(err){
+        var msg = (err === 'no-config')
+          ? 'Add an OpenAI / Groq / Mistral / Gemini API key to transcribe with AI.'
+          : 'Transcription failed (' + err + '). Try again.';
+        if(typeof showToast === 'function') showToast(msg, '🎙️', 4800);
+        asstFinishVoice();
+      });
+    };
+    try{ r.start(); }
+    catch(e){ if(typeof showToast === 'function') showToast('Couldn\'t start recording.','🎙️',3600); asstFinishVoice(); }
+  }).catch(function(){
+    if(typeof showToast === 'function') showToast('Microphone access is needed to record audio for AI transcription.','🎙️',4600);
+    asstFinishVoice();
+  });
+}
+
+// Decode the compressed recording and re-encode it as 16-bit PCM WAV. Gemini's
+// inline audio accepts WAV reliably (webm/opus support is spotty), so we
+// transcode before sending.
+function asstVoiceBlobToWav(blob, cb){
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC || !window.FileReader){ cb(null); return; }
+  var ctx;
+  try{ ctx = new AC(); }catch(e){ cb(null); return; }
+  var done = false;
+  var finish = function(x){ if(done) return; done = true; try{ if(ctx.state !== 'closed') ctx.close(); }catch(e){} cb(x); };
+  var encode = function(audioBuffer){
+    try{
+      var ch = audioBuffer.getChannelData(0);
+      var len = ch.length, rate = audioBuffer.sampleRate;
+      var wav = new ArrayBuffer(44 + len*2);
+      var v = new DataView(wav);
+      var ws = function(off, str){ for(var i=0;i<str.length;i++) v.setUint8(off+i, str.charCodeAt(i)); };
+      ws(0,'RIFF'); v.setUint32(4, 36 + len*2, true); ws(8,'WAVE'); ws(12,'fmt ');
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, rate, true); v.setUint32(28, rate*2, true);
+      v.setUint16(32, 2, true); v.setUint16(34, 16, true); ws(36,'data'); v.setUint32(40, len*2, true);
+      var off = 44;
+      for(var i2=0;i2<len;i2++){
+        var s = ch[i2]; if(s > 1) s = 1; else if(s < -1) s = -1;
+        v.setInt16(off, s < 0 ? s*0x8000 : s*0x7FFF, true);
+        off += 2;
+      }
+      var bytes = new Uint8Array(wav), bin = '';
+      for(var j=0;j<bytes.length;j+=8192) bin += String.fromCharCode.apply(null, bytes.subarray(j, j+8192));
+      finish({ base64: btoa(bin), mime:'audio/wav' });
+    }catch(e){ finish(null); }
+  };
+  var fr = new FileReader();
+  fr.onerror = function(){ finish(null); };
+  fr.onload = function(){
+    try{
+      var p = ctx.decodeAudioData(fr.result, encode, function(){ finish(null); });
+      if(p && p.then) p.then(encode).catch(function(){ finish(null); });
+    }catch(e){ finish(null); }
+  };
+  fr.readAsArrayBuffer(blob);
+}
+
+function asstVoiceTranscribe(blob, onText, onErr){
+  var cfg = asstPickSttConfig();
+  if(!cfg){ onErr('no-config'); return; }
+
+  if(cfg.style === 'gemini'){
+    asstVoiceBlobToWav(blob, function(w){
+      if(!w){ onErr('audio-decode'); return; }
+      var url = 'https://generativelanguage.googleapis.com/v1beta/models/'
+        + encodeURIComponent(cfg.model) + ':generateContent?key=' + encodeURIComponent(cfg.key);
+      var body = {
+        contents: [{ parts: [
+          { text:'Transcribe this audio verbatim. Output only the transcription, with natural punctuation and no commentary.' },
+          { inline_data: { mime_type: w.mime, data: w.base64 } }
+        ]}],
+        generationConfig: { temperature: 0 }
+      };
+      fetch(url, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+        .then(function(r){ return r.text().then(function(t){ return { ok:r.ok, status:r.status, text:t }; }); })
+        .then(function(res){
+          if(!res.ok){ onErr('HTTP ' + res.status); return; }
+          var j = null; try{ j = JSON.parse(res.text); }catch(e){}
+          var out = '';
+          try{ j.candidates[0].content.parts.forEach(function(p){ if(p.text) out += p.text; }); }catch(e){}
+          onText((out || '').trim());
+        })
+        .catch(function(){ onErr('network'); });
+    });
+    return;
+  }
+
+  // OpenAI-compatible multipart upload (OpenAI / Groq / Mistral / custom).
+  var form = new FormData();
+  form.append('file', blob, 'dictation.webm');
+  form.append('model', cfg.model);
+  form.append('response_format', 'json');
+  fetch(cfg.base + '/audio/transcriptions', {
+    method:'POST',
+    headers:{ 'Authorization': 'Bearer ' + cfg.key },
+    body: form
+  }).then(function(r){ return r.text().then(function(t){ return { ok:r.ok, status:r.status, text:t }; }); })
+    .then(function(res){
+      if(!res.ok){ onErr('HTTP ' + res.status); return; }
+      var j = null; try{ j = JSON.parse(res.text); }catch(e){}
+      onText(((j && j.text) || '').trim());
+    })
+    .catch(function(){ onErr('network'); });
+}
 
 function asstFormatFileSize(bytes){
   if(!bytes || bytes<=0) return '';
