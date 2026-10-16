@@ -50414,10 +50414,25 @@ function asstVoiceEqTick(){
   asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick);
 }
 
+// Centre the pill over the composer ("Ask anything" bar) rather than the whole
+// viewport — with a sidebar open those two centres are not the same, which is
+// why plain 50%-of-viewport centring looked off.
+function asstVoicePositionPill(){
+  var pill = document.getElementById('asstVoicePill');
+  if(!pill || !asstVoicePillVisible) return;
+  if(window.innerWidth <= 560){ pill.style.left = ''; return; }   // mobile spans full width
+  var comp = document.querySelector('.asst-composer-inner') || document.querySelector('.asst-composer');
+  if(!comp){ pill.style.left = ''; return; }
+  var r = comp.getBoundingClientRect();
+  if(!r.width){ pill.style.left = ''; return; }
+  pill.style.left = Math.round(r.left + r.width/2) + 'px';
+}
+
 function asstVoiceShowPill(){
   var pill = asstVoiceEnsurePill();
   asstVoicePillVisible = true;
   pill.classList.add('show');
+  asstVoicePositionPill();
   asstVoiceTarget = 0.6;
   if(!asstVoiceEqRaf) asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick);
 }
@@ -50427,6 +50442,13 @@ function asstVoiceHidePill(){
   if(pill) pill.classList.remove('show','speaking');
   if(asstVoiceEqRaf){ cancelAnimationFrame(asstVoiceEqRaf); asstVoiceEqRaf = null; }
 }
+
+// Keep the pill centred on the composer if the window is resized mid-dictation.
+var asstVoicePosRaf = null;
+window.addEventListener('resize', function(){
+  if(!asstVoicePillVisible || asstVoicePosRaf) return;
+  asstVoicePosRaf = requestAnimationFrame(function(){ asstVoicePosRaf = null; asstVoicePositionPill(); });
+}, { passive:true });
 
 function asstVoiceSetStatus(txt){
   var s = document.getElementById('asstVoiceStatus');
