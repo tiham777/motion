@@ -99036,5 +99036,37 @@ html[data-theme="light"] .auth-showcase{
 })();
 </script>
 
+<style id="dark-hero-neutral">
+/* ── Neutral dark theme — remove the whitish "Good night" bar ──
+   The dashboard hero (.db-hero) draws a "lit" top edge and an inner
+   highlight from the --accent-glow* ladder. In the neutral dark theme
+   the accent is pure white (platinum), so those two effects render as a
+   whitish strip on an otherwise neutral card. Here we flatten the top
+   edge to the same neutral hairline the rest of the card uses and drop
+   the white inset highlight, leaving only the dark drop shadow.
+
+   Specificity: the winning rule is
+   `html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-dashboard .db-hero`
+   → (1,4,1). The selector below also resolves to (1,4,1) and is declared
+   last, so it wins the tie while staying scoped to the "dark" theme. */
+html[data-theme="dark"]:not([data-theme="light"]):not([data-theme="pure-light"]) #view-dashboard .db-hero{
+  border-top-color:color-mix(in srgb, var(--border) 70%, #000 30%) !important;
+  box-shadow:0 2px 10px rgba(0,0,0,.3),0 4px 20px rgba(0,0,0,.15) !important;
+}
+/* The stats strip inside the bar carries the same white inset line. */
+html[data-theme="dark"]:not([data-theme="light"]):not([data-theme="pure-light"]) #view-dashboard .db-hero-stats{
+  box-shadow:0 2px 8px rgba(0,0,0,.12) !important;
+}
+/* ── Kill the "accent bloom" behind the hero ──
+   `#view-dashboard::before` (db-polish-pc) paints a 900x300 radial bloom at
+   the top of the dashboard with `color-mix(in srgb, var(--accent) 4%, transparent)`.
+   In the neutral dark theme the accent is platinum white, so that bloom reads
+   as a soft whitish glow — and because the hero card is transparent, the glow
+   shows straight through the "Good night" bar. Neutralise it for this theme. */
+html[data-theme="dark"] #view-dashboard::before{
+  background:none !important;
+}
+</style>
+
 </body>
 </html>
