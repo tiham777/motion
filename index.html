@@ -10770,6 +10770,56 @@ html[data-theme="aot"] .main::before {
 .asst-mic-btn.listening{color:#fff!important;background:#e5484d}
 .asst-mic-btn.listening:hover{background:#e5484d;filter:brightness(1.1)}@keyframes asstMicPulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.5)}50%{box-shadow:0 0 0 5px rgba(229,72,77,0)}}
 .asst-mic-btn.listening{animation:asstMicPulse 1.4s ease-in-out infinite}
+
+/* ── Dictation pill — floating live voice bar (Wispr-Flow style) ──
+   Appended to <body> by asstVoiceEnsurePill(), so it is fixed to the
+   viewport and unaffected by the .content zoom layer. */
+.asst-voice-pill{
+  position:fixed;left:50%;bottom:96px;z-index:99997;
+  display:flex;align-items:center;gap:12px;
+  min-width:280px;max-width:min(560px,92vw);
+  padding:10px 12px 10px 14px;
+  background:var(--bg2);
+  border:1px solid var(--border2);border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px var(--accent-glow3),0 0 32px var(--accent-glow3);
+  backdrop-filter:blur(18px) saturate(1.2);
+  -webkit-backdrop-filter:blur(18px) saturate(1.2);
+  opacity:0;transform:translate(-50%,14px) scale(.96);
+  pointer-events:none;
+  transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .34s cubic-bezier(.16,1,.3,1);
+}
+.asst-voice-pill.show{opacity:1;transform:translate(-50%,0) scale(1);pointer-events:auto}
+.asst-voice-eq{display:flex;align-items:center;gap:3px;height:26px;flex-shrink:0}
+.asst-voice-eq span{
+  width:3px;height:26px;border-radius:2px;
+  background:linear-gradient(180deg,var(--accent2),var(--accent));
+  transform:scaleY(.16);transform-origin:center;
+  box-shadow:0 0 8px var(--accent-glow5);
+  will-change:transform;
+}
+.asst-voice-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.asst-voice-status{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:6px}
+.asst-voice-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:asstVoiceDot 1.3s ease-in-out infinite}
+@keyframes asstVoiceDot{0%,100%{opacity:.35}50%{opacity:1}}
+.asst-voice-text{
+  font-size:13px;line-height:1.45;color:var(--text);
+  max-height:58px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;
+  font-family:var(--font-chat);
+}
+.asst-voice-text.is-placeholder{color:var(--text3)}
+.asst-voice-stop{
+  flex-shrink:0;width:34px;height:34px;border-radius:10px;border:none;cursor:pointer;
+  background:rgba(229,72,77,.14);color:#ff6b6f;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .18s,transform .18s,color .18s;
+}
+.asst-voice-stop:hover{background:#e5484d;color:#fff;transform:scale(1.05)}
+.asst-voice-stop:active{transform:scale(.95)}
+.asst-voice-stop svg{width:14px;height:14px}
+@media (max-width:560px){
+  .asst-voice-pill{left:12px;right:12px;bottom:86px;max-width:none;transform:translateY(14px) scale(.98)}
+  .asst-voice-pill.show{transform:translateY(0) scale(1)}
+}
 /* Web search toggle */
 .asst-websearch-btn{position:relative;transition:var(--t-common) .2s cubic-bezier(.16,1,.3,1)}
 .asst-websearch-btn.active{color:var(--accent)!important;background:var(--accent-glow2)}
@@ -27029,6 +27079,10 @@ function setView(v,sideEl,opts){
   //   it open via the floating left-edge tab.
   if(typeof enforceSidebarAutohide === 'function'){
     enforceSidebarAutohide();
+  }
+  // Leaving the assistant page mid-dictation: stop the mic and hide the pill.
+  if(v!=='assistant' && typeof asstVoiceCancel === 'function'){
+    try{ asstVoiceCancel(); }catch(e){}
   }
 }
 function goAddTask(){setView('tasks',document.getElementById('snav-tasks'));setTimeout(()=>{ const el=document.getElementById('taskInput'); if(el) el.focus(); },80);}
@@ -50257,58 +50311,324 @@ function asstOpenFilePicker(){
   if(fi){ fi.value=''; fi.click(); }
 }
 
-// ── Voice input (Web Speech API) ──
+// ── Voice input (Web Speech API) — Wispr-Flow-style dictation ──
+// A floating "pill" shows an animated equaliser + the live transcript while
+// the user talks. Recognition is auto-restarted across natural pauses, and
+// the transcript is inserted at the caret instead of being appended blindly.
 var asstRecognition = null;
-var asstListening = false;
+var asstVoiceSession = false;    // true from "start" until the user stops
+var asstVoiceStopping = false;   // user pressed Stop (or a fatal error fired)
+var asstVoiceRestartTimer = null;
+var asstVoicePrefix = '';        // text before the caret
+var asstVoiceSuffix = '';        // text after the caret
+var asstVoiceFinal = '';         // finalised transcript for this session
+var asstVoicePillVisible = false;
+var asstVoiceEqRaf = null;
+var asstVoiceLevel = 0;
+var asstVoiceTarget = 0.18;
+var asstMicPermState = 'unknown';   // 'granted' | 'denied' | 'prompt' | 'unknown'
+var asstVoiceQuickEnds = 0;         // consecutive instant ends → restart-loop guard
+var asstVoiceNeedRestart = false;   // recognition stopped while the tab was hidden
 
-function asstToggleVoiceInput(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){
-    if(typeof showToast==='function') showToast('Voice input is not supported in this browser. Try Chrome or Edge.','❌',4000);
-    return;
+function asstVoiceSR(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+// Query the microphone permission WITHOUT prompting. Used so we can tell the
+// user what's wrong and, crucially, so we don't hammer recognition.start()
+// (which re-opens the browser's permission popup) while a decision is pending.
+function asstQueryMicPerm(cb){
+  var done = false;
+  var finish = function(s){ if(done) return; done = true; cb(s); };
+  if(!navigator.permissions || !navigator.permissions.query){ finish('unknown'); return; }
+  try{
+    navigator.permissions.query({name:'microphone'}).then(function(p){
+      asstMicPermState = p.state;
+      try{ p.onchange = function(){ asstMicPermState = p.state; }; }catch(_){}
+      finish(p.state);
+    }).catch(function(){ finish('unknown'); });
+  }catch(e){ finish('unknown'); }
+  setTimeout(function(){ finish(asstMicPermState); }, 1500);  // never hang
+}
+
+function asstVoiceEnsurePill(){
+  var pill = document.getElementById('asstVoicePill');
+  if(pill) return pill;
+  pill = document.createElement('div');
+  pill.className = 'asst-voice-pill';
+  pill.id = 'asstVoicePill';
+  pill.setAttribute('role','status');
+  var eq = '<div class="asst-voice-eq" id="asstVoiceEq">';
+  for(var i=0;i<7;i++) eq += '<span></span>';
+  eq += '</div>';
+  pill.innerHTML = eq
+    + '<div class="asst-voice-meta">'
+    +   '<div class="asst-voice-status"><span class="asst-voice-dot"></span><span id="asstVoiceStatus">Listening</span></div>'
+    +   '<div class="asst-voice-text is-placeholder" id="asstVoiceText">Speak now…</div>'
+    + '</div>'
+    + '<button class="asst-voice-stop" id="asstVoiceStop" type="button" title="Stop dictation (Esc)">'
+    +   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>'
+    + '</button>';
+  document.body.appendChild(pill);
+  var stopBtn = pill.querySelector('#asstVoiceStop');
+  if(stopBtn) stopBtn.addEventListener('click', function(){ asstStopVoice(); });
+  return pill;
+}
+
+// Equaliser animation. Bars react to speech activity (driven by the
+// recognition sound/speech events) and gently idle-breathe in between.
+function asstVoiceEqTick(){
+  asstVoiceEqRaf = null;
+  var eq = document.getElementById('asstVoiceEq');
+  if(!eq || !asstVoicePillVisible) return;
+  if(document.hidden){ asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick); return; }
+  asstVoiceTarget += (0.18 - asstVoiceTarget) * 0.05;   // decay toward idle
+  asstVoiceLevel  += (asstVoiceTarget - asstVoiceLevel) * 0.22;
+  var bars = eq.children, n = bars.length, t = performance.now()/1000;
+  for(var i=0;i<n;i++){
+    var s  = 0.5 + 0.5*Math.sin(t*7.5 + i*0.95);
+    var s2 = 0.5 + 0.5*Math.sin(t*12.7 + i*1.7);
+    var amp = asstVoiceLevel * (0.55 + 0.45*s2);
+    var h = 0.16 + amp*0.9*s;
+    if(h < 0.12) h = 0.12;
+    bars[i].style.transform = 'scaleY(' + h.toFixed(3) + ')';
   }
-  if(asstListening){
-    if(asstRecognition) asstRecognition.stop();
-    return;
+  asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick);
+}
+
+function asstVoiceShowPill(){
+  var pill = asstVoiceEnsurePill();
+  asstVoicePillVisible = true;
+  pill.classList.add('show');
+  asstVoiceTarget = 0.6;
+  if(!asstVoiceEqRaf) asstVoiceEqRaf = requestAnimationFrame(asstVoiceEqTick);
+}
+function asstVoiceHidePill(){
+  asstVoicePillVisible = false;
+  var pill = document.getElementById('asstVoicePill');
+  if(pill) pill.classList.remove('show','speaking');
+  if(asstVoiceEqRaf){ cancelAnimationFrame(asstVoiceEqRaf); asstVoiceEqRaf = null; }
+}
+
+function asstVoiceSetStatus(txt){
+  var s = document.getElementById('asstVoiceStatus');
+  if(s) s.textContent = txt || 'Listening';
+}
+
+function asstVoiceRender(interim){
+  interim = interim || '';
+  var full = asstVoiceFinal + interim;
+  var tEl = document.getElementById('asstVoiceText');
+  if(tEl){
+    tEl.textContent = full.trim() ? full : 'Speak now…';
+    tEl.classList.toggle('is-placeholder', !full.trim());
+    tEl.scrollTop = tEl.scrollHeight;
   }
-  var micBtn = document.getElementById('asstMicBtn');
   var input = document.getElementById('asstInput');
-  asstRecognition = new SR();
-  asstRecognition.lang = (navigator.language || 'en-US');
-  asstRecognition.interimResults = true;
-  asstRecognition.continuous = true;
+  if(input){
+    input.value = asstVoicePrefix + full + asstVoiceSuffix;
+    if(typeof autoGrowTextarea === 'function') autoGrowTextarea(input);
+    if(typeof asstHandleInput === 'function') asstHandleInput();
+  }
+}
 
-  var baseText = input ? input.value : '';
-  if(baseText && !/\s$/.test(baseText)) baseText += ' ';
+function asstStartRecognitionEngine(){
+  var SR = asstVoiceSR();
+  if(!SR) return;
+  if(asstRecognition){ try{ asstRecognition.abort(); }catch(_){} asstRecognition = null; }
+  var rec = new SR();
+  rec.lang = (navigator.language || 'en-US');
+  rec.interimResults = true;
+  rec.continuous = true;
+  rec.maxAlternatives = 1;
 
-  asstRecognition.onstart = function(){
-    asstListening = true;
+  rec.onstart = function(){
+    rec._startedAt = Date.now();
+    asstVoiceQuickEnds = 0;
+    asstVoiceSetStatus('Listening');
+    var micBtn = document.getElementById('asstMicBtn');
     if(micBtn) micBtn.classList.add('listening');
   };
-  asstRecognition.onresult = function(e){
-    var finalTxt = '', interimTxt = '';
-    for(var i=0;i<e.results.length;i++){
+  rec.onresult = function(e){
+    var interim = '';
+    // Only read NEW results (e.resultIndex …). Walking from 0 every event
+    // re-appended already-finalised text and duplicated the transcript.
+    for(var i=e.resultIndex;i<e.results.length;i++){
       var r = e.results[i];
-      if(r.isFinal) finalTxt += r[0].transcript;
-      else interimTxt += r[0].transcript;
+      if(r.isFinal) asstVoiceFinal += r[0].transcript;
+      else interim += r[0].transcript;
     }
-    if(input){
-      input.value = baseText + finalTxt + interimTxt;
-      autoGrowTextarea(input);
-    }
-    if(finalTxt) baseText += finalTxt;
+    asstVoiceTarget = 1;
+    asstVoiceRender(interim);
   };
-  asstRecognition.onerror = function(e){
-    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
-      if(typeof showToast==='function') showToast('Microphone access was blocked. Check your browser permissions.','❌',4000);
+  var markSpeaking = function(){ asstVoiceTarget = 1; var p=document.getElementById('asstVoicePill'); if(p) p.classList.add('speaking'); };
+  var markIdle = function(){ asstVoiceTarget = Math.max(asstVoiceTarget, 0.35); var p=document.getElementById('asstVoicePill'); if(p) p.classList.remove('speaking'); };
+  if('onsoundstart'  in rec){ rec.onsoundstart  = markSpeaking; rec.onsoundend  = markIdle; }
+  if('onspeechstart' in rec){ rec.onspeechstart = markSpeaking; rec.onspeechend = markIdle; }
+
+  rec.onerror = function(e){
+    var err = (e && e.error) || '';
+    if(err === 'no-speech' || err === 'aborted'){ return; }  // benign — keep listening
+    if(err === 'not-allowed' || err === 'service-not-allowed'){
+      asstVoiceStopping = true;
+      if(typeof showToast === 'function') showToast('Microphone blocked. Allow mic access for this site, then try again.','🎙️',4600);
+    } else if(err === 'audio-capture'){
+      asstVoiceStopping = true;
+      if(typeof showToast === 'function') showToast('No microphone found. Plug one in and try again.','🎙️',4200);
+    } else if(err === 'network'){
+      asstVoiceSetStatus('Reconnecting…');
     }
   };
-  asstRecognition.onend = function(){
-    asstListening = false;
+  rec.onend = function(){
+    if(!asstVoiceSession) return;
+    if(asstVoiceStopping){ asstFinishVoice(); return; }
+    if(!rec._startedAt){
+      // Recognition never actually began capturing. This is exactly what
+      // happens while the microphone permission popup is still open — and
+      // re-calling start() here is what made the popup reappear over and over.
+      asstVoiceStopping = true;
+      asstVoiceSetStatus('Mic not ready');
+      if(typeof showToast === 'function') showToast('Microphone isn\'t ready. Allow access in the popup (or un-block it in the address bar), then tap the mic again.','🎙️',5200);
+      asstFinishVoice();
+      return;
+    }
+    // Guard against a tight stop→restart loop on browsers that end
+    // recognition immediately: back off, then give up instead of looping.
+    if(Date.now() - rec._startedAt < 1200){
+      asstVoiceQuickEnds++;
+      if(asstVoiceQuickEnds >= 3){
+        asstVoiceStopping = true;
+        asstVoiceSetStatus('Mic stopped');
+        if(typeof showToast === 'function') showToast('Voice input keeps stopping. Check your microphone and permissions, then try again.','🎙️',4600);
+        asstFinishVoice();
+        return;
+      }
+    } else {
+      asstVoiceQuickEnds = 0;
+    }
+    // Chrome ends recognition on a pause even in continuous mode — restart it
+    // so dictation survives natural gaps in speech.
+    var micBtn = document.getElementById('asstMicBtn');
     if(micBtn) micBtn.classList.remove('listening');
+    asstVoiceSetStatus('Listening');
+    asstVoiceScheduleRestart(rec);
   };
-  asstRecognition.start();
+
+  asstRecognition = rec;
+  try{ rec.start(); }catch(_){}
 }
+
+function asstToggleVoiceInput(){
+  if(asstVoiceSession){ asstStopVoice(); return; }
+  var SR = asstVoiceSR();
+  if(!SR){
+    if(typeof showToast === 'function') showToast('Voice input needs Chrome, Edge, or Safari (Web Speech API).','🎙️',4200);
+    return;
+  }
+  var input = document.getElementById('asstInput');
+  asstVoiceFinal = '';
+  // Insert where the caret is if the composer is focused, otherwise append.
+  if(input){
+    var focused = (document.activeElement === input);
+    var selStart = focused ? (input.selectionStart != null ? input.selectionStart : input.value.length) : input.value.length;
+    var selEnd   = focused ? (input.selectionEnd   != null ? input.selectionEnd   : input.value.length) : input.value.length;
+    asstVoicePrefix = input.value.slice(0, selStart);
+    asstVoiceSuffix = input.value.slice(selEnd);
+    if(asstVoicePrefix && !/\s$/.test(asstVoicePrefix)) asstVoicePrefix += ' ';
+    if(asstVoiceSuffix && !/^\s/.test(asstVoiceSuffix)) asstVoiceSuffix = ' ' + asstVoiceSuffix;
+  } else {
+    asstVoicePrefix = ''; asstVoiceSuffix = '';
+  }
+  asstVoiceSession = true;
+  asstVoiceStopping = false;
+  asstVoiceQuickEnds = 0;
+  var micBtn = document.getElementById('asstMicBtn');
+  if(micBtn) micBtn.classList.add('listening');
+  asstVoiceShowPill();
+  asstVoiceRender('');
+  if(input) input.focus();
+  // Resolve the mic permission once, then start. Checking first means we never
+  // spin up recognition just to have it bounce off an unanswered popup.
+  asstQueryMicPerm(function(state){
+    if(!asstVoiceSession) return;   // user stopped while the popup was showing
+    if(state === 'denied'){
+      asstVoiceSetStatus('Mic blocked');
+      if(typeof showToast === 'function') showToast('Microphone is blocked for this page. Turn it on in your browser\'s site settings, then try again.','🎙️',5200);
+      asstFinishVoice();
+      return;
+    }
+    if(location.protocol === 'file:' && state !== 'granted'){
+      if(typeof showToast === 'function') showToast('Tip: open the app from http://localhost instead of a file:// path — browsers can\'t remember mic permission for local files.','💡',6200);
+    }
+    asstStartRecognitionEngine();
+  });
+}
+
+function asstStopVoice(){
+  if(!asstVoiceSession){ asstVoiceHidePill(); return; }
+  asstVoiceStopping = true;
+  if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+  var rec = asstRecognition;
+  if(rec){ try{ rec.stop(); }catch(_){ try{ rec.abort(); }catch(__){} } }
+  // Safety net in case onend never fires.
+  setTimeout(function(){ if(asstVoiceSession) asstFinishVoice(); }, 900);
+}
+
+function asstFinishVoice(){
+  asstVoiceSession = false;
+  asstVoiceStopping = false;
+  asstVoiceNeedRestart = false;
+  if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+  var micBtn = document.getElementById('asstMicBtn');
+  if(micBtn) micBtn.classList.remove('listening');
+  var rec = asstRecognition;
+  asstRecognition = null;
+  if(rec){ try{ rec.onend = null; rec.abort(); }catch(_){} }
+  asstVoiceHidePill();
+}
+
+// Called by setView() when navigating away from the assistant page.
+function asstVoiceCancel(){
+  if(asstVoiceSession){
+    asstVoiceStopping = true;
+    if(asstVoiceRestartTimer){ clearTimeout(asstVoiceRestartTimer); asstVoiceRestartTimer = null; }
+    var rec = asstRecognition;
+    if(rec){ try{ rec.abort(); }catch(_){} }
+  }
+  asstFinishVoice();
+}
+
+// Restart recognition after a pause, but never while the tab is hidden (some
+// browsers end recognition on tab-hide, and restarting in the background is
+// both pointless and a good way to re-trigger a permission prompt).
+function asstVoiceScheduleRestart(rec){
+  if(!asstVoiceSession || asstVoiceStopping) return;
+  if(document.hidden){ asstVoiceNeedRestart = true; return; }
+  asstVoiceNeedRestart = false;
+  if(asstVoiceRestartTimer) clearTimeout(asstVoiceRestartTimer);
+  asstVoiceRestartTimer = setTimeout(function(){
+    if(!asstVoiceSession || asstVoiceStopping) return;
+    if(asstRecognition !== rec) return;
+    if(document.hidden){ asstVoiceNeedRestart = true; return; }
+    try{ rec.start(); }catch(_){}
+  }, 300);
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden) return;
+  if(asstVoiceNeedRestart && asstVoiceSession && !asstVoiceStopping && asstRecognition){
+    asstVoiceNeedRestart = false;
+    try{ asstRecognition.start(); }catch(_){}
+  }
+});
+
+// Esc cancels dictation — capture phase so it wins over the global Esc handler.
+document.addEventListener('keydown', function(e){
+  if(asstVoiceSession && (e.key === 'Escape' || e.key === 'Esc')){
+    e.preventDefault();
+    e.stopPropagation();
+    asstStopVoice();
+  }
+}, true);
 
 function asstFormatFileSize(bytes){
   if(!bytes || bytes<=0) return '';
