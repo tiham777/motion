@@ -43969,7 +43969,10 @@ function asstRebuildModelsList(){
         var apiModel = modelId || 'openrouter/free';
         models.push({
           id: id,
-          name: modelId ? ('OpenRouter · ' + modelId) : 'OpenRouter · openrouter/free',
+          // Display name is JUST the model id (no "OpenRouter · " prefix —
+          // the picker/badge already shows the provider + icon, and the
+          // prefix duplicated it as a long unreadable string).
+          name: apiModel,
           provider: 'OpenRouter',
           providerId: 'openrouter',
           color: info ? info.color : '#615bff',
