@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"/>
 <meta name="description" content="Motion — Focus & productivity timer with time blocks, tasks, habits, notes, and AI assistant. Own your time."/>
 <meta name="robots" content="index,follow,max-image-preview:large"/>
 <meta name="color-scheme" content="dark light"/>
@@ -21,6 +21,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="application-name" content="Motion"/>
+<!-- iOS auto-detects phone-like number strings in notes/tasks/assistant text and
+     turns them into call links. A productivity app is full of numbers
+     ("25:00", "call 555 0100"), so disable detection app-wide. -->
+<meta name="format-detection" content="telephone=no"/>
 <meta name="apple-mobile-web-app-title" content="Motion"/>
 <meta name="msapplication-TileColor" content="#000000"/>
 
@@ -39339,6 +39343,10 @@ function animateCount(el,target,unit=''){
 /* ═══ FOCUS PAGE: ambient particle background when running ═══ */
 (function(){
   let particleCanvas=null,pCtx=null,pAnim=null,particles=[];
+  /* Set by spawnParticles: restarts the rAF loop after stopParticles has
+     cancelled it (the canvas element is reused, so spawnParticles itself
+     early-returns on a second call and the loop would never resume). */
+  let _resumeLoop=null;
   function spawnParticles(){
     const fp=document.querySelector('.focus-layout');
     if(!fp||particleCanvas)return;
@@ -39347,7 +39355,27 @@ function animateCount(el,target,unit=''){
     fp.style.position='relative';
     fp.insertBefore(particleCanvas,fp.firstChild);
     pCtx=particleCanvas.getContext('2d');
-    function resize(){particleCanvas.width=fp.clientWidth;particleCanvas.height=fp.clientHeight;}
+    /* DPR-AWARE BACKING STORE — the canvas is laid out at 100%/100% of the
+       focus layout, so sizing the backing store in CSS pixels made the
+       dots render soft on any hi-DPI display (a 1px dot painted at DPR 2
+       becomes a 2px smear). Size the bitmap by devicePixelRatio (capped at
+       2 — the particles are soft glows, more resolution buys nothing) and
+       keep drawing in CSS pixels via setTransform, so every coordinate in
+       draw() below stays in the same logical space it always used. */
+    var _dpr=1;
+    function resize(){
+      _dpr=Math.min(window.devicePixelRatio||1,2);
+      /* getBoundingClientRect, NOT clientWidth/clientHeight: this app applies
+         CSS `zoom` to .main, and clientWidth reports the element's unzoomed
+         coordinate space while the canvas (width:100%) is laid out at the
+         ZOOMED size. Sizing from the rect keeps the bitmap exactly matched to
+         the painted area at every zoom level, so the dots stay round instead
+         of being rescaled by the compositor. */
+      var r=fp.getBoundingClientRect();
+      particleCanvas.width=Math.max(1,Math.round(r.width*_dpr));
+      particleCanvas.height=Math.max(1,Math.round(r.height*_dpr));
+      pCtx.setTransform(_dpr,0,0,_dpr,0,0);
+    }
     resize();window.addEventListener('resize',resize,{passive:true});
     particles=Array.from({length:22},()=>({
       x:Math.random()*100,y:Math.random()*100,
@@ -39355,7 +39383,12 @@ function animateCount(el,target,unit=''){
       r:Math.random()*1.5+.5,alpha:Math.random()*.25+.05,
     }));
     function draw(){
-      const w=particleCanvas.width,h=particleCanvas.height;
+      /* Logical (CSS-pixel) dimensions — not the backing-store size, which is
+         now scaled by _dpr. Re-assert the DPR transform every frame: the
+         stop path resets it to identity before clearing the bitmap, so the
+         loop must not depend on it surviving between runs. */
+      pCtx.setTransform(_dpr,0,0,_dpr,0,0);
+      const w=particleCanvas.width/_dpr,h=particleCanvas.height/_dpr;
       pCtx.clearRect(0,0,w,h);
       particles.forEach(p=>{
         pCtx.beginPath();
@@ -39368,6 +39401,7 @@ function animateCount(el,target,unit=''){
       });
       pAnim=requestAnimationFrame(draw);
     }
+    _resumeLoop=function(){ if(!pAnim) draw(); };
     draw();
   }
   function stopParticles(){
@@ -39375,7 +39409,12 @@ function animateCount(el,target,unit=''){
     // animation from running forever after the user leaves the Focus view.
     if(pAnim){ cancelAnimationFrame(pAnim); pAnim=null; }
     if(pCtx && particleCanvas){
-      try { pCtx.clearRect(0,0,particleCanvas.width,particleCanvas.height); } catch(e){}
+      try {
+        /* Reset the DPR transform first so clearing in raw backing-store
+           pixels is exact rather than scaled. */
+        pCtx.setTransform(1,0,0,1,0,0);
+        pCtx.clearRect(0,0,particleCanvas.width,particleCanvas.height);
+      } catch(e){}
     }
   }
   // Cancel particles when leaving the Focus view (currentView changes away from 'focus').
@@ -39404,7 +39443,9 @@ function animateCount(el,target,unit=''){
     const isRunning=lbl&&lbl.classList.contains('running');
     if(layout){layout.classList.toggle('running',isRunning);}
     if(particleCanvas)particleCanvas.style.opacity=isRunning?'.5':'0';
-    if(!isRunning) stopParticles(); // paused → stop rAF
+    if(!isRunning){ stopParticles(); } // paused → stop rAF
+    else if(!particleCanvas){ spawnParticles(); }
+    else if(_resumeLoop){ _resumeLoop(); } // resume → restart the (stopped) loop
   };
 })();
 
@@ -59246,6 +59287,12 @@ if(!REDUCED){
     if(!c) return;
     var lastC = '';
     setInterval(function(){
+      /* PERF: only poll while the clock can actually be seen. document.hidden
+         covers background tabs; offsetParent === null covers every view except
+         the one hosting this clock, so the rest of the app pays nothing for
+         the poll (it used to read textContent app-wide every 500 ms and, on
+         every minute change, force a synchronous reflow via offsetWidth). */
+      if(document.hidden || !c.isConnected || c.offsetParent === null) return;
       var cur = c.textContent;
       if(cur && cur !== lastC && cur.length >= 4){
         lastC = cur;
@@ -96174,7 +96221,13 @@ html[data-theme="dark"] #view-dashboard .db-eisen-pool.drop-target{
     if (changed) toast('A new day started — today\u2019s views are refreshed', '🌅');
     else if (manual) toast('Refreshed today\u2019s views', '🔄');
   }
-  setInterval(function () { rollCheck(false); }, 30000);
+  setInterval(function () {
+    /* PERF: skip the midnight check in a hidden tab — the visibilitychange
+       handler below runs rollCheck immediately on return, so no refresh is
+       ever missed. */
+    if (document.hidden) return;
+    rollCheck(false);
+  }, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) rollCheck(false); });
   window.addEventListener('focus', function () { rollCheck(false); });
   window.ep7RefreshToday = function () { rollCheck(true); };
@@ -99104,6 +99157,55 @@ html[data-theme="pure-light"] #view-settings .settings-section:hover{
   background:transparent !important;
   border-color:transparent !important;
   box-shadow:none !important;
+}
+</style>
+
+<style id="production-polish-v2">
+/* ════════════════════════════════════════════════════════════════
+   PRODUCTION POLISH v2 — typography pass (last layer in the document)
+   ───────────────────────────────────────────────────────────────
+   Companion to the earlier production-polish block (~line 90053); kept as
+   a separate id because that one already owns "production-polish".
+   Two modern text-layout defaults that every unsupported browser
+   ignores outright (the properties are simply dropped, so the rules
+   are zero-risk fallbacks):
+
+   1. text-wrap:balance on headings — Chrome 114+ / Safari 17.5+ /
+      Firefox 121+ rebalance the line breaks of h1–h3 so a two-line
+      heading reads as two even lines instead of "one long line +
+      orphans". Applies to the legal docs, modal titles and settings
+      section headings — the places users actually read as prose.
+      Deliberately NOT applied to h4–h6 / eyebrow labels: those are
+      tiny uppercase UI chrome where balancing adds jitter for free.
+
+   2. text-wrap:pretty on body paragraphs — Chrome 117+ switches from
+      greedy to a kinsoku-aware line breaker, which removes short
+      "widow" words at the end of paragraphs and honours CJK line
+      rules. Also a no-op elsewhere.
+
+   Both are pure layout-hygiene: no color, no spacing, no cascade
+   impact on any theme. Remove this <style> to revert.
+   ════════════════════════════════════════════════════════════════ */
+
+#main h1,
+#main h2,
+#main h3,
+.modal h1,
+.modal h2,
+.modal h3,
+.auth-card h1,
+.auth-card h2,
+.auth-card h3,
+.legal-doc h3,
+.legal-doc h4{
+  text-wrap:balance;
+}
+
+.legal-doc p,
+.legal-doc li,
+.modal p,
+.asst-msg p{
+  text-wrap:pretty;
 }
 </style>
 
