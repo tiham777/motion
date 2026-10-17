@@ -2183,20 +2183,6 @@ body > *{position:relative;z-index:1}@keyframes bodyReveal{from{opacity:0}to{opa
 }
 .sidebar.collapsed .sidebar-toggle{ display:none; }
 
-/* Floating reopen button when sidebar is collapsed — also unnoticeable */
-.sidebar-reopen{
-  position:fixed;left:0;top:50%;transform:translateY(-50%);
-  width:20px;height:48px;
-  background:var(--bg2);border:1px solid var(--border);
-  border-left:none;border-radius:0 8px 8px 0;
-  color:var(--text3);cursor:pointer;z-index:7;
-  display:none;align-items:center;justify-content:center;
-  opacity:.25;transition:opacity .22s,width .65s var(--prem-slow),height .65s var(--prem-slow),top .65s var(--prem-slow);
-}
-.sidebar-reopen:hover{ opacity:1; }
-.sidebar-reopen svg{ width:12px;height:12px; transition:width .65s var(--prem-slow),height .65s var(--prem-slow); }
-body.sidebar-hidden .sidebar-reopen{ display:flex; width:14px;height:36px;top:50%; min-width:14px;min-height:36px; }
-body.sidebar-hidden .sidebar-reopen svg{ width:9px;height:9px; }
 .sidebar{
   overflow-x:hidden;
   will-change:width,opacity,transform;
@@ -16278,7 +16264,7 @@ html[data-theme="aot"] ::-webkit-scrollbar-thumb:hover {
    5. ICON BUTTONS — subtle scale + tilt on hover
    ─────────────────────────────────────────────────────────────────────── */
 .icon-btn, .check-btn, .close-btn, .nav-arrow, .aih-del-btn, .aih-fav-btn,
-.habit-del-btn, .task-del, .sidebar-toggle, .sidebar-reopen,
+.habit-del-btn, .task-del, .sidebar-toggle,
 .cal-detail-close, .asst-header-btn, .asst-corner-new-chat {
   transition: transform .32s var(--prem-silk),
               background .28s var(--prem-silk),
@@ -16297,9 +16283,6 @@ html[data-theme="aot"] ::-webkit-scrollbar-thumb:hover {
 }
 .close-btn:hover, .nav-arrow:hover {
   transform: rotate(90deg) scale(1.05);
-}
-.sidebar-reopen:hover {
-  transform: translateX(2px) scale(1.04);
 }
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -16400,7 +16383,7 @@ a:not(.btn):not(.btn-save):not(.nav-item):not(.tab-btn):not(.phone-nav-item):not
   .modal { animation: modalIn .001s !important; }
   .icon-btn:hover, .check-btn:hover, .close-btn:hover, .nav-arrow:hover,
   .aih-del-btn:hover, .aih-fav-btn:hover, .habit-del-btn:hover, .task-del:hover,
-  .sidebar-toggle:hover, .sidebar-reopen:hover,
+  .sidebar-toggle:hover,
   .cal-detail-close:hover, .asst-header-btn:hover, .asst-corner-new-chat:hover,
   .badge:hover, .tab-count:hover, .now-badge:hover,
   .time-remaining-chip:hover, .task-priority:hover {
@@ -19648,7 +19631,7 @@ html[data-theme="aot"] .premium-card {
 }@media print{
   .sidebar,.topbar,.tabs,
   .asst-fab,.toast,.toast-wrap,.modal-overlay,.overlay,
-  .sidebar-reopen,.sidebar-toggle,.focus-btn-play,
+  .sidebar-toggle,.focus-btn-play,
   .focus-btn-reset,#motion-splash-screen{
     display:none !important;
   }
@@ -20843,6 +20826,41 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
 }
 
 </style>
+<style id="motion-ux-layer">
+/* ═══════════════════════════════════════════════════════════
+   MOTION UX LAYER — modal scroll-lock + tap responsiveness
+   Strictly additive. Remove this one block to revert.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. Freeze the page behind an open modal ──
+   Pure CSS via :has(), so it is self-healing: the instant the
+   dialog's .open class is removed the page scrolls again, with no
+   JS state that can leak or get stuck. `scrollbar-gutter:stable`
+   keeps the scrollbar's space reserved, so the layout no longer
+   jumps ~15px sideways when the lock engages — the classic
+   "everything shifts when a modal opens" bug. */
+html:has(.overlay.open),
+html:has(.modal-overlay.open),
+html:has(.backup-overlay.open){
+  overflow:hidden;
+  scrollbar-gutter:stable;
+  overscroll-behavior:none;
+}
+/* Nothing inside the dialog should chain-scroll the page behind it. */
+.overlay.open,
+.modal-overlay.open,
+.backup-overlay.open{overscroll-behavior:contain;}
+
+/* ── 2. Coarse pointers (touch): remove the ~300ms tap delay and
+      accidental double-tap-to-zoom on every control, not just the
+      task/habit checkboxes. ── */
+@media (pointer:coarse){
+  button,a,[role="button"],input,select,textarea,label,summary,
+  .nav-item,.tab-btn,.check-btn,.icon-btn,.btn{
+    touch-action:manipulation;
+  }
+}
+</style>
 </head>
 <body>
 
@@ -21050,9 +21068,6 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
 </div>
 
 <!-- MAIN -->
-<button class="sidebar-reopen" id="sidebarReopen" onclick="toggleSidebar()" title="Open sidebar">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-</button>
 <main class="main" id="main" tabindex="-1">
   <div class="topbar" id="topbar"></div>
 
@@ -22774,13 +22789,10 @@ html[data-theme="pure-light"] .legal-doc{box-shadow:none}
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
-                <div class="settings-row-label">Auto-hide sidebar (always)</div>
-                <div class="settings-row-desc">Sidebar stays hidden on every page and re-hides automatically after reload. Click the side tab on the left edge to peek temporarily.</div>
+                <div class="settings-row-label">Sidebar</div>
+                <div class="settings-row-desc">Open the navigation sidebar if it has been hidden.</div>
               </div>
-              <label class="settings-toggle">
-                <input type="checkbox" id="set-sidebar-autohide" onchange="setSidebarAutohide(this.checked)" aria-label="Auto-hide sidebar (always)">
-                <span class="settings-toggle-slider"></span>
-              </label>
+              <button class="settings-action-btn" onclick="openSidebar()">Open sidebar</button>
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
@@ -23616,9 +23628,8 @@ function lsSetRaw(key,val){try{localStorage.setItem(key,typeof val==='string'?va
 
 /* Settings storage key — declared next to the storage helpers, NOT down with
    saveSettings(). bootInitialView() runs before the SETTINGS SYSTEM section is
-   evaluated, and its enforceSidebarAutohide() → loadSettings() path reads this
-   key; declaring it later threw a TDZ ReferenceError on every single page load
-   (caught and logged) which meant sidebar auto-hide never applied at boot. */
+   evaluated, and its boot path reads this key; declaring it later threw a TDZ
+   ReferenceError on every single page load (caught and logged). */
 const K_SETTINGS = 'ft_settings_v1';
 
 /* ═══ TRASH / SOFT-DELETE SYSTEM ═══
@@ -25802,6 +25813,7 @@ function renderSessionLog(){
   // card visual also clears. Gated on the Focus view being visible to
   // avoid needless DOM mutation / layout thrash on other views.
   setInterval(function(){
+    if(document.hidden) return; /* PERF: no DOM writes from a hidden tab */
     if(typeof currentView==='string' && currentView!=='focus') return;
     Object.keys(AMBIENT_MAP).forEach(function(type){
       const m = AMBIENT_MAP[type];
@@ -26913,6 +26925,32 @@ function toggleSidebar(){
   }
 }
 
+/* ═══ OPEN SIDEBAR (Settings) ═══ */
+/* The floating left-edge "open sidebar" tab was removed from the app; the
+   sidebar is now opened from Settings → Appearance → "Open sidebar".
+   Mirrors the "open" branch of toggleSidebar(). */
+function openSidebar(){
+  var sb = document.querySelector('.sidebar');
+  if(sb){
+    sb.classList.remove('collapsed');
+    sb.classList.remove('hidden');
+  }
+  document.documentElement.classList.remove('sidebar-zoom');
+  document.body.classList.remove('sidebar-hidden');
+  // Remember the choice so a reload keeps the rail open.
+  try{ lsSetRaw('motion_sidebar', 'open'); }catch(e){}
+  // On the Assistant page, hide the chat sidebar so two rails don't stack.
+  if(typeof currentView === 'string' && currentView === 'assistant'){
+    var asstSidebar = document.getElementById('asstSidebar');
+    if(asstSidebar){
+      asstSidebar.style.display = 'none';
+      asstSidebar.classList.remove('mobile-open');
+    }
+  }
+  if(typeof _syncImmersiveZoom === 'function') _syncImmersiveZoom();
+  if(typeof showToast === 'function') showToast('Sidebar opened', '📂', 1400);
+}
+
 /* ═══ VIEW SWITCHING ═══ */
 // opts.silent = true → re-render data ONLY: do not restart the .view-enter
 // page-entrance animation. Used by fbRefreshUI() after cloud data is applied,
@@ -27077,12 +27115,6 @@ function setView(v,sideEl,opts){
       const fbtn=document.getElementById('focusFsToggle');
       if(fbtn)fbtn.classList.remove('is-active');
     }
-  }
-  // ▸ Re-apply "Auto-hide sidebar (always)" on every view switch so the
-  //   sidebar always auto-disappears, even if the user temporarily peeked
-  //   it open via the floating left-edge tab.
-  if(typeof enforceSidebarAutohide === 'function'){
-    enforceSidebarAutohide();
   }
   // Leaving the assistant page mid-dictation: stop the mic and hide the pill.
   if(v!=='assistant' && typeof asstVoiceCancel === 'function'){
@@ -36355,76 +36387,6 @@ function rnCopy(){
   if(t&&t.indexOf('Click Generate')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
 }
 
-// ── JSON Formatter ──
-TOOL_RENDERERS.jsonfmt=function(){
-  toolBody(
-    '<div class="tool-field"><label>JSON input</label><textarea id="jfIn" placeholder=\'{"name":"Motion","tags":["focus","productive"],"count":3}\' oninput="jfRun(\'fmt\')" style="min-height:130px;font-family:var(--font-mono,\'Courier New\',monospace)"></textarea></div>'+
-    '<div class="tool-actions">'+
-      '<button class="tool-btn" onclick="jfRun(\'fmt\')">Pretty print</button>'+
-      '<button class="tool-btn-ghost tool-btn" onclick="jfRun(\'min\')">Minify</button>'+
-      '<button class="tool-btn-ghost tool-btn" onclick="jfCopy()">Copy</button>'+
-    '</div>'+
-    '<div class="tool-output" id="jfOut" style="font-family:var(--font-mono,\'Courier New\',monospace);white-space:pre-wrap;max-height:320px;overflow:auto"><span class="tool-output-empty">Formatted JSON appears here…</span></div>'
-  );
-};
-function jfRun(mode){
-  const inp=document.getElementById('jfIn'),out=document.getElementById('jfOut');
-  if(!inp||!out)return;
-  const raw=inp.value.trim();
-  if(!raw){out.innerHTML='<span class="tool-output-empty">Formatted JSON appears here…</span>';return;}
-  try{
-    const obj=JSON.parse(raw);
-    out.textContent=(mode==='min')?JSON.stringify(obj):JSON.stringify(obj,null,2);
-  }catch(e){
-    out.innerHTML='<span style="color:#f87171">Invalid JSON: '+esc(e.message)+'</span>';
-  }
-}
-function jfCopy(){
-  const t=document.getElementById('jfOut').innerText;
-  if(t&&t.indexOf('appears here')<0){navigator.clipboard.writeText(t).then(function(){showToast('Copied','✓',1200);});}
-}
-
-// ── URL Encoder / Decoder ──
-// ── Text Diff (line by line) ──
-TOOL_RENDERERS.textdiff=function(){
-  toolBody(
-    '<div class="tool-row">'+
-      '<div class="tool-field"><label>Original</label><textarea id="tdA" style="min-height:130px"></textarea></div>'+
-      '<div class="tool-field"><label>Changed</label><textarea id="tdB" style="min-height:130px"></textarea></div>'+
-    '</div>'+
-    '<div class="tool-actions"><button class="tool-btn" onclick="tdRun()">Compare</button></div>'+
-    '<div class="tool-output" id="tdOut" style="white-space:pre-wrap;max-height:340px;overflow:auto"><span class="tool-output-empty">Line-by-line differences appear here…</span></div>'+
-    '<div style="font-size:.68rem;color:var(--text3);margin-top:6px"><span style="color:#4ade80">Green +</span> = added · <span style="color:#f87171">Red −</span> = removed · plain = unchanged</div>'
-  );
-};
-function tdRun(){
-  const A=(document.getElementById('tdA').value||'').split('\n');
-  const B=(document.getElementById('tdB').value||'').split('\n');
-  const out=document.getElementById('tdOut');
-  if(!out)return;
-  if((A.length===1&&A[0]==='')&&(B.length===1&&B[0]==='')){out.innerHTML='<span class="tool-output-empty">Line-by-line differences appear here…</span>';return;}
-  if(A.length>800||B.length>800){out.innerHTML='<span style="color:#f87171">Too long to diff — keep each side under 800 lines</span>';return;}
-  const n=A.length,m=B.length;
-  // LCS table (dp[i][j] = length of LCS of A[i:] and B[j:])
-  const dp=[];
-  for(let i=0;i<=n;i++)dp.push(new Uint16Array(m+1));
-  for(let i=n-1;i>=0;i--){
-    for(let j=m-1;j>=0;j--){
-      dp[i][j]=(A[i]===B[j])?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-    }
-  }
-  let html='',ai=0,bi=0,add=0,del=0;
-  const REM='<div style="color:#f87171;opacity:.9">− ',ADD='<div style="color:#4ade80;opacity:.9">+ ',END='</div>';
-  while(ai<n&&bi<m){
-    if(A[ai]===B[bi]){html+='<div>'+esc(A[ai])+'</div>';ai++;bi++;}
-    else if(dp[ai+1][bi]>=dp[ai][bi+1]){html+=REM+esc(A[ai])+END;del++;ai++;}
-    else{html+=ADD+esc(B[bi])+END;add++;bi++;}
-  }
-  while(ai<n){html+=REM+esc(A[ai])+END;del++;ai++;}
-  while(bi<m){html+=ADD+esc(B[bi])+END;bi++;add++;}
-  out.innerHTML='<div style="font-size:.68rem;color:var(--text3);margin-bottom:6px">'+add+' line'+(add===1?'':'s')+' added · '+del+' line'+(del===1?'':'s')+' removed</div>'+html;
-}
-
 // ── UUID Generator ──
 TOOL_RENDERERS.uuid=function(){
   toolBody(
@@ -39195,17 +39157,16 @@ renderCountdownSidebar();
     if(s && s.anims === false){
       if(typeof applyAnimationsSetting==='function') applyAnimationsSetting(false, true);
     }
-    // ▸ Apply "Auto-hide sidebar (always)" on boot — sidebar stays hidden
-    //   across reloads when the setting is ON.
-    if(s && s.sidebarAutohide === true){
-      if(typeof enforceSidebarAutohide === 'function'){
-        enforceSidebarAutohide();
-      } else {
-        var _sb = document.querySelector('.sidebar');
-        if(_sb) _sb.classList.add('hidden');
-        document.documentElement.classList.add('sidebar-zoom');
-        document.body.classList.add('sidebar-hidden');
-      }
+    // ▸ Main sidebar boots COLLAPSED (default closed, as before). An explicit
+    //   open written by openSidebar() / toggleSidebar() is remembered across
+    //   reloads. With the floating left-edge tab gone, the rail is reopened
+    //   from Settings → Appearance → "Open sidebar".
+    if(localStorage.getItem('motion_sidebar') !== 'open'){
+      var _sbd = document.querySelector('.sidebar');
+      if(_sbd) _sbd.classList.add('collapsed');
+      document.body.classList.add('sidebar-hidden');
+      document.documentElement.classList.add('sidebar-zoom');
+      if(typeof _syncImmersiveZoom === 'function') _syncImmersiveZoom();
     }
     // ▸ One-time migration: the assistant chat sidebar now defaults to
     //   OPEN. Clear legacy state written by the old mirror logic, then
@@ -39216,19 +39177,6 @@ renderCountdownSidebar();
         localStorage.setItem('motion_asst_sidebar_v2','1');
       }
     }catch(e){}
-    // ▸ Main sidebar boots COLLAPSED by default; an explicit open
-    //   (motion_sidebar='open', written by toggleSidebar) is remembered.
-    //   The auto-hide setting manages the sidebar itself above, so it is
-    //   excluded here.
-    if(!(s && s.sidebarAutohide === true)){
-      if(localStorage.getItem('motion_sidebar') !== 'open'){
-        var _sbd = document.querySelector('.sidebar');
-        if(_sbd) _sbd.classList.add('collapsed');
-        document.body.classList.add('sidebar-hidden');
-        document.documentElement.classList.add('sidebar-zoom');
-        if(typeof _syncImmersiveZoom === 'function') _syncImmersiveZoom();
-      }
-    }
   } catch(e) { console.warn('[Motion] boot init error:', e); }
 })();
 // Initialize Time Blocks view.
@@ -41124,7 +41072,7 @@ function animateCount(el,target,unit=''){
   });
 })();
 
-/* ═══════════════════��════════════════════════════════
+/* ═════════════════════════════════════════════════════
    SETTINGS SYSTEM
 ════════════════════════════════════════════════════ */
 /* K_SETTINGS now lives with the storage helpers (see STORAGE HELPERS above)
@@ -41183,66 +41131,6 @@ function applyAnimationsSetting(on, silent){
     if(st) st.textContent='';
     if(!silent) showToast('Animations enabled','✨',1400);
   }
-}
-
-/* ▸ Auto-hide sidebar (always) — Settings toggle.
-     When ON: sidebar is force-hidden on every page, persists across reload,
-     and re-applies on every view switch (so it "always auto-disappears").
-     The user can still peek via the floating reopen tab on the left edge;
-     once they navigate, the sidebar hides again. */
-function setSidebarAutohide(on){
-  // Persist setting + toast
-  saveSettingsToggle('sidebarAutohide', on);
-  if(on){
-    enforceSidebarAutohide();
-    showToast('Sidebar will stay hidden', '👁', 1400);
-  } else {
-    var sb = document.querySelector('.sidebar');
-    if(sb){
-      sb.classList.remove('hidden');
-      sb.classList.remove('collapsed');
-    }
-    document.documentElement.classList.remove('sidebar-zoom');
-    document.body.classList.remove('sidebar-hidden');
-    // If currently on Assistant view, restore the assistant sidebar mirror
-    if(typeof currentView === 'string' && currentView === 'assistant'){
-      var asstSidebar = document.getElementById('asstSidebar');
-      if(asstSidebar){
-        asstSidebar.style.display = 'flex';
-        asstSidebar.classList.add('mobile-open');
-      }
-    }
-    _syncImmersiveZoom();
-    showToast('Sidebar visible again', '👁', 1400);
-  }
-}
-
-/* Force-apply the auto-hide state if the setting is ON.
-   Called from: boot init, setView (every view switch), and setSidebarAutohide(true). */
-function enforceSidebarAutohide(){
-  try {
-    var s = (typeof loadSettings === 'function') ? loadSettings() : (function(){try{return JSON.parse(localStorage.getItem('ft_settings_v1')||'{}');}catch(e){return{};}})();
-    if(s.sidebarAutohide !== true) return;
-    var sb = document.querySelector('.sidebar');
-    if(sb){
-      sb.classList.add('hidden');
-      sb.classList.remove('collapsed');
-    }
-    document.documentElement.classList.add('sidebar-zoom');
-    document.body.classList.add('sidebar-hidden');    // Mirror to assistant chat sidebar — when main sidebar is hidden on the
-    // assistant page, the chat sidebar fills the space (same logic as
-    // toggleSidebar()). Respect an explicit close of the chat sidebar.
-    if(typeof currentView === 'string' && currentView === 'assistant'){
-      var asstSidebar = document.getElementById('asstSidebar');
-      var _asstPrefClosed = false;
-      try{ _asstPrefClosed = localStorage.getItem('motion_asst_sidebar') === 'closed'; }catch(e){}
-      if(asstSidebar && !_asstPrefClosed){
-        asstSidebar.style.display = 'flex';
-        asstSidebar.classList.add('mobile-open');
-      }
-    }
-    if(typeof _syncImmersiveZoom === 'function') _syncImmersiveZoom();
-  } catch(e) { console.warn('[Motion] enforceSidebarAutohide error:', e); }
 }
 
 function confirmClearAll(){
@@ -41320,7 +41208,6 @@ function initSettingsPage(){
     'set-notif':       s.notif       !== false,
     'set-focus-sound': s.focusSound  === true,
     'set-greeting':    s.greeting    !== false,
-    'set-sidebar-autohide': s.sidebarAutohide === true,
     'set-compact':     s.compact     === true,
     'set-anims':       s.anims       !== false,
     'set-autoclear':   s.autoclear   === true,
@@ -42039,6 +41926,7 @@ function renderBlocksWeekView() {
 
 // Auto-refresh calendar every 60s
 setInterval(() => {
+  if (document.hidden) return; /* PERF: no calendar re-render from a hidden tab */
   if (currentView === 'blocks' && blocksViewMode !== 'list') renderBlocksCalView();
 }, 60000);
 
@@ -43155,51 +43043,6 @@ function renderProgressPanel() {
     return svg;
   }
 
-  function buildFlowChart(data) {
-    if (data.length<2) return '<div style="padding:20px 0;text-align:center;font-size:11px;color:var(--text3)">Not enough data for this period</div>';
-    const VW=720,VH=220,PL=40,PR=16,PT=18,PB=32;
-    const CW=VW-PL-PR,CH=VH-PT-PB;
-    const maxVal = Math.max(...data.concat([0.5]));
-    const step = CW/(data.length-1);
-    /* Smooth bezier points */
-    const pts = data.map(function(v,i){ return {x:(PL+i*step),y:(PT+CH-(v/maxVal)*CH)}; });
-    /* Build smooth curve with cubic bezier */
-    let lineD = 'M'+pts[0].x.toFixed(1)+','+pts[0].y.toFixed(1);
-    for (let i=1;i<pts.length;i++){
-      const prev = pts[i-1];
-      const cur = pts[i];
-      const cpx = (prev.x + cur.x)/2;
-      lineD += ' C'+cpx.toFixed(1)+','+prev.y.toFixed(1)+' '+cpx.toFixed(1)+','+cur.y.toFixed(1)+' '+cur.x.toFixed(1)+','+cur.y.toFixed(1);
-    }
-    const areaD = lineD + ' L'+pts[pts.length-1].x.toFixed(1)+','+(PT+CH)+' L'+pts[0].x.toFixed(1)+','+(PT+CH)+' Z';
-
-    let svg = '<svg viewBox="0 0 '+VW+' '+VH+'" class="da-flow-svg"><defs><linearGradient id="da-fag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0.01"/></linearGradient><linearGradient id="da-flg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--ring-stop1)"/><stop offset="100%" stop-color="var(--ring-stop2)"/></linearGradient><filter id="da-fgl"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
-    /* Grid lines */
-    [0,0.25,0.5,0.75,1].forEach(function(p){
-      var gy=(PT+CH-CH*p).toFixed(1);
-      svg+='<line x1="'+PL+'" y1="'+gy+'" x2="'+(VW-PR)+'" y2="'+gy+'" stroke="var(--border)" stroke-width="0.4" stroke-dasharray="3 4"/>';
-      svg+='<text x="'+(PL-6)+'" y="'+(+gy+3.5).toFixed(1)+'" text-anchor="end" font-size="7.5" fill="var(--text3)" font-family="var(--font-mono)">'+(maxVal*p).toFixed(p===0?0:1)+'h</text>';
-    });
-    svg+='<path d="'+areaD+'" fill="url(#da-fag)"/>';
-    svg+='<path d="'+lineD+'" fill="none" stroke="url(#da-flg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#da-fgl)"/>';
-    /* Data points */
-    pts.forEach(function(p,i){
-      var r=dayData[i]&&dayData[i].isToday?5.5:2.5;
-      var clr=dayData[i]&&dayData[i].isToday?'var(--accent)':'var(--ring-stop1)';
-      svg+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+r+'" fill="'+clr+'" stroke="var(--bg2)" stroke-width="2" style="transition:r .2s"/>';
-    });
-    /* X-axis labels */
-    var labelStep=Math.max(1,Math.floor(data.length/7));
-    dayData.forEach(function(d,i){
-      if(i%labelStep===0||d.isToday){
-        var x=(PL+i*step).toFixed(1);
-        svg+='<text x="'+x+'" y="'+(VH-6)+'" text-anchor="middle" font-size="7.5" fill="'+(d.isToday?'var(--accent)':'var(--text3)')+'" font-weight="'+(d.isToday?'800':'500')+'" font-family="var(--font-mono)">'+d.dateObj.getDate()+'</text>';
-      }
-    });
-    svg+='</svg>';
-    return svg;
-  }
-
   function buildDeepWorkChart(data) {
     if (data.length<2) return '<div style="padding:14px 0;text-align:center;font-size:11px;color:var(--text3)">No deep work data yet</div>';
     const VW=420,VH=170,PL=34,PR=10,PT=12,PB=26;
@@ -43434,12 +43277,11 @@ function renderProgressPanel() {
     }
     flowData = flowDayData.map(d=>d.cumMins/60);
   }
-  /* Temporarily swap dayData so buildFlowChart uses flowDayData for x-axis labels & dot sizing */
-  const _origDayData = dayData;
-  /* We need to pass flowDayData into buildFlowChart's closure — override the local reference */
+  /* The Time Flow chart is built inline below from flowData/flowDayData, so its
+     x-axis labels and dot sizing use the hourly series. */
   html += '<div class="da-sec da-cascade da-d6"><div class="da-sec-head"><span class="da-sec-label">Time Flow</span><span class="da-sec-sub">'+(isHourlyFlow ? daRangeLabel() + ' 0\u201324h' : 'Daily hours invested')+'</span></div></div>';
   html += '<div class="da-flow da-cascade da-d6"><div class="da-flow-glow"></div>'+(function(){
-    /* buildFlowChart reads dayData from closure — rebuild with flowDayData */
+    /* Inline Time Flow chart (hourly-aware when a single day is selected). */
     const data=flowData, dd=flowDayData, hourly=isHourlyFlow;
     if(data.length<2) return '<div style="padding:20px 0;text-align:center;font-size:11px;color:var(--text3)">Not enough data for this period</div>';
     const VW=720,VH=220,PL=40,PR=16,PT=18,PB=32;
@@ -87350,7 +87192,7 @@ html[data-theme="aot"] .db-hero::after {
        .aih-open-btn, .aih-add-btn, .aih-filter-btn,
        .swatch, .cal-day, .bcal-event, .sound-card, .note-card,
        .habit-card, .block-card, .stat-card, .aih-card,
-       .sidebar-toggle, .sidebar-reopen):active{
+       .sidebar-toggle):active{
   transform: scale(0.98) !important;
   transition-duration: 0.06s !important;
 }
@@ -88875,12 +88717,12 @@ html[data-theme="pure-light"] .habit-week-label{
               0 0 0 1px var(--accent-glow4) !important;
 }
 
-/* ── 12. Sidebar toggle / reopen — bigger hit target, nicer press ── */
-:where(.sidebar-toggle, .sidebar-reopen){
+/* ── 12. Sidebar toggle — bigger hit target, nicer press ── */
+:where(.sidebar-toggle){
   min-width: 36px; min-height: 36px;
   display: inline-flex; align-items: center; justify-content: center;
 }
-:where(.sidebar-toggle:hover, .sidebar-reopen:hover){
+:where(.sidebar-toggle:hover){
   background: var(--glass2);
   color: var(--accent);
 }
@@ -89344,7 +89186,7 @@ html[data-theme="pure-light"] .habit-week-label{
 }
 .icon-btn,.check-btn,.close-btn,.nav-arrow,.aih-del-btn,.aih-fav-btn,
 .db-day-nav-btn,.db-hero-theme-btn,.db-range-pill,.sidebar-toggle,
-.sidebar-reopen,.bvt-btn,.home-section-link{
+.bvt-btn,.home-section-link{
   transition:transform .16s var(--prem-silk),
              background .16s var(--prem-silk),
              border-color .16s var(--prem-silk),
@@ -96976,10 +96818,10 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
    real 44px row height on touch devices. */
 @media (pointer: coarse){
   :where(.tab-btn){ min-height:44px; }
-  :where(.sidebar-toggle, .sidebar-reopen, .close-btn, .nav-arrow){
+  :where(.sidebar-toggle, .close-btn, .nav-arrow){
     position:relative;
   }
-  :where(.sidebar-toggle, .sidebar-reopen, .close-btn, .nav-arrow)::before{
+  :where(.sidebar-toggle, .close-btn, .nav-arrow)::before{
     content:'';
     position:absolute;
     inset:-8px;
@@ -99224,6 +99066,111 @@ html[data-theme="pure-light"] #view-settings .settings-section:hover{
   text-wrap:pretty;
 }
 </style>
+
+<script id="motion-ux-layer-js">
+/* ═══════════════════════════════════════════════════════════
+   MOTION UX LAYER — modal focus management
+   Companion to <style id="motion-ux-layer">.
+
+   What it does, and only when a real modal is open:
+     • tags the dialog with role="dialog" / aria-modal="true"
+     • moves keyboard focus onto the dialog when it opens
+       (the container is focused, never a text field, so opening a
+       modal on a phone does not pop the on-screen keyboard)
+     • restores focus to the trigger when the modal closes
+     • traps Tab / Shift+Tab inside the topmost open modal
+
+   The overlay elements are static markup, so they are observed
+   once at boot — no subtree observer, so this adds no per-frame
+   cost to the app's frequent view re-renders. Every step is
+   guarded; if anything is missing the function simply no-ops.
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  if(window.__motionModalA11y) return;
+  window.__motionModalA11y = true;
+
+  var SEL = '.overlay, .modal-overlay, .backup-overlay';
+  var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),'+
+                  'select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  var lastFocus = null, wasOpen = false;
+
+  function all(){ return [].slice.call(document.querySelectorAll(SEL)); }
+  function openList(){
+    return all().filter(function(el){
+      return el.classList.contains('open') && el.getClientRects().length > 0;
+    });
+  }
+  function focusables(root){
+    return [].slice.call(root.querySelectorAll(FOCUSABLE)).filter(function(el){
+      return el.getClientRects().length > 0;
+    });
+  }
+  function focusEl(el){
+    try { el.focus({preventScroll:true}); }
+    catch(e){ try { el.focus(); } catch(_){} }
+  }
+
+  function sync(){
+    var open = openList();
+    var top = open.length ? open[open.length - 1] : null;
+    if(top){
+      if(top.getAttribute('role') !== 'dialog') top.setAttribute('role','dialog');
+      if(!top.hasAttribute('aria-modal')) top.setAttribute('aria-modal','true');
+    }
+    var any = !!top;
+    if(any && !wasOpen){
+      lastFocus = document.activeElement;
+      if(top.tabIndex < 0 && !top.hasAttribute('tabindex')) top.setAttribute('tabindex','-1');
+      focusEl(top);
+    } else if(!any && wasOpen){
+      var back = lastFocus; lastFocus = null;
+      var act = document.activeElement;
+      if(back && back !== document.body && document.contains(back) &&
+         typeof back.focus === 'function'){
+        focusEl(back);
+      } else if(act && act !== document.body && act.getClientRects().length === 0){
+        /* The modal closed while focus sat on one of its now-hidden
+           controls; blur so focus returns to the document instead of
+           being stranded on an invisible element. */
+        try { act.blur(); } catch(e){}
+      }
+    }
+    wasOpen = any;
+  }
+
+  // Keep Tab inside the dialog while one is open.
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Tab') return;
+    var open = openList();
+    if(!open.length) return;
+    var top = open[open.length - 1];
+    var f = focusables(top);
+    if(!f.length){ e.preventDefault(); return; }
+    var first = f[0], last = f[f.length - 1], a = document.activeElement;
+    if(!top.contains(a)){ e.preventDefault(); focusEl(e.shiftKey ? last : first); return; }
+    if(e.shiftKey && a === first){ e.preventDefault(); focusEl(last); }
+    else if(!e.shiftKey && a === last){ e.preventDefault(); focusEl(first); }
+  }, true);
+
+  var mo = new MutationObserver(sync);
+  function observe(){
+    all().forEach(function(el){
+      if(el.__motionModalObs) return;
+      el.__motionModalObs = true;
+      try { mo.observe(el, {attributes:true, attributeFilter:['class','style']}); } catch(e){}
+    });
+  }
+  function boot(){ try { observe(); sync(); } catch(e){} }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+  window.addEventListener('load', boot);
+})();
+</script>
 
 </body>
 </html>
