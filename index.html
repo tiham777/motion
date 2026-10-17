@@ -43950,42 +43950,40 @@ function asstRebuildModelsList(){
     }
 
     if(provId === 'openrouter'){
-      // OpenRouter is special: one key unlocks many sub-provider models
-      // (qwen, kimi26, deepseek, gpt4o, gptoss). Keep the existing
-      // behavior of one entry per sub-provider, linked to the first
-      // active OpenRouter key. If a key has a modelId override, add an
-      // extra entry for that specific model.
-      var orKey = keys[0];  // primary key for standard sub-providers
-      asstProviderDefaults.forEach(function(provDef){
-        if(provDef.providerId !== 'openrouter') return;
-        var checkId = provDef.subId ? 'prov_'+provDef.providerId+'_'+provDef.subId : 'prov_'+provDef.providerId;
-        if(_removedModelIds.indexOf(checkId)!==-1) return;
-        var entry = asstBuildProviderEntry(provDef);
-        entry.apiKeyId = orKey.id;  // link to the specific key
-        models.push(entry);
-      });
-      // Add extra entries for OpenRouter keys with modelId overrides
-      keys.forEach(function(k){
-        if(!k.modelId) return;
-        var id = 'prov_openrouter_'+k.id;
+      // OpenRouter: ONE entry per added key — nothing bundled.
+      // (This branch previously also injected five fixed sub-provider
+      // defaults — Qwen 2.5 72B, Kimi K2.6, DeepSeek V4 Flash, GPT-4o Mini,
+      // GPT-OSS 120B — linked to the first OpenRouter key, so adding a key
+      // immediately cluttered the picker with models the user never chose.
+      // Per user request those defaults are gone: each active key now
+      // yields exactly one entry — its own Model ID when set, otherwise
+      // OpenRouter's Free Models Router `openrouter/free`, so the picker is
+      // never empty and never silently routes to a PAID model.)
+      keys.forEach(function(k, idx){
+        var modelId = (k.modelId || '').trim();
+        // A single no-Model-ID key gets the canonical id (mirrors the
+        // standard-provider rule) so a saved defaultModel resolves stably.
+        var id = (!modelId && keys.length === 1) ? 'prov_openrouter' : 'prov_openrouter_'+k.id;
         if(_removedModelIds.indexOf(id)!==-1) return;
         var info = apiKeyProviderInfo['openrouter'];
+        var apiModel = modelId || 'openrouter/free';
         models.push({
           id: id,
-          name: 'OpenRouter · ' + k.modelId,
+          name: modelId ? ('OpenRouter · ' + modelId) : 'OpenRouter · openrouter/free',
           provider: 'OpenRouter',
           providerId: 'openrouter',
           color: info ? info.color : '#615bff',
           ctx: '—',
-          desc: 'Custom model via OpenRouter',
+          desc: modelId ? 'Custom model via OpenRouter'
+                        : 'Free Models Router — auto-picks a $0 model',
           icon: info ? info.icon : 'O',
-          apiModelId: k.modelId,
+          apiModelId: apiModel,
           apiKeyId: k.id,
           // Detect vision from the modelId — e.g. anthropic/claude-3.5-sonnet
           // supports vision, while deepseek/deepseek-chat does not. Previously
           // this was hardcoded false, which silently stripped images for ALL
           // OpenRouter custom models (including Claude/GPT-4o/Gemini).
-          vision: asstDetectVisionCapability(k.modelId, k.label)
+          vision: asstDetectVisionCapability(apiModel, k.label)
         });
       });
       return;
