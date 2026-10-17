@@ -97611,6 +97611,12 @@ html #auth-overlay .auth-btn.auth-btn-guest svg{width:17px;height:17px;flex-shri
     color-mix(in srgb,var(--accent) 9%,transparent),
     transparent 72%);
 }
+/* Neutral dark theme: no halo behind the idle digits — the 9% accent
+   wash read as a glow around the time number on the graphite background.
+   Other themes keep the halo. */
+html[data-theme="dark"] #view-focus .focus-hero .focus-main{
+  background:none;
+}
 
 /* Presets read as ONE segmented control, not three loose buttons */
 #view-focus .focus-presets{
