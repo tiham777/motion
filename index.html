@@ -99068,5 +99068,38 @@ html[data-theme="dark"] #view-dashboard::before{
 }
 </style>
 
+<style id="settings-light-leak-fix">
+/* ══════════════════════════════════════════════════════════════════════
+   SETTINGS (light) — stop the category wrapper painting a white card
+   ----------------------------------------------------------------------
+   The global "ONE CARD LANGUAGE" pass (~line 98718) lists
+   `.settings-section` among the card surfaces, so every category wrapper
+   got a solid `var(--bg2)` (white) fill plus the card shadow. But a
+   section is only a GROUPING element (eyebrow + the real card below it),
+   so on the #f6f7f9 canvas that white fill leaked out around every
+   category: a white band behind each header, doubled borders, and a
+   white backing that filled the card's rounded corners.
+
+   A section paints nothing here — only the actual `.settings-card` is a
+   surface. Scoped to #view-settings, light / pure-light only, declared
+   last so it wins the document-order tie against the card pass.
+   Remove this <style> block to revert.
+   ══════════════════════════════════════════════════════════════════════ */
+
+html[data-theme="light"] #view-settings .settings-section,
+html[data-theme="pure-light"] #view-settings .settings-section{
+  background:transparent !important;
+  background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+html[data-theme="light"] #view-settings .settings-section:hover,
+html[data-theme="pure-light"] #view-settings .settings-section:hover{
+  background:transparent !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+</style>
+
 </body>
 </html>
