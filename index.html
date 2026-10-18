@@ -95681,6 +95681,42 @@ html[data-theme="dark"]{
   --text3:#8c8c8c;
 }
 
+/* ── 4. Canvas — make the neutral token actually reach the paint ──
+   Pass 1 above ("canvas neutralized to #0a0a0a") never landed: it only
+   re-declared the --bg *token*, while the real canvas is painted by
+   dark-mode-polish-v2 (~84852) with a hard `#060606 !important` on
+   body / .app-shell / .main-area. A token re-declaration cannot beat an
+   explicit !important background, so every surface that reads the token
+   drifted away from the paint it sits on:
+     • .sidebar is var(--bg) = #0a0a0a, so the rail sat 4 units LIGHTER
+       than the page it docks against — a faint vertical seam where
+       sidebar meets canvas on every screen;
+     • .content (the whole scrolling page) already paints a #0a0a0a
+       gradient, so the canvas was the odd surface out — the app was
+       #0a0a0a everywhere except the strip of body visible around it;
+     • the surface ladder rendered +18 / +14 (canvas→bg2→bg3) instead of
+       the even +14 / +14 this sheet documents;
+     • the "#060606 too dark — pure black void" finding logged in the
+       Sound Studio audit (~88238) was still live;
+     • setTheme()'s circular reveal paints the *old* --bg, so the
+       theme-switch wipe flashed #0a0a0a over the #060606 page.
+   Pointing the canvas at the token fixes all four with one value, and
+   keeps dark strictly neutral — no chroma anywhere on the page.
+
+   The one chromatic note left in this "pure neutral" theme rode along
+   on the same rule: the atmospheric wash was lavender
+   rgba(200,180,255,.02) at 10% 110%, while every other dark surface is
+   chroma-free. Same geometry, same strength, neutralized to white.
+   (The body::before bottom halo at ~62555 is already white; this leaves
+   one continuous neutral ambient instead of a violet/white mix.) */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .app-shell,
+html[data-theme="dark"] .main-area{
+  background-color:var(--bg) !important;
+  background-image:
+    radial-gradient(900px 500px at 10% 110%, rgba(255,255,255,.02), transparent 70%) !important;
+}
+
 html[data-theme="dark"] ::placeholder{
   color:var(--text3);
   opacity:1;
