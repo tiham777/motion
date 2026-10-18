@@ -95717,6 +95717,30 @@ html[data-theme="dark"] .main-area{
     radial-gradient(900px 500px at 10% 110%, rgba(255,255,255,.02), transparent 70%) !important;
 }
 
+/* ── 4b. …except AI Hub, Settings and Focus ──
+   User: "undo that in ai hub, setting page" (then: "undo from the focus
+   page also"). Those three pages keep the pre-§4 canvas — the darker
+   #060606 and its cool lavender wash, exactly as dark-mode-polish-v2
+   (~84852) painted them — while every other page keeps the neutralized
+   #0a0a0a canvas.
+
+   Scoped with the app's own per-page hook: setView() (~27034/27041/27044)
+   toggles .content.aihub-active / .content.settings-active /
+   .content.focus-active, the same classes the zoom rules at ~89444 and
+   the contain rule at ~2459 already key off — so no JS was needed and
+   nothing else is touched.
+
+   Specificity: (0,3,2) — [data-theme] + .content + the page class in the
+   :has() argument — beats the (0,1,2) of §4, so order inside this sheet
+   does not matter. Delete this block to make the revert global again. */
+html[data-theme="dark"]:has(.content.aihub-active) body,
+html[data-theme="dark"]:has(.content.settings-active) body,
+html[data-theme="dark"]:has(.content.focus-active) body{
+  background-color:#060606 !important;
+  background-image:
+    radial-gradient(900px 500px at 10% 110%, rgba(200,180,255,0.020), transparent 70%) !important;
+}
+
 html[data-theme="dark"] ::placeholder{
   color:var(--text3);
   opacity:1;
