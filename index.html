@@ -5674,8 +5674,8 @@ body.x-showing .tabs{transition-delay:0.11s}
 #overlay .time-grid{gap:8px}
 #overlay .pri-btn-row{gap:6px}
 #overlay .pri-btn{padding:7px 6px;font-size:11.5px;border-radius:8px}
-#overlay .cat-btn-row{gap:5px;margin-top:1px}
-#overlay .cat-btn{padding:3px 9px;font-size:11px;border-radius:99px}
+#overlay .cat-btn-row{gap:4px;margin-top:1px}
+#overlay .cat-btn{padding:3px 8px;font-size:11px;border-radius:99px}
 #overlay .cat-row-wrap{gap:6px;margin-top:1px}
 #overlay .btn-mark-done{padding:3px 9px;font-size:10.5px}
 #overlay .form-hint{font-size:10.5px;margin-top:4px;line-height:1.35}
@@ -22752,6 +22752,17 @@ html:has(.backup-overlay.open){
                 <span class="settings-toggle-slider"></span>
               </label>
             </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <label class="settings-row-label" for="set-toast-mode">Notification style</label>
+                <div class="settings-row-desc">How in-app messages appear: standard, minimal (one at a time), or off</div>
+              </div>
+              <select class="settings-select" id="set-toast-mode" onchange="saveSettingsToastMode(this.value)" aria-label="Notification style">
+                <option value="standard">Standard</option>
+                <option value="minimal">Minimal</option>
+                <option value="off">Off</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -22932,7 +22943,7 @@ html:has(.backup-overlay.open){
                 <div class="settings-row-label">Default AI Model</div>
                 <div class="settings-row-desc">The model used when starting new conversations</div>
               </div>
-              <select class="settings-select" id="set-ai-model" onchange="saveAISetting('defaultModel',this.value)">
+              <select class="settings-select" id="set-ai-model" onchange="saveAISetting('defaultModel',this.value)" aria-label="Default AI model">
                 <!-- Populated dynamically by asstRefreshModels -->
               </select>
             </div>
@@ -22971,7 +22982,7 @@ html:has(.backup-overlay.open){
                 <div class="settings-row-label">Chat retention</div>
                 <div class="settings-row-desc">How long to keep conversation history</div>
               </div>
-              <select class="settings-select" id="set-ai-retention" onchange="saveAISetting('retention',this.value)">
+              <select class="settings-select" id="set-ai-retention" onchange="saveAISetting('retention',this.value)" aria-label="Chat retention">
                 <option value="7">7 days</option>
                 <option value="30" selected>30 days</option>
                 <option value="90">90 days</option>
@@ -22993,7 +23004,7 @@ html:has(.backup-overlay.open){
                 <div class="settings-row-label">Data access</div>
                 <div class="settings-row-desc">The AI works as a normal AI — no access to your Motion data</div>
               </div>
-              <select class="settings-select" id="set-ai-scope" onchange="saveAISetting('dataScope',this.value)" disabled>
+              <select class="settings-select" id="set-ai-scope" onchange="saveAISetting('dataScope',this.value)" disabled aria-label="Data access">
                 <option value="none" selected>No app data access (normal AI)</option>
               </select>
             </div>
@@ -23524,7 +23535,10 @@ html:has(.backup-overlay.open){
 <div class="overlay" id="overlay" onclick="handleOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">Add Time Block</div>
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Add Time Block</div>
+        <div class="modal-eyebrow" id="modalEyebrow" hidden></div>
+      </div>
       <button class="close-btn" onclick="closeModal()" aria-label="Close dialog">&#215;</button>
     </div>
     <div class="form-group">
@@ -23532,43 +23546,49 @@ html:has(.backup-overlay.open){
       <input class="form-input" type="text" id="fTitle" placeholder="e.g. Physics Chapter 5" maxlength="60"/>
     </div>
     <div class="form-group">
-      <label class="form-label" for="fNote">Note (optional)</label>
+      <label class="form-label" for="fNote">Note <span class="form-opt">optional</span></label>
       <input class="form-input" type="text" id="fNote" placeholder="e.g. Lectures 5–9, solve 3 problems" maxlength="80"/>
     </div>
-    <div class="form-group">
-      <label class="form-label">Category</label>
-      <button class="btn-mark-done btn-remove-block" id="removeBlockBtn" onclick="removeBlockFromModal()" title="Delete this block (sends to Trash)">🗑 Remove</button>
-      <div class="cat-row-wrap">
-        <div class="cat-btn-row" id="catBtnRow"></div>
-        <button class="btn-mark-done" id="markDoneBtn" onclick="markBlockDone()" title="Mark this block as completed">✓ Mark as done</button>
+    <div class="form-group" role="group" aria-labelledby="catGroupLabel">
+      <div class="field-head">
+        <span class="form-label" id="catGroupLabel">Category</span>
+        <div class="field-head-actions">
+          <button class="btn-mark-done" id="markDoneBtn" onclick="markBlockDone()" title="Mark this block as completed">✓ Mark as done</button>
+          <button class="btn-mark-done btn-remove-block" id="removeBlockBtn" onclick="removeBlockFromModal()" title="Delete this block (sends to Trash)">🗑 Remove</button>
+        </div>
       </div>
+      <div class="cat-btn-row" id="catBtnRow"></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Priority</label>
+    <div class="form-group" role="group" aria-labelledby="priGroupLabel">
+      <span class="form-label" id="priGroupLabel">Priority</span>
       <div class="pri-btn-row" id="priRow">
         <button type="button" class="pri-btn pri-high" data-pri="high" onclick="selectPriority('high')">🔴 High</button>
         <button type="button" class="pri-btn pri-med pri-active" data-pri="medium" onclick="selectPriority('medium')">🟠 Medium</button>
         <button type="button" class="pri-btn pri-low" data-pri="low" onclick="selectPriority('low')">🟢 Low</button>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Time</label>
-      <div class="time-grid">
-        <input class="form-input" type="time" id="fStart" value="09:00"/>
-        <input class="form-input" type="time" id="fEnd" value="10:00"/>
+    <div class="form-group" role="group" aria-labelledby="timeGroupLabel">
+      <div class="field-head">
+        <span class="form-label" id="timeGroupLabel">Time</span>
+        <span class="time-dur" id="fDurBadge">1h</span>
       </div>
+      <div class="time-grid">
+        <input class="form-input" type="time" id="fStart" value="09:00" aria-label="Start time"/>
+        <input class="form-input" type="time" id="fEnd" value="10:00" aria-label="End time"/>
+      </div>
+      <div class="form-hint time-warn" id="fTimeWarn" hidden></div>
     </div>
     <div class="form-group">
-      <label class="form-label" for="fTaskLink">Link a task (optional)</label>
+      <label class="form-label" for="fTaskLink">Link a task <span class="form-opt">optional</span></label>
       <select class="form-input" id="fTaskLink" onchange="onTaskLinkChange(this)">
         <option value="">— None —</option>
       </select>
-      <div class="form-hint" id="fTaskLinkHint">Pulls duration &amp; category from the task into this block.</div>
+      <div class="form-hint" id="fTaskLinkHint" hidden></div>
     </div>
 
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-save"   onclick="saveBlock()">Save Block</button>
+      <button class="btn btn-save" id="saveBlockBtn" onclick="saveBlock()">Save Block</button>
     </div>
   </div>
 </div>
@@ -23581,16 +23601,16 @@ const K_RULES = 'ft_rules_v1';
 const K_BLOCK = d => 'ft_blocks_v1_' + d;
 
 const TASK_CATEGORIES = [
-  {id:'study',      label:'📚 Study',         color:'#5b8def'},
-  {id:'skill',      label:'⚡ Skill Dev',      color:'#2de0c8'},
-  {id:'work',       label:'💼 Work',           color:'#e9bb52'},
-  {id:'exercise',   label:'🏃 Exercise',       color:'#2dd4a0'},
-  {id:'health',     label:'🌿 Health',         color:'#5ec96a'},
-  {id:'entertainment',label:'🎮 Entertainment',color:'#b48ee0'},
-  {id:'social',     label:'👥 Social',         color:'#d98aad'},
-  {id:'sleep',      label:'😴 Sleep',          color:'#818cf8'},
-  {id:'personal',   label:'🧘 Personal',       color:'#e09070'},
-  {id:'other',      label:'📌 Other',          color:'#8a88a4'},
+  {id:'study',      label:'Study',         color:'#5b8def'},
+  {id:'skill',      label:'Skill Dev',     color:'#2de0c8'},
+  {id:'work',       label:'Work',          color:'#e9bb52'},
+  {id:'exercise',   label:'Exercise',      color:'#2dd4a0'},
+  {id:'reading',    label:'Reading Book',  color:'#d98aad'},
+  {id:'entertainment',label:'Entertainment',color:'#b48ee0'},
+  {id:'health',     label:'Health',        color:'#5ec96a'},
+  {id:'sleep',      label:'Sleep',         color:'#818cf8'},
+  {id:'personal',   label:'Personal',      color:'#e09070'},
+  {id:'other',      label:'Other',         color:'#8a88a4'},
 ];
 
 const COLORS = [
@@ -23916,7 +23936,36 @@ function _invalidateBlocksCache(){_blocksCache=null;_blocksCacheKey='';}
 
 function td(s,e){if(!s||!e||typeof s!=='string'||typeof e!=='string')return 0;const[sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);if(!isFinite(sh)||!isFinite(sm)||!isFinite(eh)||!isFinite(em))return 0;return(eh*60+em)-(sh*60+sm);}
 function fmtDur(m){if(m<=0)return'—';const h=Math.floor(m/60),mn=m%60;return h&&mn?`${h}h ${mn}m`:h?`${h}h`:`${mn}m`;}
-function fmtTime(t){const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')} ${h<12?'am':'pm'}`;}
+/* ═══ CLOCK FORMATTING — single source of truth for Settings → Clock format ═══
+   `ft_settings_v1.clockFmt` is '12' (default) or '24'. The resolved flag is
+   cached so render loops never re-parse localStorage; saveSettings() refreshes
+   it whenever settings change. Every text formatter below routes through these
+   helpers so a 24-hour user sees 24-hour times everywhere. */
+var _motionClock24=null;
+function motionClockIs24(){
+  if(_motionClock24===null){
+    try{ _motionClock24=String(loadSettings().clockFmt||'12')==='24'; }
+    catch(e){ _motionClock24=false; }
+  }
+  return _motionClock24;
+}
+function motionSetClockFmt(v){ _motionClock24=String(v)==='24'; }
+function motionFormatHM(hh,mm){
+  hh=Number(hh)||0; mm=Number(mm)||0;
+  if(motionClockIs24()) return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  return (hh%12||12)+':'+String(mm).padStart(2,'0')+' '+(hh<12?'am':'pm');
+}
+function motionFormatClock(d,withSeconds){
+  if(!(d instanceof Date)) d=new Date(d);
+  const hh=d.getHours(),mm=String(d.getMinutes()).padStart(2,'0'),ss=String(d.getSeconds()).padStart(2,'0');
+  if(motionClockIs24()) return String(hh).padStart(2,'0')+':'+mm+(withSeconds?':'+ss:'');
+  return (hh%12||12)+':'+mm+(withSeconds?':'+ss:'')+' '+(hh<12?'am':'pm');
+}
+function fmtTime(t){
+  const[h,m]=String(t).split(':').map(Number);
+  if(!isFinite(h)||!isFinite(m))return String(t);
+  return motionFormatHM(h,m);
+}
 
 function renderBlocks(){
   const{day,sub}=dateInfo(offset);
@@ -23982,7 +24031,7 @@ function renderBlocks(){
         <div class="block-meta">
           <div class="block-dur">${dur>0?fmtDur(dur):'?'}</div>
           <div class="block-actions">
-            <button class="check-btn${b.done?' done':''}" onclick="toggleBlock(${i})">${b.done?'✓':''}</button>
+            <button class="check-btn${b.done?' done':''}" onclick="toggleBlock(${i})" aria-label="${b.done?'Mark block as not done':'Mark block as done'}" title="${b.done?'Mark as not done':'Mark as done'}">${b.done?'✓':''}</button>
             <button class="icon-btn" onclick="openEdit(${i})" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
             <button class="icon-btn del" onclick="delBlock(${i})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
           </div>
@@ -24086,6 +24135,7 @@ function parseTimeOfDay(str){
 /* formatTimeOfDay({hh,mm}) → '2:30 PM' style string for display. */
 function formatTimeOfDay(t){
   if(!t)return '';
+  if(motionClockIs24()) return String(t.hh||0).padStart(2,'0')+':'+String(t.mm||0).padStart(2,'0');
   let h=t.hh;const mm=String(t.mm).padStart(2,'0');
   const ap=h>=12?'PM':'AM';
   h=h%12;if(h===0)h=12;
@@ -25321,6 +25371,15 @@ function triggerFocusComplete(){
     const _ps=(_pe&&typeof _pe==='object')?(_pe.sessions||0):0;
     _flog[_hk]={mins:_pm+dur,sessions:_ps+1,updated:Date.now()};
     lsSet('ft_focus_log_v1',_flog);
+    // Settings → Pomodoro break reminder: prompt a break every N sessions today.
+    var _pb=parseInt(loadSettings().pomoBreak,10); if(!isFinite(_pb)||_pb<1)_pb=4;
+    var _sessToday=_ps+1;
+    if(_sessToday>0 && _sessToday%_pb===0){
+      if(typeof showToast==='function') showToast('Break time — '+_sessToday+' focus sessions done today. Long break earned.','☕',6000);
+      if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+        try{new Notification('Time for a break',{body:_sessToday+' focus sessions completed — step away for a few minutes.'});}catch(e){}
+      }
+    }
   }catch(e){}
   renderSessionLog();
   // Play completion sound (works in background tabs)
@@ -25430,6 +25489,13 @@ function toggleFocus(){
     updFocus();
   }else{
     focusOn=true;
+    // Settings → Focus mode auto-sound: start Brown Noise when a session begins.
+    try{
+      if(loadSettings().focusSound===true && typeof window._sndToggle==='function'
+         && typeof window._sndIsPlaying==='function' && !window._sndIsPlaying('brown')){
+        window._sndToggle('brown');
+      }
+    }catch(e){}
     focusEndTime=Date.now()+focusRem*1000;
     setFocusIcon('pause');
     setFocusRunning(true);
@@ -26532,8 +26598,31 @@ function selectCategory(id){
   selCategory = id;
   buildCategoryButtons();
 }
+/* Pre-fill the block modal's end time from Settings → Default block duration.
+   Only used when creating a new block; edit mode keeps the stored times. */
+function applyDefaultBlockDuration(){
+  const startEl=document.getElementById('fStart');
+  const endEl=document.getElementById('fEnd');
+  if(!startEl||!endEl) return;
+  let mins=60;
+  try{ const v=parseInt(loadSettings().blockDur,10); if(isFinite(v)&&v>=5) mins=v; }catch(e){}
+  const parts=String(startEl.value||'09:00').split(':').map(Number);
+  const startMin=(isFinite(parts[0])?parts[0]:9)*60+(isFinite(parts[1])?parts[1]:0);
+  const endMin=Math.min(startMin+mins, 23*60+59);
+  endEl.value=String(Math.floor(endMin/60)).padStart(2,'0')+':'+String(endMin%60).padStart(2,'0');
+}
 function openModal(isEdit=false){
   document.getElementById('modalTitle').textContent=isEdit?'Edit Block':'Add Time Block';
+  // Day context ("Today · Mar 4") so the target date is never ambiguous.
+  const _eb=document.getElementById('modalEyebrow');
+  if(_eb){
+    const _txt=blockModalEyebrow();
+    _eb.textContent=_txt;
+    _eb.hidden=!_txt;
+  }
+  // The linked-task hint starts empty; it only appears once a task is linked.
+  const _tlh=document.getElementById('fTaskLinkHint');
+  if(_tlh){ _tlh.textContent=''; _tlh.hidden=true; }
   const ov=document.getElementById('overlay');
   // Reset any inline transform/opacity/transition left over from a prior
   // closeModal() call. Without this, close→reopen within 250ms opens the
@@ -26559,11 +26648,18 @@ function openModal(isEdit=false){
   var removeBtn=document.getElementById('removeBlockBtn');
   if(removeBtn) removeBtn.style.display = isEdit ? '' : 'none';
   if(!isEdit){
+    // Adding a new block — clear any edit target left over from a previous
+    // session so saveBlock() inserts instead of overwriting a stale row.
+    editIdx=null;
+    editDateKey=null;
     selectPriority('medium');
     selCategory='other';
+    applyDefaultBlockDuration();
     buildCategoryButtons();
     setTimeout(()=>{ const el=document.getElementById('fTitle'); if(el) el.focus(); },80);
   }
+  initBlockModalUX();
+  updateBlockTimeUI();
 }
 
 /* buildTaskLinkOptions() — fills #fTaskLink with today's daily tasks + unscheduled tasks.
@@ -26612,7 +26708,7 @@ function onTaskLinkChange(selEl){
   const ref=selEl.value;
   const hint=document.getElementById('fTaskLinkHint');
   if(!ref){
-    if(hint)hint.textContent='Pulls duration & category from the task into this block.';
+    if(hint){ hint.textContent=''; hint.hidden=true; }
     return;
   }
   const [src,idStr]=ref.split(':');
@@ -26620,7 +26716,7 @@ function onTaskLinkChange(selEl){
   const list=(src==='daily')?loadDailyTasks():loadTasks();
   const t=list.find(x=>Number(x.id)===id);
   if(!t){
-    if(hint)hint.textContent='Task not found — it may have been deleted.';
+    if(hint){ hint.textContent='Task not found — it may have been deleted.'; hint.hidden=false; }
     return;
   }
   // Pre-fill title if empty
@@ -26656,8 +26752,11 @@ function onTaskLinkChange(selEl){
   if(t.deadline)bits.push('deadline: '+t.deadline);
   if(t.category)bits.push('category: '+t.category);
   if(hint){
-    hint.textContent=bits.length?('Linked: '+bits.join(' · ')):'Linked — no extra metadata on this task.';
+    if(bits.length){ hint.textContent='Linked: '+bits.join(' · '); hint.hidden=false; }
+    else { hint.textContent=''; hint.hidden=true; }
   }
+  // The linked task may have moved the end time — refresh the duration UI.
+  if(typeof updateBlockTimeUI==='function') updateBlockTimeUI();
 }
 function openEdit(i){
   editIdx=i;
@@ -26704,8 +26803,123 @@ function closeModal(){
   document.getElementById('fEnd').value='10:00';
   selColor=0;editIdx=null;selCategory='other';editDateKey=null;
   selectPriority('medium');
+  /* Clear the derived time UI (badge, chips, error/overlap note, Save state). */
+  updateBlockTimeUI();
 }
 function handleOverlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+/* ═══ BLOCK MODAL — time UX ═════════════════════════════════════════════
+   A live duration badge, quick-duration chips, inline validation and a
+   non-blocking overlap hint. Purely additive: saveBlock()'s validation and
+   the stored block shape are unchanged. */
+function blockModalParseHM(v){
+  const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return null;
+  const h=+m[1], mi=+m[2];
+  if(!isFinite(h)||!isFinite(mi)) return null;
+  return h*60+mi;
+}
+function blockModalDurLabel(mins){
+  if(!(mins>0)) return '—';
+  const h=Math.floor(mins/60), m=mins%60;
+  if(h&&m) return h+'h '+m+'m';
+  if(h) return h+'h';
+  return m+'m';
+}
+/* The day a block created/edited right now will land on: an explicit
+   editDateKey (calendar edit) wins, otherwise the list's current offset. */
+function blockModalTargetKey(){
+  if(typeof editDateKey==='string' && editDateKey) return editDateKey;
+  return dateKey(typeof offset==='number'?offset:0);
+}
+function blockModalEyebrow(){
+  const key=blockModalTargetKey();
+  const d=new Date(key+'T00:00:00');
+  if(isNaN(d.getTime())) return '';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diff=Math.round((d-today)/86400000);
+  const md=((typeof MONTHS!=='undefined'&&MONTHS[d.getMonth()])||'')+' '+d.getDate();
+  if(diff===0) return 'Today · '+md;
+  if(diff===1) return 'Tomorrow · '+md;
+  if(diff===-1) return 'Yesterday · '+md;
+  const dn=(typeof DAYS!=='undefined'&&DAYS[d.getDay()])||'';
+  return dn?dn+', '+md:md;
+}
+/* Existing blocks on the target day that overlap the given range.
+   Returns '' when there is nothing to report or the data is unreadable. */
+function blockOverlapHint(sm,em){
+  if(sm===null||em===null||em<=sm) return '';
+  try{
+    const key=blockModalTargetKey();
+    const arr=lsGet('ft_blocks_v1_'+key,[]);
+    if(!Array.isArray(arr)||!arr.length) return '';
+    const skip=(editIdx!==null&&editIdx!==undefined&&editIdx>=0)?editIdx:-1;
+    const hits=[];
+    for(let i=0;i<arr.length;i++){
+      if(i===skip) continue;
+      const b=arr[i]; if(!b) continue;
+      const bs=blockModalParseHM(b.start), be=blockModalParseHM(b.end);
+      if(bs===null||be===null) continue;
+      if(sm<be && em>bs) hits.push(b);
+    }
+    if(!hits.length) return '';
+    const names=hits.slice(0,2).map(b=>b.title||'Untitled').join(', ');
+    if(hits.length===1) return 'Overlaps “'+names+'”';
+    return 'Overlaps '+hits.length+' blocks'+(hits.length>2?' (incl. '+names+'…)':': '+names);
+  }catch(e){ return ''; }
+}
+/* Single place that reflects the current time fields into the UI:
+   duration badge, chip highlight, inline error, overlap note, Save state. */
+function updateBlockTimeUI(){
+  const sEl=document.getElementById('fStart'), eEl=document.getElementById('fEnd');
+  if(!sEl||!eEl) return;
+  const badge=document.getElementById('fDurBadge');
+  const warn=document.getElementById('fTimeWarn');
+  const saveBtn=document.getElementById('saveBlockBtn');
+  const sm=blockModalParseHM(sEl.value), em=blockModalParseHM(eEl.value);
+  let invalid=false, errText='';
+  if(sm===null||em===null){ invalid=true; errText='Set a start and end time.'; }
+  else if(em<=sm){ invalid=true; errText='End time must be after the start time.'; }
+  const mins=(sm!==null&&em!==null)?(em-sm):0;
+  if(badge){
+    badge.textContent=invalid?'—':blockModalDurLabel(mins);
+    badge.classList.toggle('is-invalid', invalid);
+  }
+  sEl.classList.toggle('is-invalid', invalid);
+  eEl.classList.toggle('is-invalid', invalid);
+  if(warn){
+    const overlap = invalid ? '' : blockOverlapHint(sm,em);
+    if(errText){ warn.hidden=false; warn.textContent=errText; warn.classList.add('is-error'); warn.classList.remove('is-overlap'); }
+    else if(overlap){ warn.hidden=false; warn.textContent=overlap; warn.classList.add('is-overlap'); warn.classList.remove('is-error'); }
+    else { warn.hidden=true; warn.textContent=''; warn.classList.remove('is-error','is-overlap'); }
+  }
+  if(saveBtn) saveBtn.disabled = invalid;
+}
+/* One-time wiring for the modal's time controls + Enter-to-save. */
+function initBlockModalUX(){
+  const ov=document.getElementById('overlay');
+  if(!ov||ov._blockUxBound) return;
+  ov._blockUxBound=true;
+  ['fStart','fEnd'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', updateBlockTimeUI);
+    el.addEventListener('change', updateBlockTimeUI);
+  });
+  ov.addEventListener('keydown', function(e){
+    if(e.key!=='Enter') return;
+    const t=e.target;
+    if(!t||t.tagName==='TEXTAREA'||t.tagName==='SELECT') return;
+    // Enter in the short text fields, or Ctrl/Cmd+Enter anywhere, saves.
+    if(t.id==='fTitle'||t.id==='fNote'||e.ctrlKey||e.metaKey){
+      const btn=document.getElementById('saveBlockBtn');
+      if(btn&&btn.disabled) return;
+      e.preventDefault();
+      saveBlock();
+    }
+  });
+}
+
 
 /* ═══ GLOBAL KEYBOARD: Escape closes any open modal/overlay ═══ */
 // Single delegated handler — works for any overlay that exposes .open class on a
@@ -26848,7 +27062,7 @@ function removeBlockFromModal(){
     const hh=String(n.getHours()).padStart(2,'0');
     const mm=String(n.getMinutes()).padStart(2,'0');
     const ss=String(n.getSeconds()).padStart(2,'0');
-    const display=hh+':'+mm+':'+ss;
+    const display=(typeof motionFormatClock==='function')?motionFormatClock(n,true):(hh+':'+mm+':'+ss);
     if(!document.hidden && el.textContent!==display) el.textContent=display;
     // Schedule next tick aligned to next second boundary
     const delay=1000-n.getMilliseconds();
@@ -27138,11 +27352,7 @@ function homeGreeting(){
 }
 
 function homeFormatClock(){
-  const d=new Date();
-  let h=d.getHours(),m=d.getMinutes();
-  const ap=h<12?'am':'pm';
-  h=h%12||12;
-  return String(h)+':'+String(m).padStart(2,'0')+' '+ap;
+  return motionFormatClock(new Date(), false);
 }
 
 function homeFormatDate(){
@@ -27995,7 +28205,7 @@ function renderDashboard(){
     h += `<div class="db-talloc-legend">`;
     sortedCats.forEach(([k,g],i) => {
       const cat = TASK_CATEGORIES.find(c => c.id===k) || { label:k };
-      const label = cat.label.replace(/^\S+\s/, '');
+      const label = cat.label;
       const pct = Math.round(g.mins/(totalCatMins||1)*100);
       const shade = _tallocShade(i);
       h += `<div class="db-talloc-row">
@@ -28107,7 +28317,7 @@ function renderDashboard(){
       const nm = b.title || b.task || 'Block';
       const current = viewingToday && isCurrent(b);
       const catObj = b.category ? (TASK_CATEGORIES.find(c => c.id===b.category)) : null;
-      const catPill = catObj ? `<span class="db-sched-cat-pill" style="color:${catObj.color}">${catObj.label.split(' ')[0]}</span>` : '';
+      const catPill = catObj ? `<span class="db-sched-cat-pill" style="color:${catObj.color}">${catObj.label}</span>` : '';
       const toggleAttr = viewingToday ? `onclick="event.stopPropagation();dbToggleBlock(${i})"` : '';
       const titleAttr = viewingToday ? (b.done?'Mark not done':'Mark done') : 'Read-only — switch to Today to edit';
       h += `<div class="db-sched-item${b.done?' done':''}${current?' current':''}${viewingToday?'':' ro'}">
@@ -37400,6 +37610,43 @@ function doRestore(event){
 /* ═══ SMOOTH UX ENHANCEMENTS ═══ */
 
 /* Toast system */
+/* ═══ TOAST ENGINE ═════════════════════════════════════════════════════
+   Toasts are acknowledgements, not a feed. Identical messages collapse
+   into a "×N" counter instead of stacking, the visible stack is capped,
+   and every card is click-to-dismiss with a progress bar. Verbosity is
+   user-controlled via Settings → Notification style. */
+var _toastByKey = Object.create(null);
+function _dismissToast(node, immediate){
+  if(!node || node._toastDismissed) return;
+  node._toastDismissed = true;
+  var cleanup = function(){
+    if(node.parentNode) node.remove();
+    var k = node._toastKey;
+    if(k && _toastByKey[k] && _toastByKey[k].el === node) delete _toastByKey[k];
+  };
+  if(immediate){ cleanup(); return; }
+  node.classList.add('out');
+  node._cleanupTimer = setTimeout(cleanup, 380);
+}
+function _refreshToast(entry, duration){
+  if(!entry || !entry.el || !entry.el.parentNode) return;
+  clearTimeout(entry.timer);
+  clearTimeout(entry.el._cleanupTimer);
+  entry.el._toastDismissed = false;
+  entry.el.classList.remove('out');
+  entry.count++;
+  var c = entry.el.querySelector('.toast-count');
+  if(c){ c.hidden = false; c.textContent = '\u00d7' + entry.count; }
+  var bar = entry.el.querySelector('.toast-bar');
+  if(bar){
+    /* Restart the countdown bar from full width. */
+    bar.style.animation = 'none';
+    void bar.offsetWidth;
+    bar.style.animation = '';
+    bar.style.animationDuration = duration + 'ms';
+  }
+  entry.timer = setTimeout(function(){ _dismissToast(entry.el); }, duration);
+}
 function showToast(msg, icon='✓', duration=2200){
   msg = (msg === null || msg === undefined) ? '' : String(msg);
   icon = (icon === null || icon === undefined) ? '✓' : String(icon);
@@ -37413,6 +37660,14 @@ function showToast(msg, icon='✓', duration=2200){
       'display:flex;flex-direction:column;gap:10px;pointer-events:none;');
     document.body ? document.body.appendChild(container) : document.documentElement.appendChild(container);
   }
+
+  /* Verbosity policy — set from Settings → Notification style. */
+  var _toastMode = 'standard';
+  try { _toastMode = String((loadSettings() || {}).toastMode || 'standard'); } catch(e){}
+  if (_toastMode === 'off') return;
+  var _toastMax = (_toastMode === 'minimal') ? 1 : 3;
+  if (_toastMode === 'minimal') duration = Math.max(900, Math.round(duration * 0.75));
+
   const el = document.createElement('div');
   el.className = 'toast';
   // Map emojis to clean SVG icons
@@ -37437,6 +37692,7 @@ function showToast(msg, icon='✓', duration=2200){
     '⏳':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14M5 21h14M7 3v2a8 8 0 0 0 10 0V3M7 21v-2a8 8 0 0 1 10 0v2"/></svg>',
     '📐':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>',
     '🔕':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+    '🔔':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M9 4a3 3 0 0 1 6 0"/></svg>',
     '✨':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
     '🔥':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-4 4-6 8-6 12a6 6 0 0 0 12 0c0-4-2-8-6-12z"/></svg>',
     '📝':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
@@ -37448,12 +37704,26 @@ function showToast(msg, icon='✓', duration=2200){
   // Escape the message text — many call sites pass user-controlled strings (task names,
   // API key labels, upstream API error messages) which would otherwise be XSS sinks.
   // svgIcon comes from our own static map (safe) or a startsWith('<svg') check from callers.
-  el.innerHTML = `<span class="toast-icon">${svgIcon}</span><span>${esc(cleanMsg)}</span>`;
+  el.innerHTML = `<span class="toast-icon">${svgIcon}</span><span class="toast-msg">${esc(cleanMsg)}<span class="toast-count" hidden></span></span><i class="toast-bar" style="animation-duration:${duration}ms"></i>`;
+
+  /* Collapse repeats — a second "Habit done" refreshes the first card and
+     bumps its counter rather than stacking a near-identical notification. */
+  const _prev = _toastByKey[cleanMsg];
+  if (_prev && _prev.el && _prev.el.parentNode) { _refreshToast(_prev, duration); return; }
+
+  el._toastKey = cleanMsg;
+  el.addEventListener('click', function(){ _dismissToast(el); });
   container.appendChild(el);
-  setTimeout(()=>{
-    el.classList.add('out');
-    setTimeout(()=>el.remove(), 320);
-  }, duration);
+
+  /* Never stack more than the cap — retire the oldest cards first. */
+  const _live = Array.from(container.children);
+  if (_live.length > _toastMax) {
+    _live.slice(0, _live.length - _toastMax).forEach(function(n){ _dismissToast(n, true); });
+  }
+
+  const _entry = { el: el, count: 1, timer: null };
+  _toastByKey[cleanMsg] = _entry;
+  _entry.timer = setTimeout(function(){ _dismissToast(el); }, duration);
 }
 
 /* Ripple effect */
@@ -37722,6 +37992,8 @@ document.addEventListener('click', e=>{
 
 /* Welcome toast on load */
 setTimeout(()=>{
+  // Settings → Welcome greeting toast (on by default).
+  try{ if(loadSettings().greeting===false) return; }catch(e){}
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning ☀️' : hour < 17 ? 'Good afternoon ⚡' : 'Good evening 🌙';
   showToast(greeting + ' — let\'s flow!', '👋', 2800);
@@ -37983,13 +38255,11 @@ function showUndoToast(message, onUndo, duration){
     +'</div>'
     +'<span class="undo-toast-progress" style="animation-duration:'+(duration/1000)+'s;"></span>';
   container.appendChild(toast);
-  // Animate in (reuse the app's toastIn keyframe if present)
-  toast.style.animation='toastIn .42s cubic-bezier(.34,1.56,.64,1) both';
   let done=false;
   function finish(){
     if(done) return; done=true;
-    toast.style.animation='toastOut .32s ease forwards';
-    setTimeout(function(){ if(toast.parentNode) toast.parentNode.removeChild(toast); },340);
+    toast.classList.add('out');
+    setTimeout(function(){ if(toast.parentNode) toast.parentNode.removeChild(toast); },380);
   }
   toast.querySelector('.undo-toast-btn').addEventListener('click', function(){
     if(done) return;
@@ -41078,15 +41348,22 @@ function animateCount(el,target,unit=''){
 /* K_SETTINGS now lives with the storage helpers (see STORAGE HELPERS above)
    so it is initialised before bootInitialView() runs. */
 function loadSettings(){ return lsGet(K_SETTINGS, {}); }
-function saveSettings(obj){ lsSet(K_SETTINGS, obj); }
+function saveSettings(obj){ _motionClock24=String((obj||{}).clockFmt||'12')==='24'; lsSet(K_SETTINGS, obj); }
 
 function saveSettingsDayStart(v){ const s=loadSettings(); s.dayStart=v; saveSettings(s); showToast('Day start saved','⏰',1600); }
-function saveSettingsClockFmt(v){ const s=loadSettings(); s.clockFmt=v; saveSettings(s); showToast('Clock format updated','🕐',1600); }
+function saveSettingsClockFmt(v){ const s=loadSettings(); s.clockFmt=v; saveSettings(s); motionSetClockFmt(v); try{ const lc=document.getElementById('liveClock'); if(lc) lc.textContent=motionFormatClock(new Date(),true); if(typeof currentView==='string'){ if(currentView==='blocks'&&typeof renderBlocks==='function') renderBlocks(); if(currentView==='home'&&typeof renderHome==='function') renderHome(); } }catch(e){} showToast('Clock format updated','🕐',1600); }
 function saveSettingsBlockDur(v){ const s=loadSettings(); s.blockDur=parseInt(v)||60; saveSettings(s); }
 function saveSettingsWeekStart(v){ const s=loadSettings(); s.weekStart=parseInt(v); saveSettings(s); showToast('Week start updated','📅',1600); }
 function saveSettingsPomoBreak(v){ const s=loadSettings(); s.pomoBreak=parseInt(v)||4; saveSettings(s); }
 function saveSettingsTheme(v){ const s=loadSettings(); s.theme=v; saveSettings(s); }
 function saveSettingsToggle(key,val){ const s=loadSettings(); s[key]=val; saveSettings(s); showToast(val ? 'Enabled' : 'Disabled','✓',1200); }
+/* Notification verbosity. Confirm before persisting so the switch itself
+   still gives feedback when moving to the quietest setting. */
+function saveSettingsToastMode(v){
+  v = (v === 'minimal' || v === 'off') ? v : 'standard';
+  showToast(v === 'off' ? 'Notifications turned off' : v === 'minimal' ? 'Minimal notifications on' : 'Standard notifications on', '🔔', 1500);
+  const s = loadSettings(); s.toastMode = v; saveSettings(s);
+}
 
 /* ═══ Focus timer font picker ═══
    Stores a short key (e.g. 'orbitron') in ft_settings_v1.timerFont.
@@ -41219,6 +41496,9 @@ function initSettingsPage(){
   // Pomo break
   const pb = document.getElementById('set-pomo-break');
   if(pb) pb.value = s.pomoBreak || 4;
+  // Notification style
+  const tm = document.getElementById('set-toast-mode');
+  if(tm) tm.value = s.toastMode || 'standard';
   // Theme selector
   const ts = document.getElementById('set-theme-sel');
   if(ts){
@@ -41679,7 +41959,8 @@ function buildDayColCells(dateStr, isToday) {
     const startLabel = fmtH(sh) + fmtM(sm) + ampm(sh);
     const endLabel   = fmtH(eh) + fmtM(em) + ampm(eh);
     // Full time range + decimal duration: 11:30–12:45 · 1.5h
-    const fmt24 = (h, m) => String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    // Honours Settings → Clock format (24h users see 11:30, 12h users 11:30 am).
+    const fmt24 = (h, m) => (typeof motionFormatHM === 'function') ? motionFormatHM(h, m) : (String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
     const durDecimal = Math.round(durMins / 60 * 10) / 10;
     const timeLabel = fmt24(sh, sm) + '–' + fmt24(eh, em) + ' · ' + durDecimal + 'h';
 
@@ -41730,7 +42011,12 @@ function bcalCellClick(dateStr, hour) {
     const startEl = document.getElementById('fStart');
     if (startEl) startEl.value = String(hour).padStart(2,'0') + ':00';
     const endEl = document.getElementById('fEnd');
-    if (endEl) endEl.value = String(Math.min(hour+1,23)).padStart(2,'0') + ':00';
+    // Honour Settings → Default block duration for the end time.
+    let _bd = 60;
+    try { const _v = parseInt(loadSettings().blockDur, 10); if(isFinite(_v) && _v>=5) _bd = _v; } catch(e){}
+    const _endMin = Math.min(hour*60 + _bd, 23*60+59);
+    if (endEl) endEl.value = String(Math.floor(_endMin/60)).padStart(2,'0') + ':' + String(_endMin%60).padStart(2,'0');
+    if (typeof updateBlockTimeUI === 'function') updateBlockTimeUI();
   }, 60);
 }
 
@@ -41827,7 +42113,7 @@ function renderBlocksDayView() {
   const bodyEl = document.getElementById('bcalBody');
   const nowPxD = isToday ? ((now.getHours() - BVT_HOURS_START) + now.getMinutes()/60) * BVT_HOUR_PX : -1;
   const nowLineD = nowPxD >= 0 ? `<div class="bcal-now-line" style="top:${nowPxD}px"><div class="bcal-now-dot"></div></div>` : '';
-  const nowTimeD = nowPxD >= 0 ? `<div class="bcal-now-time" style="top:${nowPxD}px">${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</div>` : '';
+  const nowTimeD = nowPxD >= 0 ? `<div class="bcal-now-time" style="top:${nowPxD}px">${(typeof motionFormatHM==='function')?motionFormatHM(now.getHours(),now.getMinutes()):(String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'))}</div>` : '';
   bodyEl.innerHTML = `
     <div class="bcal-time-gutter" style="height:${totalPx}px;position:relative">${buildTimeGutter()}${nowTimeD}</div>
     <div class="bcal-cols day-mode" style="height:${totalPx}px;position:relative">${buildDayColCells(dateStr, isToday)}${nowLineD}</div>`;
@@ -41842,9 +42128,12 @@ function renderBlocksDayView() {
 function renderBlocksWeekView() {
   const today = new Date(); today.setHours(0,0,0,0);
   const dow = today.getDay();
-  const daysToMon = (dow + 6) % 7;
+  // Honour Settings → Week starts on (0=Sun, 1=Mon, 6=Sat). Default Monday.
+  let _ws = 1;
+  try { const _v = parseInt(loadSettings().weekStart, 10); if(isFinite(_v) && _v>=0 && _v<=6) _ws = _v; } catch(e){}
+  const daysFromStart = (dow - _ws + 7) % 7;
   const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - daysToMon + bvtWeekOffset * 7);
+  weekStart.setDate(today.getDate() - daysFromStart + bvtWeekOffset * 7);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
 
@@ -41897,7 +42186,7 @@ function renderBlocksWeekView() {
     const hh = String(now.getHours()).padStart(2,'0');
     const mm = String(now.getMinutes()).padStart(2,'0');
     nowLineW = `<div class="bcal-now-line" style="top:${nowPxW}px"><div class="bcal-now-dot"></div></div>`;
-    nowTimeW = `<div class="bcal-now-time" style="top:${nowPxW}px">${hh}:${mm}</div>`;
+    nowTimeW = `<div class="bcal-now-time" style="top:${nowPxW}px">${(typeof motionFormatHM==='function')?motionFormatHM(now.getHours(),now.getMinutes()):(hh+':'+mm)}</div>`;
   }
 
   const bodyEl = document.getElementById('bcalBody');
@@ -43391,7 +43680,7 @@ function renderProgressPanel() {
       const prevMins = prevCatMap[k] || 0;
       const trend = prevMins > 0 ? Math.round((g.mins-prevMins)/prevMins*100) : 0;
       const trendIcon = trend > 5 ? '↑' : trend < -5 ? '↓' : '→';
-      html += '<div class="da-cat-row"><span class="da-cat-row-icon">'+cat.label.split(' ')[0]+'</span><span class="da-cat-row-name">'+cat.label.replace(/^[^\s]+\s/,'')+'</span><div class="da-cat-row-track"><div class="da-cat-row-fill" data-w="'+Math.round(g.mins/maxCatMins*100)+'" style="width:0%;background:linear-gradient(90deg,'+cat.color+'bb,'+cat.color+'66)"></div></div><span class="da-cat-row-hours">'+fmtDur(g.mins)+'</span><span class="da-cat-row-pct">'+pct+'%</span><span class="da-cat-row-trend">'+trendIcon+'</span></div>';
+      html += '<div class="da-cat-row"><span class="da-cat-row-icon"><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:'+cat.color+'"></span></span><span class="da-cat-row-name">'+cat.label+'</span><div class="da-cat-row-track"><div class="da-cat-row-fill" data-w="'+Math.round(g.mins/maxCatMins*100)+'" style="width:0%;background:linear-gradient(90deg,'+cat.color+'bb,'+cat.color+'66)"></div></div><span class="da-cat-row-hours">'+fmtDur(g.mins)+'</span><span class="da-cat-row-pct">'+pct+'%</span><span class="da-cat-row-trend">'+trendIcon+'</span></div>';
     });
     html += '</div>';
   }
@@ -44014,7 +44303,8 @@ function initAssistant(skipDirtyMark){
     document.addEventListener('paste', function(e){
       var view = document.getElementById('view-assistant');
       if(!view || view.style.display==='none') return;
-      var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      var _cd = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+      var items = _cd ? _cd.items : null;
       if(!items) return;
       var hasImg = false;
       for(var i=0;i<items.length;i++){
@@ -46935,8 +47225,13 @@ function asstFindFreeSlotToday(durMin){
     }).filter(function(iv){ return iv.e > iv.s; })
       .sort(function(a, b){ return a.s - b.s; });
 
-    // Scan from 7:00 to 23:00 - durMin
-    var dayStart = 7 * 60;     // 7:00am
+    // Scan from Settings → Day start (default 07:00) to 23:00 - durMin
+    var dayStart = 7 * 60;     // 7:00am default
+    try {
+      var _ds = String(loadSettings().dayStart || '07:00').split(':');
+      var _dsh = parseInt(_ds[0], 10), _dsm = parseInt(_ds[1], 10);
+      if(isFinite(_dsh) && _dsh >= 0 && _dsh < 24) dayStart = _dsh * 60 + (isFinite(_dsm) ? _dsm : 0);
+    } catch(e){}
     var dayEnd = 23 * 60;      // 11:00pm
     var cursor = dayStart;
     var now = new Date();
@@ -51005,7 +51300,11 @@ function asstHandlePaste(e){
   if(asstHandlePaste._lastTs && (now - asstHandlePaste._lastTs) < 80) return;
   asstHandlePaste._lastTs = now;
 
-  var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+  var items = (function(){
+    if(!e) return null;
+    var cd = e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
+    return cd ? cd.items : null;
+  })();
   if(!items) return;
   /* Process only the FIRST image item, then break. Some OSes put the
      same image in multiple formats (e.g. image/png + image/jpeg) in the
@@ -90954,6 +91253,7 @@ function ofcGridDblClick(e){
 /* ═══ Clipboard (copy / cut / paste as TSV) ═══ */
 function ofcGridCopy(e){
   if(ofcEditing) return;
+  if(!e || !e.clipboardData) return;
   e.clipboardData.setData('text/plain', ofcSelTSV());
   e.preventDefault();
 }
@@ -90964,6 +91264,7 @@ function ofcGridCut(e){
 }
 function ofcGridPaste(e){
   if(ofcEditing) return;
+  if(!e || !e.clipboardData) return;
   e.preventDefault();
   var text = e.clipboardData.getData('text/plain');
   if(text) ofcPasteTSV(text);
@@ -97014,7 +97315,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     var _tc = doc.getElementById('toast-container');
     if (_tc){
       var _capMo = new MutationObserver(function(){
-        while (_tc.children.length > 6) _tc.removeChild(_tc.firstChild);
+        while (_tc.children.length > 4) _tc.removeChild(_tc.firstChild);
       });
       _capMo.observe(_tc, { childList:true });
     }
@@ -98012,10 +98313,11 @@ html[data-theme="pure-light"] #view-sound .sound-play-btn.on:hover{
   function homeRenderClock(){
     var d = new Date();
     var h = d.getHours(), m = d.getMinutes();
-    var ap = h < 12 ? 'am' : 'pm';
-    h = h % 12 || 12;
-    return '<span>' + h + '</span><span class="hcc">:</span><span>' +
-           String(m).padStart(2, '0') + '</span><small class="hcap">' + ap + '</small>';
+    var mm = String(m).padStart(2, '0');
+    var is24 = (typeof motionClockIs24 === 'function') && motionClockIs24();
+    var hourTxt = is24 ? String(h).padStart(2, '0') : String(h % 12 || 12);
+    var cap = is24 ? '' : '<small class="hcap">' + (h < 12 ? 'am' : 'pm') + '</small>';
+    return '<span>' + hourTxt + '</span><span class="hcc">:</span><span>' + mm + '</span>' + cap;
   }
 
   /* Sun-arc dial. Day 06:00–18:00 rides the arc (6→18h maps 28→92px);
@@ -99229,6 +99531,357 @@ html[data-theme="pure-light"] #view-settings .settings-section:hover{
     boot();
   }
   window.addEventListener('load', boot);
+})();
+</script>
+
+<style id="toast-v2">
+/* ═══ TOAST v2 — quieter, more refined in-app messages ══════════════════
+   One authoritative last-layer definition so it wins over the older toast
+   rules scattered through the sheet. Motion is re-declared with !important
+   because an earlier layer pinned the entrance animation that way; the
+   reduced-motion block at the end restores it for users who ask for less. */
+
+#toast-container{
+  position:fixed;
+  bottom:max(22px, env(safe-area-inset-bottom, 0px));
+  right:22px;
+  left:auto;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:10px;
+  pointer-events:none;
+  max-width:min(380px, calc(100vw - 44px));
+}
+
+#toast-container .toast{
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:230px;
+  max-width:min(380px, calc(100vw - 44px));
+  padding:12px 16px 14px;
+  border-radius:16px !important;
+  background:var(--bg2) !important;
+  border:1px solid var(--border) !important;
+  color:var(--text) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.045) inset,
+    0 18px 42px -14px rgba(0,0,0,.55),
+    0 4px 14px -8px rgba(0,0,0,.4) !important;
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  font-size:13px;
+  font-weight:500;
+  line-height:1.45;
+  letter-spacing:.005em;
+  pointer-events:auto;
+  cursor:pointer;
+  animation:toastInV2 .5s cubic-bezier(.16,1,.3,1) both !important;
+  transition:transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s ease;
+}
+#toast-container .toast:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 22px 50px -14px rgba(0,0,0,.6),
+    0 6px 18px -8px rgba(0,0,0,.45) !important;
+}
+#toast-container .toast::before{ content:none; }
+#toast-container .toast.out{
+  animation:toastOutV2 .34s cubic-bezier(.4,0,.7,.2) forwards !important;
+}
+
+/* Icon chip */
+#toast-container .toast-icon{
+  width:30px;height:30px;
+  flex:0 0 30px;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-glow3);
+  color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent-glow2) inset;
+  font-size:0;
+}
+#toast-container .toast-icon svg{ width:16px;height:16px; }
+
+/* Message — clamps to two lines, then ellipsises. */
+#toast-container .toast-msg{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow-wrap:anywhere;
+}
+#toast-container .toast-count{
+  display:inline-block;
+  margin-left:7px;
+  padding:1px 6px;
+  border-radius:999px;
+  background:var(--accent-glow3);
+  color:var(--accent);
+  font-size:11px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  vertical-align:1px;
+}
+
+/* Auto-dismiss countdown */
+#toast-container .toast-bar{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:2.5px;
+  background:linear-gradient(90deg, var(--accent), var(--accent-glow4, var(--accent)));
+  transform-origin:0 50%;
+  opacity:.85;
+  animation-name:toastBar;
+  animation-timing-function:linear;
+  animation-fill-mode:forwards;
+}
+@keyframes toastBar{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
+
+@keyframes toastInV2{
+  0%   { opacity:0; transform:translateY(16px) scale(.97); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes toastOutV2{
+  0%   { opacity:1; transform:translateY(0) scale(1); }
+  100% { opacity:0; transform:translateY(6px) scale(.985); }
+}
+
+/* Undo toast reuses .toast — match the new card's spacing. */
+#toast-container .undo-toast-inner{ display:flex;align-items:center;gap:12px;width:100%; }
+#toast-container .undo-toast-btn{
+  flex:0 0 auto;
+  margin-left:auto;
+  padding:5px 12px;
+  border-radius:9px;
+  border:1px solid var(--accent-glow2);
+  background:var(--accent-glow3);
+  color:var(--accent);
+  font:inherit;font-weight:600;
+  cursor:pointer;
+}
+#toast-container .undo-toast-progress{
+  position:absolute;left:0;bottom:0;height:2.5px;width:100%;
+  transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--accent),var(--accent-glow4,var(--accent)));
+  animation-name:toastBar;
+  animation-timing-function:linear;
+  animation-fill-mode:forwards;
+}
+
+/* Light themes need a stronger edge than dark ones do. */
+html[data-theme="light"] #toast-container .toast,
+html[data-theme="pure-light"] #toast-container .toast{
+  background:var(--bg2) !important;
+  border:1px solid rgba(15,17,33,.10) !important;
+  color:var(--text) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.7) inset,
+    0 10px 30px -8px rgba(15,17,33,.18),
+    0 2px 8px -4px rgba(15,17,33,.12) !important;
+}
+
+/* Phones — hug the bottom edge, stretch across. */
+@media (max-width: 560px){
+  #toast-container{
+    left:14px;
+    right:14px;
+    bottom:max(14px, env(safe-area-inset-bottom, 0px));
+    align-items:stretch;
+    max-width:none;
+  }
+  #toast-container .toast{ min-width:0; max-width:none; width:100%; }
+}
+
+/* Honour reduced-motion: land on the final frame, no travel. */
+@media (prefers-reduced-motion: reduce){
+  #toast-container .toast,
+  #toast-container .toast.out{ animation-duration:.001s !important; }
+}
+</style>
+
+<style id="block-modal-v2">
+/* ═══ BLOCK MODAL v2 — header context, time controls, feedback ══════════
+   Scoped to #overlay (the Add/Edit Time Block dialog only) and appended
+   last so it wins over the earlier modal layers. Purely presentational:
+   every id/onclick it styles already existed or is wired in JS. */
+
+/* Header: title + day context */
+#overlay .modal-head{ min-width:0; }
+#overlay .modal-eyebrow{
+  margin-top:3px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.02em;
+  color:var(--text3);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Shared "label on the left, control on the right" field header */
+#overlay .field-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:4px;
+}
+#overlay .field-head .form-label{ margin-bottom:0; }
+#overlay .field-head-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-left:auto;
+}
+#overlay .field-head-actions .btn-mark-done{
+  margin-left:0;
+  padding:3px 9px;
+  font-size:10.5px;
+}
+#overlay .field-head-actions .btn-remove-block{
+  display:inline-flex;
+  align-items:center;
+  margin:0;
+  padding:3px 9px;
+  font-size:10.5px;
+}
+
+/* "optional" tag beside field labels */
+#overlay .form-opt{
+  font-weight:600;
+  letter-spacing:.04em;
+  text-transform:none;
+  color:var(--text3);
+  opacity:.7;
+}
+
+/* Live duration badge */
+#overlay .time-dur{
+  flex:0 0 auto;
+  padding:2px 9px;
+  border-radius:999px;
+  background:var(--accent-glow3);
+  color:var(--accent);
+  font-size:11px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.01em;
+  transition:background .2s,color .2s;
+}
+#overlay .time-dur.is-invalid{
+  background:rgba(248,113,113,.14);
+  color:#f87171;
+}
+
+/* Inline validation + overlap note */
+#overlay .time-warn{
+  margin-top:5px;
+  font-style:normal;
+  font-weight:600;
+}
+#overlay .time-warn[hidden]{ display:none; }
+#overlay .time-warn.is-error{ color:#f87171; }
+#overlay .time-warn.is-overlap{ color:var(--text2); opacity:.9; }
+#overlay .form-input.is-invalid{
+  border-color:#f87171 !important;
+  box-shadow:0 0 0 3px rgba(248,113,113,.14) !important;
+}
+
+/* Save button — unmistakable disabled state */
+#overlay .btn-save:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  filter:grayscale(.25);
+  box-shadow:none !important;
+  transform:none !important;
+}
+
+/* Light themes: chips sit on a white surface.
+   :where() keeps the selector at (1,1,0) so .is-active below still wins. */
+:where(html[data-theme="light"],html[data-theme="pure-light"]) #overlay .dur-chip{
+  background:#fff;
+  border-color:rgba(15,17,33,.14);
+  color:rgba(15,17,33,.62);
+}
+:where(html[data-theme="light"],html[data-theme="pure-light"]) #overlay .dur-chip:hover:not(.is-active){
+  background:#fff;
+  border-color:rgba(15,17,33,.3);
+  color:#0f1121;
+}
+
+/* Narrow screens: chips wrap, header actions stay on one line */
+@media (max-width:420px){
+  #overlay .modal{ max-width:100%; }
+  #overlay .field-head{ flex-wrap:wrap; row-gap:4px; }
+}
+</style>
+
+<script id="settings-behavior-bridge">
+/* ═══════════════════════════════════════════════════════════
+   SETTINGS BEHAVIOR BRIDGE
+   Makes the remaining Settings controls functional:
+     • Auto-clear old blocks (>90 days) on boot
+     • Block-end notifications (toast + optional browser notification)
+   Each is guarded and self-contained. Remove this <script> to revert.
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  /* ── Auto-clear: drop day-block buckets older than 90 days ── */
+  try {
+    if (loadSettings().autoclear === true) {
+      var cutoff = Date.now() - 90 * 86400000;
+      var kill = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        var m = k && k.match(/^ft_blocks_v1_(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) continue;
+        var t = new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+        if (isFinite(t) && t < cutoff) kill.push(k);
+      }
+      kill.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    }
+  } catch(e){}
+
+  /* ── Block-end notifications ──
+     Polls once a minute; fires a single toast (+ browser notification when
+     permitted) the first time a block's end time crosses. Deduped per
+     (date, title, start, end) so re-renders and reloads don't spam. */
+  var _beNotified = {};
+  function _beMin(s){ var p = String(s||'').split(':'); return (parseInt(p[0],10)||0)*60 + (parseInt(p[1],10)||0); }
+  setInterval(function(){
+    var s; try { s = loadSettings(); } catch(e){ return; }
+    if (s.notif === false) return;
+    var todayKey, blocks;
+    try {
+      todayKey = dateKey(0);
+      blocks = lsGet('ft_blocks_v1_' + todayKey, []);
+    } catch(e){ return; }
+    if (!Array.isArray(blocks) || !blocks.length) return;
+    var now = new Date(), nowMin = now.getHours()*60 + now.getMinutes();
+    blocks.forEach(function(b){
+      if (!b || !b.end || b.done) return;
+      var em = _beMin(b.end);
+      var diff = nowMin - em;
+      if (diff < 0 || diff > 1) return; /* only within the minute after it ends */
+      var k = todayKey + '|' + (b.title||'') + '|' + (b.start||'') + '|' + b.end;
+      if (_beNotified[k]) return;
+      _beNotified[k] = 1;
+      var title = b.title || 'Your time block';
+      if (!document.hidden && typeof showToast === 'function') showToast('"' + title + '" just ended', '⏰', 4200);
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        try { new Notification('Time block ended', { body: title }); } catch(e){}
+      }
+    });
+  }, 60000);
 })();
 </script>
 
