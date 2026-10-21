@@ -27737,7 +27737,7 @@ function dbQuickAddTask(){
       const rows = dbTopTasksList();
       list.innerHTML = rows.length
         ? rows.map(dbTaskRowHtml).join('')
-        : '<div class="db-empty">Nothing due today. Add one below.</div>';
+        : '<div class="db-ra-empty db-ra-empty-sm"><div class="db-ra-empty-title">No tasks due today</div><div class="db-ra-empty-sub">Add one below.</div></div>';
     }
 
     inp.value = '';
@@ -28206,15 +28206,10 @@ function renderDashboard(){
        --accent2 CSS variables (via color-mix), so segments automatically
        reflow to whichever theme is active — no fixed hex values. */
     const _tallocShade = (i) => {
-      const mixes = [
-        'color-mix(in srgb, var(--accent) 100%, transparent 0%)',
-        'color-mix(in srgb, var(--accent2) 100%, transparent 0%)',
-        'color-mix(in srgb, var(--accent) 45%, var(--accent2) 55%)',
-        'color-mix(in srgb, var(--accent) 65%, var(--text3) 35%)',
-        'color-mix(in srgb, var(--accent2) 55%, var(--text3) 45%)',
-        'color-mix(in srgb, var(--accent) 30%, var(--accent2) 70%)'
-      ];
-      return mixes[i % mixes.length];
+      /* Neutral ramp: lightness steps of --text over the card surface, so
+         categories stay distinguishable without adding any hue. */
+      const steps = [88, 66, 50, 38, 28, 20];
+      return 'color-mix(in srgb, var(--text) ' + steps[i % steps.length] + '%, var(--bg3))';
     };
 
     /* Legend */
@@ -28233,7 +28228,10 @@ function renderDashboard(){
     });
     h += `</div>`;
   } else {
-    h += `<div class="db-empty db-talloc-empty">Nothing scheduled for this period.</div>`;
+    h += `<div class="db-ra-empty">
+      <div class="db-ra-empty-title">No time planned</div>
+      <div class="db-ra-empty-sub">Add a time block to get started.</div>
+    </div>`;
   }
 
   h += `</div></div>`;
@@ -28304,10 +28302,15 @@ function renderDashboard(){
         ${graphBars}
       </div>
       <div class="db-graph-foot">
-        <span><i></i>Daily completion — blocks, habits &amp; focus</span>
+        <span><i></i>Blocks, habits &amp; focus</span>
         <span>Best ${graphBest}%</span>
       </div>
-    </div>` : `<div class="db-empty">Not enough data yet — <button class="db-link" onclick="setView('blocks',null)">add a time block</button> or check off a habit to start your progress graph.</div>`}
+    </div>` : `<div class="db-ra-empty">
+      <span class="db-ra-empty-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg></span>
+      <div class="db-ra-empty-title">Nothing to chart yet</div>
+      <div class="db-ra-empty-sub">Add a time block or check off a habit to start your progress graph.</div>
+      <button class="db-ra-empty-btn" onclick="setView('blocks',null)">Add a time block</button>
+    </div>`}
   </div>`;
 
   h += `</div>`; /* end row-2 */
@@ -28336,11 +28339,22 @@ function renderDashboard(){
       const catPill = catObj ? `<span class="db-sched-cat-pill" style="color:${catObj.color}">${catObj.label}</span>` : '';
       const toggleAttr = viewingToday ? `onclick="event.stopPropagation();dbToggleBlock(${i})"` : '';
       const titleAttr = viewingToday ? (b.done?'Mark not done':'Mark done') : 'Read-only — switch to Today to edit';
+      /* Agenda layout: start time on the left ("9:00" / "AM"), and a quiet
+         "Ends 10:00 AM · 1h" line under the block name. */
+      const _sParts = fmtT(b.start).split(' ');
+      let schedMeta = '';
+      if(b.end){
+        const _sm = parseInt(b.start.split(':')[0],10)*60 + parseInt(b.start.split(':')[1],10);
+        const _em = parseInt(b.end.split(':')[0],10)*60 + parseInt(b.end.split(':')[1],10);
+        schedMeta = (_em > _sm ? fmtDur(_em - _sm) + ' · ' : '') + 'ends ' + fmtT(b.end);
+      }
       h += `<div class="db-sched-item${b.done?' done':''}${current?' current':''}${viewingToday?'':' ro'}">
         <button type="button" class="db-sched-check${b.done?' checked':''}" ${toggleAttr} title="${titleAttr}" aria-pressed="${b.done?'true':'false'}" aria-label="${esc(nm)}"${viewingToday?'':' disabled'}>${b.done?'✓':''}</button>
-        <div class="db-sched-time">${fmtT(b.start)}</div>
-        <div class="db-sched-bar"></div>
-        <div class="db-sched-name">${esc(nm)}</div>
+        <div class="db-sched-time"><span class="db-sched-start">${_sParts[0]}</span><span class="db-sched-ampm">${_sParts[1]||''}</span></div>
+        <div class="db-sched-main">
+          <div class="db-sched-name">${esc(nm)}</div>
+          ${schedMeta ? `<div class="db-sched-meta">${schedMeta}</div>` : ''}
+        </div>
         ${current ? '<div class="db-sched-now-badge">Now</div>' : catPill}
       </div>`;
     });
@@ -28361,7 +28375,7 @@ function renderDashboard(){
     <div class="db-task-list">`;
   if(topTasks.length){
     topTasks.forEach(t => { h += dbTaskRowHtml(t); });
-  } else {      h += `<div class="db-empty">Nothing due today. Add one below.</div>`;
+  } else {      h += `<div class="db-ra-empty db-ra-empty-sm"><div class="db-ra-empty-title">No tasks due today</div><div class="db-ra-empty-sub">Add one below.</div></div>`;
   }
   h += `</div>
     <div class="db-inline-add">
@@ -100327,6 +100341,298 @@ html[data-theme="pure-light"] #toast-container .toast{
   };
 })();
 </script>
+
+
+<style id="db-row2-polish">
+/* DASHBOARD ROW 2 — Time Allocation + Progress. Neutral, hue-free: every fill
+   is --text mixed over the surface (grayscale in dark, still correct in light).
+   Last in the cascade; scoped to #view-dashboard .db-row-2. */
+#view-dashboard .db-row-2{gap:10px !important;align-items:stretch}
+#view-dashboard .db-row-2 .db-section{padding:18px 20px !important;gap:0}
+#view-dashboard .db-row-2 .db-section-head{margin-bottom:16px !important}
+#view-dashboard .db-ra-empty{
+  flex:1;min-height:170px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:20px 16px;text-align:center;border-radius:12px;
+  background:color-mix(in srgb,var(--text) 2.2%,transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 6%,transparent);
+}
+#view-dashboard .db-ra-empty-ico{
+  width:40px;height:40px;border-radius:12px;margin-bottom:6px;
+  display:flex;align-items:center;justify-content:center;color:var(--text3);
+  background:color-mix(in srgb,var(--text) 5%,transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent);
+}
+#view-dashboard .db-ra-empty-title{font:650 13px var(--font-body);color:var(--text);letter-spacing:-.005em}
+#view-dashboard .db-ra-empty-sub{font:500 12px/1.5 var(--font-body);color:var(--text3);max-width:240px}
+#view-dashboard .db-ra-empty-btn{
+  margin-top:8px;padding:6px 14px;border-radius:99px;cursor:pointer;
+  font:650 11.5px var(--font-body);color:var(--text);
+  background:color-mix(in srgb,var(--text) 7%,transparent);
+  border:1px solid color-mix(in srgb,var(--text) 10%,transparent);
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+#view-dashboard .db-ra-empty-btn:hover{
+  background:color-mix(in srgb,var(--text) 12%,transparent);
+  border-color:color-mix(in srgb,var(--text) 18%,transparent);
+  transform:translateY(-1px);
+}
+/* Time Allocation */
+#view-dashboard .db-talloc{gap:14px}
+#view-dashboard .db-talloc-total{display:flex;align-items:baseline;gap:8px}
+#view-dashboard .db-talloc-total-val{font:700 26px/1 var(--font-body);letter-spacing:-.02em;color:var(--text);font-variant-numeric:tabular-nums}
+#view-dashboard .db-talloc-total-lbl{font:500 12px var(--font-body);color:var(--text3)}
+#view-dashboard .db-talloc-bar{display:flex;gap:3px;width:100%;height:8px;border-radius:99px;background:none;box-shadow:none;overflow:hidden}
+#view-dashboard .db-talloc-seg{min-width:4px;border-radius:99px;transform:none !important;transition:filter .2s ease,opacity .2s ease}
+#view-dashboard .db-talloc-bar:hover .db-talloc-seg{opacity:.55}
+#view-dashboard .db-talloc-bar .db-talloc-seg:hover{opacity:1;filter:brightness(1.12)}
+#view-dashboard .db-talloc-legend{gap:1px;max-height:190px}
+#view-dashboard .db-talloc-row{padding:7px 8px;border-radius:8px}
+#view-dashboard .db-talloc-row:hover{background:color-mix(in srgb,var(--text) 4.5%,transparent)}
+#view-dashboard .db-talloc-swatch{width:8px;height:8px;border-radius:99px}
+#view-dashboard .db-talloc-name{font:600 12.5px var(--font-body)}
+#view-dashboard .db-talloc-meta{color:var(--text3);font-variant-numeric:tabular-nums}
+#view-dashboard .db-talloc-pct{color:var(--text);font-variant-numeric:tabular-nums}
+/* Progress graph */
+#view-dashboard .db-row-2 .db-graph{gap:14px}
+#view-dashboard .db-row-2 .db-graph-cols{gap:8px;flex:1}
+#view-dashboard .db-row-2 .db-graph-col{gap:10px}
+#view-dashboard .db-row-2 .db-graph-track{
+  flex:1;height:auto;min-height:132px;border-radius:8px;
+  background:color-mix(in srgb,var(--text) 4%,transparent);
+  box-shadow:none !important;transition:background .2s ease;
+}
+#view-dashboard .db-row-2 .db-graph-col:hover .db-graph-track{background:color-mix(in srgb,var(--text) 7%,transparent);box-shadow:none !important}
+#view-dashboard .db-row-2 .db-graph-col.future .db-graph-track{opacity:.4}
+#view-dashboard .db-row-2 .db-graph-x{font:600 10.5px/12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text3) !important}
+#view-dashboard .db-row-2 .db-graph-col.today .db-graph-x{color:var(--text) !important;font-weight:800}
+#view-dashboard .db-row-2 .db-graph-foot{padding-top:12px;border-top:1px solid color-mix(in srgb,var(--text) 6%,transparent);font:500 11px var(--font-mono);color:var(--text3)}
+#view-dashboard .db-row-2 .db-graph-foot span:last-child{color:var(--text2);font-variant-numeric:tabular-nums}
+@media (max-width:1100px){#view-dashboard .db-row-2 .db-graph-track{min-height:110px}}
+@media (max-width:520px){
+  #view-dashboard .db-row-2 .db-section{padding:14px 14px !important}
+  #view-dashboard .db-row-2 .db-graph-cols{gap:5px}
+}
+</style>
+
+
+<style id="db-sched-polish">
+/* TODAY'S SCHEDULE — agenda timeline: time | rail with the checkbox as the dot | details.
+   No boxes; hairline-quiet; fills are --text over the surface. */
+#view-dashboard .db-sched-list{gap:0 !important;padding-right:4px}
+#view-dashboard .db-sched-item{
+  position:relative;
+  grid-template-columns:52px 20px 1fr auto !important;
+  grid-template-rows:auto;
+  column-gap:14px !important;align-items:center;
+  padding:13px 8px !important;
+  border:none !important;border-radius:10px !important;
+  background:transparent !important;box-shadow:none !important;
+}
+#view-dashboard .db-sched-item>*{grid-row:1}
+#view-dashboard .db-sched-time{grid-column:1}
+#view-dashboard .db-sched-check{grid-column:2}
+#view-dashboard .db-sched-main{grid-column:3}
+#view-dashboard .db-sched-cat-pill,#view-dashboard .db-sched-now-badge{grid-column:4}
+/* the rail: a hairline running through every checkbox dot */
+#view-dashboard .db-sched-item::before{
+  content:'';position:absolute;top:0;bottom:0;
+  left:calc(8px + 52px + 14px + 10px);width:1px;
+  background:color-mix(in srgb,var(--text) 11%,transparent);
+}
+#view-dashboard .db-sched-item:first-child::before{top:50%}
+#view-dashboard .db-sched-item:last-child::before{bottom:50%}
+#view-dashboard .db-sched-item:only-child::before{display:none}
+#view-dashboard .db-sched-item:hover{
+  transform:none !important;
+  background:color-mix(in srgb,var(--text) 3.5%,transparent) !important;
+}
+#view-dashboard .db-sched-item.current{background:color-mix(in srgb,var(--text) 4.5%,transparent) !important;padding-left:8px !important}
+#view-dashboard .db-sched-item.done{opacity:.55}
+
+#view-dashboard .db-sched-time{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums;text-align:right}
+#view-dashboard .db-sched-start{font:700 13px/1 var(--font-mono);color:var(--text) !important;letter-spacing:-.01em}
+#view-dashboard .db-sched-ampm{font:600 9.5px/1 var(--font-mono);color:var(--text3);letter-spacing:.08em}
+#view-dashboard .db-sched-item.done .db-sched-start{color:var(--text2) !important}
+
+#view-dashboard .db-sched-check{
+  position:relative;z-index:1;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--bg2);
+  border:1.5px solid color-mix(in srgb,var(--text) 30%,transparent);
+}
+#view-dashboard .db-sched-check:hover{border-color:var(--text)}
+#view-dashboard .db-sched-check.checked{background:var(--text);border-color:var(--text);color:var(--bg)}
+#view-dashboard .db-sched-item.current .db-sched-check:not(.checked){border-color:var(--text)}
+
+#view-dashboard .db-sched-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+#view-dashboard .db-sched-name{font:600 13.5px/1.25 var(--font-body);color:var(--text)}
+#view-dashboard .db-sched-item.done .db-sched-name{color:var(--text3);text-decoration:line-through}
+#view-dashboard .db-sched-meta{font:500 11.5px/1.2 var(--font-body);color:var(--text3);font-variant-numeric:tabular-nums}
+
+#view-dashboard .db-sched-now-badge{
+  color:var(--text);
+  background:color-mix(in srgb,var(--text) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--text) 14%,transparent);
+  box-shadow:none !important;animation:none !important;
+}
+/* Category: plain quiet text, no pill chrome */
+#view-dashboard .db-sched-cat-pill{
+  font:500 12px var(--font-body) !important;letter-spacing:0;white-space:nowrap;
+  padding:0 !important;border:none !important;border-radius:0 !important;
+  background:none !important;box-shadow:none !important;
+  color:var(--text3) !important;
+}
+#view-dashboard .db-sched-cat-pill::before{content:none}
+#view-dashboard .db-sched-item:hover .db-sched-cat-pill{color:var(--text2) !important}
+@media (max-width:520px){
+  #view-dashboard .db-sched-item{grid-template-columns:46px 20px 1fr auto !important;column-gap:12px !important;padding:12px 6px !important}
+  #view-dashboard .db-sched-item::before{left:calc(6px + 46px + 12px + 10px)}
+}
+</style>
+
+<style id="db-dark-polish-lite">
+/* Neutral dark theme only: soft range pills + slimmer year (2026) progress bar. */
+html[data-theme="dark"] #view-dashboard .db-range-pills{
+  background:color-mix(in srgb,var(--text) 3.5%,transparent);
+  border-color:color-mix(in srgb,var(--text) 7%,transparent);
+}
+html[data-theme="dark"] #view-dashboard .db-range-pill.active{
+  background:color-mix(in srgb,var(--text) 13%,transparent) !important;
+  color:var(--text) !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 10%,transparent) !important;
+}
+html[data-theme="dark"] #view-dashboard .db-day-nav-btn:hover:not(:disabled){
+  background:color-mix(in srgb,var(--text) 7%,transparent);
+  color:var(--text);
+}
+html[data-theme="dark"] #view-dashboard .db-year-track{height:8px;box-shadow:none}
+html[data-theme="dark"] #view-dashboard .db-year-fill{
+  background:color-mix(in srgb,var(--text) 78%,transparent);
+  box-shadow:none;
+}
+html[data-theme="dark"] #view-dashboard .db-year-fill::after{display:none}
+</style>
+
+
+<style id="db-tasks-polish">
+/* TOP TASKS — flat rows with hairline dividers, same language as the schedule.
+   Priority stays semantic (red / orange / green) but as quiet text, not glowing chips. */
+#view-dashboard .db-ra-empty-sm{flex:none;min-height:0;padding:22px 16px}
+#view-dashboard .db-task-list{gap:0 !important}
+#view-dashboard .db-task-item{
+  position:relative;
+  grid-template-columns:20px 1fr auto !important;
+  column-gap:14px !important;
+  padding:12px 8px !important;
+  border:none !important;border-radius:10px !important;
+  background:transparent !important;box-shadow:none !important;
+}
+#view-dashboard .db-task-item:not(:last-child)::after{
+  content:'';position:absolute;left:8px;right:8px;bottom:0;height:1px;
+  background:color-mix(in srgb,var(--text) 5%,transparent);
+}
+#view-dashboard .db-task-item:hover{
+  transform:none !important;
+  background:color-mix(in srgb,var(--text) 3.5%,transparent) !important;
+}
+#view-dashboard .db-task-item.done{opacity:.55}
+#view-dashboard .db-task-dot{display:none !important}
+#view-dashboard .db-task-check{
+  width:20px;height:20px;border-radius:50%;
+  border:1.5px solid color-mix(in srgb,var(--text) 30%,transparent);
+}
+#view-dashboard .db-task-check:hover{border-color:var(--text)}
+#view-dashboard .db-task-check.checked{background:var(--text);border-color:var(--text);color:var(--bg)}
+#view-dashboard .db-task-name{font:600 13.5px/1.25 var(--font-body);color:var(--text)}
+#view-dashboard .db-task-item.done .db-task-name{color:var(--text3);text-decoration:line-through}
+#view-dashboard .db-task-pri{
+  font:600 11.5px var(--font-body) !important;letter-spacing:0 !important;text-transform:none !important;
+  padding:0 !important;border-radius:0 !important;background:none !important;
+  color:var(--text3);
+}
+#view-dashboard .db-task-pri.high{color:color-mix(in srgb,var(--red) 80%,var(--text3)) !important}
+#view-dashboard .db-task-pri.med,#view-dashboard .db-task-pri.medium{color:color-mix(in srgb,var(--orange) 80%,var(--text3)) !important}
+#view-dashboard .db-task-pri.low{color:color-mix(in srgb,var(--green) 80%,var(--text3)) !important}
+
+/* Quick-add: flat neutral field + solid button, no glow */
+#view-dashboard .db-inline-add{
+  margin-top:14px !important;padding:8px 8px 8px 14px !important;
+  background:color-mix(in srgb,var(--text) 3%,transparent) !important;
+  border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;
+  border-radius:12px !important;box-shadow:none !important;
+}
+#view-dashboard .db-inline-add:focus-within{
+  background:color-mix(in srgb,var(--text) 4%,transparent) !important;
+  border-color:color-mix(in srgb,var(--text) 22%,transparent) !important;
+  box-shadow:none !important;
+}
+#view-dashboard .db-inline-add-btn{
+  background:var(--text) !important;color:var(--bg) !important;
+  box-shadow:none !important;border-radius:8px !important;
+  padding:7px 14px !important;font-size:12px !important;
+}
+#view-dashboard .db-inline-add-btn:hover{transform:none !important;opacity:.88 !important;box-shadow:none !important}
+</style>
+
+
+<style id="db-habits-actions-polish">
+/* HABITS TODAY + QUICK ACTIONS — same quiet language as the schedule and tasks. */
+#view-dashboard .db-habit-list{gap:0 !important}
+#view-dashboard .db-habit-item{
+  position:relative;gap:14px !important;
+  padding:12px 8px !important;
+  border:none !important;border-radius:10px !important;
+  background:transparent !important;box-shadow:none !important;
+}
+#view-dashboard .db-habit-item:not(:last-child)::after{
+  content:'';position:absolute;left:8px;right:8px;bottom:0;height:1px;
+  background:color-mix(in srgb,var(--text) 5%,transparent);
+}
+#view-dashboard .db-habit-item:hover{
+  transform:none !important;
+  background:color-mix(in srgb,var(--text) 3.5%,transparent) !important;
+  border-color:transparent !important;
+}
+#view-dashboard .db-habit-item.done{opacity:.55;background:transparent !important}
+#view-dashboard .db-habit-check{
+  width:20px;height:20px;border-radius:50%;font-size:12px;
+  border:1.5px solid color-mix(in srgb,var(--text) 30%,transparent);
+}
+#view-dashboard .db-habit-check:hover{border-color:var(--text)}
+#view-dashboard .db-habit-check.checked{
+  background:var(--text);border-color:var(--text);color:var(--bg);box-shadow:none;
+}
+#view-dashboard .db-habit-name{font:600 13.5px/1.25 var(--font-body)}
+/* streak: plain text instead of an orange chip */
+#view-dashboard .db-habit-streak{
+  font:600 12px var(--font-mono);color:var(--text2);
+  padding:0;border-radius:0;background:none;
+  font-variant-numeric:tabular-nums;
+}
+#view-dashboard .db-habit-streak.zero{color:var(--text3);background:none}
+
+/* Quick actions: left-aligned icon + label tiles */
+#view-dashboard .db-actions{gap:8px}
+#view-dashboard .db-action-btn{
+  justify-content:flex-start;gap:10px;
+  padding:13px 14px;border-radius:12px;
+  font:600 13px var(--font-body);
+  background:color-mix(in srgb,var(--text) 3.5%,transparent);
+  border:1px solid color-mix(in srgb,var(--text) 7%,transparent);
+  color:var(--text);
+  box-shadow:none;
+}
+#view-dashboard .db-action-btn::before{display:none}
+#view-dashboard .db-action-btn svg{color:var(--text2);flex-shrink:0;transition:color .2s ease}
+#view-dashboard .db-action-btn:hover{
+  background:color-mix(in srgb,var(--text) 6.5%,transparent);
+  border-color:color-mix(in srgb,var(--text) 13%,transparent);
+  color:var(--text);transform:none;
+}
+#view-dashboard .db-action-btn:hover svg{color:var(--text)}
+#view-dashboard .db-action-btn:active{transform:scale(.985)}
+</style>
 
 </body>
 </html>
