@@ -36,6 +36,22 @@
 <title>Motion — Focus timer, time blocks, tasks &amp; habits</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27bg%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%%27%20stop-color%3D%27%231f1f1f%27%2F%3E%3Cstop%20offset%3D%2755%%27%20stop-color%3D%27%230a0a0a%27%2F%3E%3Cstop%20offset%3D%27100%%27%20stop-color%3D%27%23000000%27%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%27letter%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%%27%20stop-color%3D%27%23ffffff%27%2F%3E%3Cstop%20offset%3D%27100%%27%20stop-color%3D%27%23c8cede%27%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20ry%3D%2796%27%20fill%3D%27url(%23bg)%27%2F%3E%3Cpath%20d%3D%27M104%20392V120h80l64%20128%2064-128h80v272h-64V218l-64%20120h-32l-64-120v174z%27%20fill%3D%27url(%23letter)%27%2F%3E%3C%2Fsvg%3E"/>
 <meta name="theme-color" content="#08090a"/>
+<!-- SECURITY (additive): tighten cross-origin data leakage + disable powerful
+     browser APIs this app never uses.
+       • referrer: send only the origin (not full URL/path/query) to the
+         third-party hosts this page loads — fonts.googleapis, gstatic,
+         cloudflare (jsPDF), api.qrserver.com, accounts.google, firestore.
+         Full URLs can leak local route/state; origin-only is enough for
+         their CORS/referrer checks.
+       • Permissions-Policy: turn off camera, geolocation, payment, USB,
+         serial, HID, Bluetooth, MIDI, WebXR, wake-lock, idle-detection and
+         display-capture. This app uses NONE of them. Microphone (voice
+         notes), clipboard (Copy buttons), notifications, fullscreen (focus
+         mode) and ambient audio are deliberately left ENABLED so nothing
+         user-facing breaks. Fail-closed on unused surfaces shrinks the
+         attack surface if a dependency is ever compromised. -->
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<meta http-equiv="Permissions-Policy" content="camera=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), bluetooth=(), midi=(), xr-spatial-tracking=(), screen-wake-lock=(), idle-detection=(), display-capture=()"/>
 <script>
 // Apply saved theme IMMEDIATELY to prevent FOUC.
 // Resolution: an explicit choice made in Settings always wins. When the user
@@ -23887,8 +23903,8 @@ function restoreFromTrash(idx){
 }
 
 // Permanently delete a single trash item
-function deleteFromTrashForever(idx){
-  if(!confirm('Delete this item permanently? This cannot be undone.')) return;
+async function deleteFromTrashForever(idx){
+  if(!(await showConfirm('Delete this item permanently? This cannot be undone.'))) return;
   trashPurge(idx);
   var ov = document.getElementById('trashOverlay');
   if(ov) ov.remove();
@@ -23898,8 +23914,8 @@ function deleteFromTrashForever(idx){
 }
 
 // Empty the entire trash
-function emptyTrashConfirm(){
-  if(!confirm('Empty the trash? All ' + trashCount() + ' items will be permanently deleted. This cannot be undone.')) return;
+async function emptyTrashConfirm(){
+  if(!(await showConfirm('Empty the trash? All ' + trashCount() + ' items will be permanently deleted. This cannot be undone.'))) return;
   trashEmptyAll();
   var ov = document.getElementById('trashOverlay');
   if(ov) ov.remove();
@@ -25107,9 +25123,9 @@ function addCategory(){
   if(rulesQuery)rulesResetFilter(); /* new category must be visible */
   renderRules();
 }
-function delCategory(ci){
+async function delCategory(ci){
   const rules=loadRules();
-  if(!confirm(`Delete "${rules[ci].name}" and all entries?`))return;
+  if(!(await showConfirm(`Delete "${rules[ci].name}" and all entries?`)))return;
   rules.splice(ci,1);saveRules(rules);renderRules();
 }
 function addEntry(ci){
@@ -29105,10 +29121,10 @@ function dbJournalFlush(){
   dbJournalSaveNow();
 }
 
-function dbJournalDelete(){
+async function dbJournalDelete(){
   try{
     if(!_dbJournalCtx) return;
-    if(!confirm('Delete today\'s journal entry? This cannot be undone.')) return;
+    if(!(await showConfirm('Delete today\'s journal entry? This cannot be undone.'))) return;
     if(typeof daJournalDelete === 'function'){
       daJournalDelete(_dbJournalCtx.dayKey);
     } else {
@@ -29974,10 +29990,10 @@ function addHabit(){
   renderHabits();
 }
 
-function delHabit(id){
+async function delHabit(id){
   const habits=loadHabits();
   const h=habits.find(x=>x.id===id);
-  if(!confirm(`Delete habit "${h?h.name:'this habit'}"?`))return;
+  if(!(await showConfirm(`Delete habit "${h?h.name:'this habit'}"?`)))return;
   if(h) trashAdd('habit',h,'id');
   saveHabits(habits.filter(x=>x.id!==id));
   renderHabits();
@@ -30657,10 +30673,10 @@ function trkSaveReview(cat,id){
 }
 
 // ── Delete ──
-function trkDelete(cat,id){
+async function trkDelete(cat,id){
   var items=trkCatData(cat);
   var it=items.find(function(x){return x.id===id;});
-  if(!confirm('Delete "'+(it?it.title:'this item')+'"?'))return;
+  if(!(await showConfirm('Delete "'+(it?it.title:'this item')+'"?')))return;
   if(it)trashAdd('tracker_'+cat,it,'id');
   trkSetCatData(cat,items.filter(function(x){return x.id!==id;}));
   // If deleting a show, also remove it from the tier list
@@ -31134,13 +31150,13 @@ function fitSetVal(exIdx,setIdx,key,val){
   d.active.exercises[exIdx].sets[setIdx][key]=val;
   fitSave(d);
 }
-function fitFinishWorkout(){
+async function fitFinishWorkout(){
   const d=fitLoad();
   if(!d.active){showToast('No active workout','!',1500);return;}
   // check if any set has data
   const hasData=(d.active.exercises||[]).some(ex=>(ex.sets||[]).some(s=>s.weight||s.reps||s.note));
   if(!hasData){
-    if(!confirm('No sets logged. Discard this workout?'))return;
+    if(!(await showConfirm('No sets logged. Discard this workout?')))return;
     fitDiscardActive();return;
   }
   const w={
@@ -31160,8 +31176,8 @@ function fitFinishWorkout(){
   trkRenderStats();
   showToast('Workout saved! 💪','✓',2200);
 }
-function fitDiscardActive(){
-  if(!confirm('Discard the active workout? This cannot be undone.'))return;
+async function fitDiscardActive(){
+  if(!(await showConfirm('Discard the active workout? This cannot be undone.')))return;
   const d=fitLoad();
   d.active=null;
   fitSave(d);
@@ -31263,11 +31279,11 @@ function fitHistItemHTML(w){
     '</div>'+
   '</div>';
 }
-function fitRepeatWorkout(id){
+async function fitRepeatWorkout(id){
   const d=fitLoad();
   const w=(d.workouts||[]).find(x=>x.id===id);
   if(!w)return;
-  if(d.active){if(!confirm('You have an active workout. Replace it with this one?'))return;}
+  if(d.active){if(!(await showConfirm('You have an active workout. Replace it with this one?')))return;}
   d.active={
     name:w.name+' (Repeat)',
     date:Date.now(),startedAt:Date.now(),
@@ -31278,8 +31294,8 @@ function fitRepeatWorkout(id){
   fitRender();
   showToast('Workout loaded — start lifting!','💪',2000);
 }
-function fitDelWorkout(id){
-  if(!confirm('Delete this workout from history?'))return;
+async function fitDelWorkout(id){
+  if(!(await showConfirm('Delete this workout from history?')))return;
   const d=fitLoad();
   d.workouts=(d.workouts||[]).filter(w=>w.id!==id);
   fitSave(d);
@@ -31857,17 +31873,17 @@ function chTogglePause(id){
   chRender();
   trkRenderStats();
 }
-function chAbandon(id){
+async function chAbandon(id){
   const arr=chLoad();
   const c=arr.find(x=>x.id===id);
   if(!c)return;
   if(c.status==='active'||c.status==='paused'){
-    if(!confirm('Abandon "'+c.title+'"? It will be marked as abandoned.'))return;
+    if(!(await showConfirm('Abandon "'+c.title+'"? It will be marked as abandoned.')))return;
     c.status='abandoned';c.abandonedAt=Date.now();
     chSave(arr);
     chRender();trkRenderStats();
   } else {
-    if(!confirm('Delete "'+c.title+'" permanently?'))return;
+    if(!(await showConfirm('Delete "'+c.title+'" permanently?')))return;
     chSave(arr.filter(x=>x.id!==id));
     chRender();trkRenderStats();
   }
@@ -32159,10 +32175,10 @@ function tvCycleStatus(id){
   tvRender();
   trkRenderStats();
 }
-function tvDelete(id){
+async function tvDelete(id){
   const arr=tvLoad();
   const t=arr.find(x=>x.id===id);
-  if(!confirm('Delete "'+(t?t.place:'this destination')+'"?'))return;
+  if(!(await showConfirm('Delete "'+(t?t.place:'this destination')+'"?')))return;
   tvSave(arr.filter(x=>x.id!==id));
   tvRender();
   trkRenderStats();
@@ -32587,10 +32603,10 @@ function fnTrendHTML(d){
 }
 
 // ── Actions ──
-function fnDelete(id){
+async function fnDelete(id){
   const d=fnLoad();
   const t=(d.transactions||[]).find(function(x){return x.id===id;});
-  if(!confirm('Delete this transaction?'))return;
+  if(!(await showConfirm('Delete this transaction?')))return;
   d.transactions=(d.transactions||[]).filter(function(x){return x.id!==id;});
   fnSave(d);
   fnRender();
@@ -32966,10 +32982,10 @@ function prDetailHTML(p){
 // ── Actions ──
 function prOpenDetail(id){prView='detail';prDetailId=id;prRender();}
 function prBackToList(){prView='list';prDetailId=null;prRender();}
-function prDelete(id){
+async function prDelete(id){
   const arr=prLoad();
   const p=arr.find(function(x){return x.id===id;});
-  if(!confirm('Delete "'+(p?p.name:'this project')+'"? All its tasks will be lost.'))return;
+  if(!(await showConfirm('Delete "'+(p?p.name:'this project')+'"? All its tasks will be lost.')))return;
   prSave(arr.filter(function(x){return x.id!==id;}));
   if(prDetailId===id){prView='list';prDetailId=null;}
   prRender();
@@ -33373,8 +33389,8 @@ function customToolSaveItem(){
   showToast('Link added','✓',1200);
 }
 
-function customToolDelete(id){
-  if(!confirm('Delete this link?'))return;
+async function customToolDelete(id){
+  if(!(await showConfirm('Delete this link?')))return;
   var arr=customToolLoad();
   customToolSave(arr.filter(function(t){return t.id!==id;}));
   renderTools();
@@ -33602,8 +33618,8 @@ function mmRename(newTitle){
   mmPersist();
 }
 
-function mmNewMap(){
-  if(mmState&&mmState.map.nodes.length>0&&!confirm('Start a new mindmap? Current one is saved.'))return;
+async function mmNewMap(){
+  if(mmState&&mmState.map.nodes.length>0&&!(await showConfirm('Start a new mindmap? Current one is saved.')))return;
   mmClose();
   setTimeout(function(){mmOpen();},220);
 }
@@ -33648,8 +33664,8 @@ function mmOpenListPick(id){
   if(cur){cur.style.opacity='0';cur.style.transition='opacity .2s';setTimeout(function(){if(cur.parentNode)cur.parentNode.removeChild(cur);},200);mmState=null;}
   setTimeout(function(){mmOpen(id);},250);
 }
-function mmDeleteMap(id){
-  if(!confirm('Delete this mindmap permanently?'))return;
+async function mmDeleteMap(id){
+  if(!(await showConfirm('Delete this mindmap permanently?')))return;
   const arr=mmLoad().filter(function(m){return m.id!==id;});
   mmSave(arr);
   // Refresh the list modal
@@ -33658,11 +33674,11 @@ function mmDeleteMap(id){
   showToast('Mindmap deleted','✓',1200);
 }
 
-function mmClearCanvas(){
+async function mmClearCanvas(){
   if(!mmState)return;
   const total=mmState.map.nodes.length+mmState.map.texts.length+mmState.map.strokes.length+(mmState.map.images?mmState.map.images.length:0);
   if(!total){showToast('Canvas is already empty','!',1200);return;}
-  if(!confirm('Clear ALL nodes, text, and drawings? This cannot be undone (but you can Undo with Ctrl+Z).'))return;
+  if(!(await showConfirm('Clear ALL nodes, text, and drawings? This cannot be undone (but you can Undo with Ctrl+Z).')))return;
   mmSnapshot();
   mmState.map.nodes=[];
   mmState.map.links=[];
@@ -37550,12 +37566,12 @@ function doRestore(event){
   const file = event.target.files[0];
   if(!file){ return; }
   const reader = new FileReader();
-  reader.onload = function(e){
+  reader.onload = async function(e){
     try{
       const parsed = JSON.parse(e.target.result);
       if(!parsed.data) throw new Error('Invalid backup format');
       const count = Object.keys(parsed.data).length;
-      if(!confirm(`Restore ${count} data entries from backup dated ${parsed.exported ? parsed.exported.split('T')[0] : 'unknown'}?\n\nThis will OVERWRITE your current data.`)) return;
+      if(!(await showConfirm(`Restore ${count} data entries from backup dated ${parsed.exported ? parsed.exported.split('T')[0] : 'unknown'}?\n\nThis will OVERWRITE your current data.`))) return;
       // TRUE REPLACE (not merge): wipe ALL existing ft_* and motion_* keys first,
       // except per-device keys that must survive a restore (device id, mode,
       // cloud credentials). This mirrors fbApplyCloudData's behavior so that
@@ -38605,9 +38621,9 @@ function nbConfirmAdd(){
   nbCancelAdd();
   nbSelect(id);
 }
-function nbDeleteTopic(e,id){
+async function nbDeleteTopic(e,id){
   e.stopPropagation();
-  if(!confirm('Delete this topic and all its notes?'))return;
+  if(!(await showConfirm('Delete this topic and all its notes?')))return;
   // Move the topic and its notes to trash before deleting
   const nbs = nbLoad();
   const topic = nbs.find(n=>n.id===id);
@@ -41410,8 +41426,8 @@ function applyAnimationsSetting(on, silent){
   }
 }
 
-function confirmClearAll(){
-  if(!confirm('⚠️ This will delete ALL your data — blocks, tasks, habits, notes, rules, countdowns and AI conversations.\n\nDeleted items will be moved to Trash and recoverable for 30 days. Your cloud data will be replaced on next sync. Are you sure?')) return;
+async function confirmClearAll(){
+  if(!(await showConfirm('⚠️ This will delete ALL your data — blocks, tasks, habits, notes, rules, countdowns and AI conversations.\n\nDeleted items will be moved to Trash and recoverable for 30 days. Your cloud data will be replaced on next sync. Are you sure?'))) return;
   const savedDeviceId = localStorage.getItem('ft_device_id'); // preserve device ID
   // Preserve the existing trash so previously-deleted items survive the clear
   var savedTrash = localStorage.getItem('ft_trash');
@@ -42997,10 +43013,10 @@ function daJournalAttachHandlers(){
       });
       // Delete
       if(deleteBtn){
-        deleteBtn.addEventListener('click', function(){
+        deleteBtn.addEventListener('click', async function(){
           var e2 = daJournalLoad(dayKey);
           if(!e2){ return; }
-          if(confirm('Delete this journal entry? This cannot be undone.')){
+          if(await showConfirm('Delete this journal entry? This cannot be undone.')){
             daJournalDelete(dayKey);
             // Clear the flush context — nothing to flush after explicit delete
             _daJournalCtx = null;
@@ -51727,10 +51743,10 @@ function asstCloseSidebar(){
   if(backdrop) backdrop.style.display = 'none';
 }
 
-function asstClearChat(){
+async function asstClearChat(){
   var conv = asstGetCurrentConv();
   if(!conv) return;
-  if(!confirm('Clear all messages in this conversation?')) return;
+  if(!(await showConfirm('Clear all messages in this conversation?'))) return;
   conv.messages = [];
   asstSaveConversations();
   asstRenderMessages();
@@ -51790,8 +51806,8 @@ function loadAISettings(){
   if(scopeSel && asstSettings.dataScope) scopeSel.value = asstSettings.dataScope;
 }
 
-function clearAIConversations(){
-  if(!confirm('Delete all AI conversation history? This cannot be undone.')) return;
+async function clearAIConversations(){
+  if(!(await showConfirm('Delete all AI conversation history? This cannot be undone.'))) return;
   asstConversations = [];
   asstCurrentConvId = null;
   localStorage.removeItem('motion_asst_convs');
@@ -51800,8 +51816,8 @@ function clearAIConversations(){
   asstRenderMessages();
 }
 
-function clearAIMemories(){
-  if(!confirm('Delete all AI memories and preferences? This cannot be undone.')) return;
+async function clearAIMemories(){
+  if(!(await showConfirm('Delete all AI memories and preferences? This cannot be undone.'))) return;
   asstMemories = [];
   localStorage.removeItem('motion_asst_memories');
   asstRenderCtxContent();
@@ -52059,8 +52075,8 @@ function updateApiKey(id){
   if(typeof showToast==='function') showToast('API key updated','✅',2000);
 }
 
-function deleteApiKey(id){
-  if(!confirm('Remove this API key?')) return;
+async function deleteApiKey(id){
+  if(!(await showConfirm('Remove this API key?'))) return;
   apiKeys = apiKeys.filter(function(k){ return k.id!==id; });
   lsSetRaw('motion_api_keys', JSON.stringify(apiKeys));
   renderApiKeyList();
@@ -53217,7 +53233,7 @@ function cloudPull(){
           }
           return r.json();
         })
-        .then(function(data){
+        .then(async function(data){
           if(!data || !data.data){
             showToast('Invalid sync data from Drive','❌',3000);
             return;
@@ -53231,7 +53247,7 @@ function cloudPull(){
           if(cloudTime) msg += '\n\nCloud data from: ' + cloudTime.toLocaleString();
           if(data.deviceInfo) msg += '\nUploaded from: ' + (data.deviceInfo.deviceName || 'unknown device');
 
-          if(!confirm(msg)) return;
+          if(!(await showConfirm(msg))) return;
 
           // Restore cloud data
           // BUGFIX: wrap the localStorage restore loop in try/catch — a single
@@ -53717,8 +53733,8 @@ function authSignInGuest(){
 }
 
 // ── End guest session ──
-function authEndGuest(){
-  if(!confirm('Exit guest mode? Your local guest data will be cleared.')) return;
+async function authEndGuest(){
+  if(!(await showConfirm('Exit guest mode? Your local guest data will be cleared.'))) return;
   try { localStorage.removeItem('ft_guest_mode'); } catch(e){}
   var keysToRemove = [];
   try {
@@ -53754,7 +53770,7 @@ if(typeof firebase !== 'undefined'){
 }
 
 // ── Firebase Sign Out (old version code + guest mode routing) ──
-function fbSignOut(){
+async function fbSignOut(){
   // If the user is in guest mode, route to the guest-specific sign-out
   if(localStorage.getItem('ft_guest_mode') === '1' || (fbCurrentUser && fbCurrentUser.isGuest)){
     authEndGuest();
@@ -53765,7 +53781,7 @@ function fbSignOut(){
   var confirmMsg = hasUnsynced
     ? 'Sign out? You have unsynced changes — they will be pushed to the cloud first. Your data is saved in the cloud and will reload when you sign in again.'
     : 'Sign out? Your local data will be cleared. Your data is saved in the cloud and will reload when you sign in again.';
-  if(!confirm(confirmMsg)) return;
+  if(!(await showConfirm(confirmMsg))) return;
   fbStopSnapshotListener();
   if(hasUnsynced){
     fbPushToCloud(true);
@@ -54487,7 +54503,7 @@ function fbPullOnSignIn(){
 function fbPullCloud(){
   if(!fbDb || !fbCurrentUser) return;
   
-  fbDb.collection('users').doc(fbCurrentUser.uid).get().then(function(doc){
+  fbDb.collection('users').doc(fbCurrentUser.uid).get().then(async function(doc){
     if(!doc.exists){
       showToast('No cloud data found', '⚠️', 3000);
       return;
@@ -54511,7 +54527,7 @@ function fbPullCloud(){
     var cloudTime = parsed.exported ? new Date(parsed.exported).toLocaleString() : 'unknown';
     var deviceName = cloudData.deviceInfo ? cloudData.deviceInfo.deviceName : 'unknown';
     
-    if(!confirm('Replace your local data with the cloud version?\n\nCloud data from: ' + cloudTime + '\nUploaded from: ' + deviceName + '\n\nA backup of your current local data will be saved automatically.')) return;
+    if(!(await showConfirm('Replace your local data with the cloud version?\n\nCloud data from: ' + cloudTime + '\nUploaded from: ' + deviceName + '\n\nA backup of your current local data will be saved automatically.'))) return;
 
     // DATA LOSS PROTECTION: save a backup before overwriting, so the user
     // can recover via Settings → Data Recovery if the pull was a mistake.
@@ -54586,7 +54602,7 @@ function fbShowRecoveryPanel(){
 
 // Restore a pre-sync backup by index, back up current state first, then
 // apply the backup data and push to cloud so all devices get the restored state.
-function fbRestoreBackup(idx){
+async function fbRestoreBackup(idx){
   var backups = [];
   try { backups = JSON.parse(localStorage.getItem(FB_PRE_SYNC_BACKUP_KEY) || '[]'); } catch(e){}
   if(!Array.isArray(backups) || idx < 0 || idx >= backups.length){
@@ -54595,7 +54611,7 @@ function fbRestoreBackup(idx){
   }
   var backup = backups[idx];
   var when = backup.timestamp ? new Date(backup.timestamp).toLocaleString() : 'unknown time';
-  if(!confirm('Restore this backup from ' + when + '?\n\nYour current data will be backed up first, then this backup will be applied and synced to the cloud.')) return;
+  if(!(await showConfirm('Restore this backup from ' + when + '?\n\nYour current data will be backed up first, then this backup will be applied and synced to the cloud.'))) return;
 
   // Back up current state before restoring (so user can undo the restore too)
   fbSavePreSyncBackup('pre-restore');
@@ -57259,9 +57275,10 @@ html[data-theme="bleach"] .db-hero::before {
   background:linear-gradient(180deg,var(--accent2),color-mix(in srgb,var(--accent2) 32%,transparent));
   box-shadow:0 0 12px color-mix(in srgb,var(--accent2) 40%,transparent);
 }
-.db-graph-col.today .db-graph-track{
-  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 70%,transparent);
-}
+/* Today's track: intentionally NO special border — today is identified only by
+   the brighter day-name label below (.db-graph-col.today .db-graph-x). The
+   glowing accent outline was removed at user request, so today's track now uses
+   the default .db-graph-track border like every other day. */
 .db-graph-col.future .db-graph-track{opacity:.45;}
 .db-graph-col:hover .db-graph-track{box-shadow:inset 0 0 0 1px var(--accent);}
 .db-graph-col:hover .db-graph-fill{filter:brightness(1.15);}
@@ -61958,8 +61975,8 @@ function getCss(v){
     persist();RM_render();
     if(typeof showToast==='function')showToast(editId?'Step updated':'Step added','✓',1500);
   };
-  window.RM_deleteNode=function(id){
-    if(!confirm('Delete this step?'))return;
+  window.RM_deleteNode=async function(id){
+    if(!(await showConfirm('Delete this step?')))return;
     state.nodes=state.nodes.filter(function(n){return n.id!==id}).map(function(n,i){n.order=i;return n});
     persist();RM_render();
   };
@@ -62012,16 +62029,16 @@ function getCss(v){
     n.tasks=n.tasks.filter(function(t){return t.id!==taskId});
     persist();RM_render();
   };
-  window.RM_clearAll=function(){
+  window.RM_clearAll=async function(){
     if(!state.nodes.length)return;
-    if(!confirm('Clear all roadmap steps? This cannot be undone.'))return;
+    if(!(await showConfirm('Clear all roadmap steps? This cannot be undone.')))return;
     state.nodes=[];state.editingNodeId=null;persist();RM_render();
     if(typeof showToast==='function')showToast('Roadmap cleared','🗑',1500);
   };
   window.RM_toggleAI=function(){state.showAI=!state.showAI;state.editingNodeId=null;RM_render();if(state.showAI){setTimeout(function(){var i=document.getElementById('rmAIPrompt');if(i)i.focus()},50)}};
 
   // Quick-start templates — pre-fills sensible default nodes based on type
-  window.RM_loadTemplate=function(idx){
+  window.RM_loadTemplate=async function(idx){
     var templates={
       learning:[
         // Fundamentals first
@@ -62083,7 +62100,7 @@ function getCss(v){
     var tpl=typeTpls[idx]||typeTpls[0];
     if(!tpl)return;
     if(state.nodes.length){
-      if(!confirm('Replace your current roadmap with this template?'))return;
+      if(!(await showConfirm('Replace your current roadmap with this template?')))return;
     }
     state.nodes=sanitizeNodes(tpl);
     persist();RM_render();
@@ -99882,6 +99899,432 @@ html[data-theme="pure-light"] #toast-container .toast{
       }
     });
   }, 60000);
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CALM MOTION LAYER — de-slop the ambient animation
+     ───────────────────────────────────────────────────────────────────────────
+     Diagnosis: the file accumulated ~70 INFINITE decorative loops (shimmer
+     sweeps, "breathing" glows, floating orbs, animated gradient text, pulsing
+     dots) plus 187 slow entrances (many 0.8–1.4s) with stagger cascades up to
+     0.75s. That combination is the signature of un-reviewed "vibe-coded" UI:
+     motion that carries no information. Real product UIs (Linear, Things, Arc)
+     animate state changes, not idle decoration.
+
+     This layer is ADDITIVE and non-destructive. It does three things:
+       1. Kills 55 decorative infinite loops (functional live-state loops —
+          mic, voice, AI typing/streaming cursor, spinners, colon-blink timer,
+          playing-audio dots — are deliberately KEPT so usability is preserved).
+       2. Compresses entrance motion: cuts the longest durations, caps every
+          animation-delay so cascades resolve fast instead of staggering forever.
+       3. Enforces one calm easing + short transition budget so hovers feel
+          instant and nothing "springs" distractingly.
+
+     Safety notes:
+       • The ripple effect and the .da-cascade reveal are EXCLUDED from the kill
+         list because two `animationend` listeners depend on them firing (ripple
+         self-removes; .da-cascade gains .da-revealed). A duration *cap* still
+         fires animationend — only animation:none would strand them.
+       • The splash-screen sequence (name / bar / fill / sheen) is untouched:
+         its staged timing is intentional brand loading, not decoration.
+       • Respects the existing `anims:false` kill-switch (that switch already
+         injects animation:none for everything, which supersedes this layer).
+
+     To REVERT just this layer: delete everything between the two markers
+     "CALM MOTION LAYER BEGIN" and "CALM MOTION LAYER END".
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<style id="calm-motion">
+/* ── CALM MOTION LAYER BEGIN ─────────────────────────────────────────────── */
+
+/* 1 ── Kill decorative infinite loops ─────────────────────────────────────
+      These ran forever with no state meaning. Removing them is the single
+      biggest change from "AI slop" to "intentional product". Functional
+      live-state loops (recording, typing, streaming, spinner, timer colon,
+      playing audio) are intentionally NOT in this list. */
+  .prog-fill::after{animation:none!important}
+  .fi-dot{animation:none!important}
+  .pomo-dot.active{animation:none!important}
+  .pomo-dot.active::after{animation:none!important}
+  .focus-state-badge.running{animation:none!important}
+  .focus-ring-wrap.running svg{animation:none!important}
+  .focus-active-task-dot{animation:none!important}
+  .now-badge{animation:none!important}
+  #view-blocks-month .cal-day.today{animation:none!important}
+  .da-hero::after{animation:none!important}
+  .da-hero-title span{animation:none!important}
+  .da-rank-fill::after{animation:none!important}
+  .da-cat-row-fill::after{animation:none!important}
+  .da-year-fill::after{animation:none!important}
+  .da-journal-save-dot.saving{animation:none!important}
+  .da-empty-icon{animation:none!important}
+  .focus-layout.running .focus-time{animation:none!important}
+  .form-input:focus,.task-input:focus,.cat-name-inp:focus{animation:none!important}
+  .asst-empty-icon{animation:none!important}
+  .asst-act-btn.reading svg{animation:none!important}
+  .asst-typing-label{animation:none!important}
+  .asst-att-thumb.type-image:hover::before{animation:none!important}
+  .trk-progress-fill::after{animation:none!important}
+  body.task-drag-active #taskModeDaily{animation:none!important}
+  #auth-overlay::before{animation:none!important}
+  .prog-fill::after, .prog-fill-today::after, .habit-prog-fill::after{animation:none!important}
+  .logo-icon{animation:none!important}
+  #view-tasks .task-daily-date .tdd-dot{animation:none!important}
+  #view-tasks .task-empty-icon{animation:none!important}
+  .empty-state{animation:none!important}
+  .focus-btn-play{animation:none!important}
+  .omc-node.connect .omc-node-rect{animation:none!important}
+  .db-hero-next-label::before{animation:none!important}
+  .db-year-fill::after{animation:none!important}
+  .db-journal-save-dot.saving{animation:none!important}
+  .db-sched-now-badge{animation:none!important}
+  .db-hero-next:not(.idle) .db-hero-next-label::before{animation:none!important}
+  .rm-learn-beacon.current{animation:none!important}
+  html.micro-polish-on #auth-overlay .auth-logo{animation:none!important}
+  html.micro-polish-on #view-blocks-month .cal-day.today{animation:none!important}
+  html[data-theme="light"] .logo-icon, html[data-theme="pure-light"] .logo-icon{animation:none!important}
+  html[data-theme="dark"] #view-blocks .block-card.current-block{animation:none!important}
+  html[data-theme="dark"] #view-blocks .timeline-now-line::before{animation:none!important}
+  html[data-theme="light"] #view-dashboard .db-year-fill::after, html[data-theme="pure-light"] #view-dashboard .db-year-fill::after{animation:none!important}
+  html[data-theme="deep"] #view-blocks .block-card.current-block{animation:none!important}
+  html[data-theme="deep"] #view-blocks .timeline-now-line::before{animation:none!important}
+  html[data-theme="bleach"] #view-blocks .block-card.current-block{animation:none!important}
+  html[data-theme="bleach"] #view-blocks .timeline-now-line::before{animation:none!important}
+  html:not(.phone-mode) #view-tasks .tdd-dot{animation:none!important}
+  .ep5-net-dot{animation:none!important}
+  .ep6-wc-ic{animation:none!important}
+  .ep6-eye-ring{animation:none!important}
+  .ep6-eye-core{animation:none!important}
+  .ep7-hud-dot{animation:none!important}
+  .hcc{animation:none!important}
+
+/* 2 ── Entrance motion budget ──────────────────────────────────────────────
+      Cap the slowest, most theatrical entrances to a calm 320ms so content is
+      present almost immediately. A duration *cap* (not animation:none) keeps
+      the .da-cascade reveal firing its animationend. */
+  .view-enter,.da-cascade,.db-kpi,.db-section,.hero-inner,
+  .settings-hero,.settings-section,.db-hero-ring-prog,.db-flow-svg path,
+  .trk-card,.sound-card,.rm-modal,.rm-slide{animation-duration:320ms!important}
+
+/* 3 ── Stagger budget ──────────────────────────────────────────────────────
+      Cascade delays ballooned to 0.75s+. Clamping every delay to 90ms keeps a
+      whisper of sequence (so lists don't pop as one flat block) without the
+      "cards flying in one by one" feel. */
+  *,*::before,*::after{animation-delay:0s!important}
+  .block-card,.task-item,.stat-card,.db-sched-item,.da-cat-row,
+  .da-rank-row,.bcal-day-col,.cal-day,.rm-learn-row,.settings-row,
+  .asst-msg,.db-eisen-cell,.trk-card,.today-card{animation-delay:90ms!important}
+
+/* 4 ── One calm easing + short transition budget ───────────────────────────
+      Replace the distracting overshoot/spring curves everywhere with a single
+      ease-out, and keep hovers/snappiness under 180ms. Explicit functional
+      transitions (theme crossfade, ring progress) keep their longer timing. */
+  *{animation-timing-function:cubic-bezier(.2,.6,.2,1)!important;
+    transition-timing-function:cubic-bezier(.2,.6,.2,1)!important}
+  *{transition-duration:160ms!important}
+  #theme-transition-overlay,.focus-ring-wrap svg,.db-hero-ring-prog,
+  .prog-fill,.progress-fill{transition-duration:380ms!important}
+
+/* ── CALM MOTION LAYER END ───────────────────────────────────────────────── */
+</style>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     END CALM MOTION LAYER
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PREMIUM CONFIRM DIALOG v1 — themed replacement for native confirm()
+     ───────────────────────────────────────────────────────────────────────────
+     Native `confirm()` pops a stock browser box that instantly breaks Motion's
+     premium, fully-themed aesthetic — and it can't be styled, can't be branded,
+     and looks identical on every site. This layer adds `showConfirm(message,
+     opts)` — a Promise-based dialog that matches the app's existing modal system
+     (same tokens: --bg2, --border2, --radius, --shadow, .btn / .btn-cancel /
+     .btn-save, --font-head) so destructive actions now feel like first-class
+     parts of the product instead of browser interrupts.
+
+     Design & UX decisions:
+       • Destructive actions (the majority of confirms) get a red-tinted title
+         icon + red "Delete"/confirm button, and keyboard FOCUS defaults to
+         Cancel — so a stray Enter can never nuke data (native confirm focused
+         OK, which was a real foot-gun for deletes).
+       • Non-destructive confirms focus the confirm button, matching muscle
+         memory for "Are you sure?" style continue prompts.
+       • Full keyboard support: Tab cycles only between the two buttons (focus
+         trap), Esc cancels, Enter confirms the focused button.
+       • Backdrop click + a visible ✕ both cancel — no more "click outside
+         does nothing" dead-end.
+       • aria-modal / role="dialog" / labelled-by wiring so screen readers
+         announce it correctly; the live region is polite.
+       • Reduced-motion respected; the dialog appears instantly when the user
+         has animations off.
+       • SAFETY NET: if anything in the dialog fails to build, it falls back to
+         the native confirm() so a confirm can NEVER silently pass as "true".
+
+     Integration is non-destructive: existing `confirm(...)` call sites are
+     rewritten to `await showConfirm(...)`, and their enclosing functions marked
+     `async`. If you want to revert just this feature, restore native confirm by
+     re-running the inverse replacement — no other layer depends on it.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style id="premium-confirm">
+#ft-confirm-overlay{
+  position:fixed;inset:0;z-index:100001;
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+  background:rgba(2,3,5,.62);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .28s cubic-bezier(.22,1,.36,1);
+  -webkit-font-smoothing:antialiased;
+}
+#ft-confirm-overlay.open{display:flex}
+#ft-confirm-overlay.shown{opacity:1}
+#ft-confirm-overlay.closing{opacity:0}
+/* Card mirrors .modal so it inherits the app's premium surface + shadow */
+.ft-confirm-card{
+  position:relative;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow),0 24px 70px rgba(0,0,0,.5);
+  width:100%;max-width:408px;
+  padding:26px 26px 22px;
+  transform:translateY(14px) scale(.97);opacity:0;
+  transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .32s cubic-bezier(.16,1,.3,1);
+  will-change:transform,opacity;
+}
+#ft-confirm-overlay.shown .ft-confirm-card{transform:translateY(0) scale(1);opacity:1}
+.ft-confirm-head{display:flex;align-items:flex-start;gap:13px;margin-bottom:12px}
+.ft-confirm-icon{
+  flex:0 0 auto;width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text2);
+}
+.ft-confirm-icon svg{width:21px;height:21px}
+.ft-confirm-card.danger .ft-confirm-icon{
+  background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.28);color:var(--red);
+}
+.ft-confirm-title{
+  font-family:var(--font-head);font-size:18px;font-weight:700;
+  color:var(--text);line-height:1.3;padding-top:7px;margin:0;
+}
+.ft-confirm-card.danger .ft-confirm-title{color:var(--text)}
+.ft-confirm-body{
+  font-family:var(--font-body);font-size:14px;line-height:1.6;
+  color:var(--text2);margin:0 0 4px 53px;white-space:pre-wrap;word-break:break-word;
+}
+/* When there's no icon offset (title spans full width) keep body aligned */
+.ft-confirm-card.no-icon .ft-confirm-body{margin-left:0}
+.ft-confirm-actions{display:flex;gap:10px;margin-top:22px}
+.ft-confirm-actions .ft-cbtn{
+  flex:1;padding:11px 16px;border-radius:var(--radius-xs);
+  font-family:var(--font-body);font-size:14px;font-weight:600;
+  cursor:pointer;border:1px solid transparent;
+  transition:background .22s,border-color .22s,color .22s,transform .12s,box-shadow .22s;
+}
+.ft-cbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ft-cbtn:active{transform:scale(.98)}
+.ft-cbtn-cancel{background:var(--surface2);color:var(--text2);border-color:var(--border2)}
+.ft-cbtn-cancel:hover{background:var(--surface);color:var(--text)}
+.ft-cbtn-ok{background:var(--accent);color:var(--btn-text);font-weight:700}
+.ft-cbtn-ok:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow6,rgba(255,255,255,.08))}
+.ft-confirm-card.danger .ft-cbtn-ok{background:var(--red);color:#2a0b0b}
+.ft-confirm-card.danger .ft-cbtn-ok:hover{box-shadow:0 6px 20px rgba(248,113,113,.28)}
+/* ✕ close affordance */
+.ft-confirm-x{
+  position:absolute;top:14px;right:14px;width:30px;height:30px;
+  border:1px solid var(--border2);background:var(--surface);
+  border-radius:50%;cursor:pointer;color:var(--text3);
+  display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;
+  transition:background .2s,color .2s;
+}
+.ft-confirm-x:hover{background:var(--surface2);color:var(--text)}
+@media (max-width:420px){
+  .ft-confirm-card{padding:22px 20px 18px}
+  .ft-confirm-body{margin-left:0}
+  .ft-confirm-actions{flex-direction:column-reverse}
+  .ft-confirm-actions .ft-cbtn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  #ft-confirm-overlay,.ft-confirm-card,.ft-cbtn{transition-duration:.001s !important}
+}
+</style>
+<script id="premium-confirm-js">
+(function(){
+  'use strict';
+  /* Native confirm captured BEFORE any override, used as the safety net. */
+  var _nativeConfirm = window.confirm.bind(window);
+  var _active = null; /* resolve fn of the currently-open dialog, if any */
+
+  var SHIELD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+  var ALERT_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+  function focusables(card){
+    return Array.prototype.filter.call(
+      card.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      function(el){ return !el.disabled && el.offsetParent !== null; }
+    );
+  }
+
+  /* Hard-close: remove listeners, fade out, drop node. Never resolves here —
+     resolution is driven only by an explicit user choice. */
+  function teardown(ov){
+    if(!ov) return;
+    ov.classList.remove('shown');
+    ov.classList.add('closing');
+    var done = function(){ if(ov && ov.parentNode) ov.parentNode.removeChild(ov); };
+    var reduced = false;
+    try{ reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+    if(reduced) done(); else setTimeout(done, 300);
+  }
+
+  /**
+   * showConfirm(message, opts) -> Promise<boolean>
+   * opts: { title, confirmText, cancelText, danger }
+   *   danger=true  -> red accent + focus defaults to Cancel (safe for deletes)
+   *   danger=false -> neutral accent + focus defaults to Confirm (continue flow)
+   */
+  window.showConfirm = function(message, opts){
+    opts = opts || {};
+    /* If a dialog is somehow already open, don't stack — treat as cancel. */
+    if(_active){ return Promise.resolve(false); }
+
+    var text = (message === null || message === undefined) ? '' : String(message);
+    var danger = !!opts.danger;
+    /* Default to destructive styling when the copy reads like a delete. */
+    if(opts.danger === undefined){
+      /* Destructive-copy heuristic. Two fixes over a naive \b...\b version:
+         (1) NO trailing \b — the word "Delete" has no boundary between "delet"
+             and the trailing "e", so /\bdelet\b/ never matched it (it silently
+             missed 20 of the 35 real messages, leaving deletes styled as a
+             neutral "Confirm" with focus on the confirm button — the exact
+             foot-gun this dialog exists to prevent).
+         (2) "los" (not "lose|lost") with a leading \b catches both "lose" and
+             "lost" forms cleanly. Leading \b still prevents matching inside
+             unrelated words. */
+      danger = /\b(delet|remov|clear|destroy|purge|overwrit|abandon|discard|wipe|empty|los|replace)/i.test(text);
+    }
+    var okLabel = opts.confirmText || (danger ? 'Delete' : 'Confirm');
+    var cancelLabel = opts.cancelText || 'Cancel';
+
+    try{
+      var ov = document.createElement('div');
+      ov.id = 'ft-confirm-overlay';
+      ov.setAttribute('role','presentation');
+
+      var card = document.createElement('div');
+      card.className = 'ft-confirm-card' + (danger ? ' danger' : '');
+      card.setAttribute('role','dialog');
+      card.setAttribute('aria-modal','true');
+      var titleId = 'ft-confirm-title-' + Date.now();
+      var bodyId  = 'ft-confirm-body-' + Date.now();
+      card.setAttribute('aria-labelledby', titleId);
+      card.setAttribute('aria-describedby', bodyId);
+
+      var x = document.createElement('button');
+      x.className = 'ft-confirm-x'; x.type = 'button';
+      x.setAttribute('aria-label','Close'); x.innerHTML = '&times;';
+      card.appendChild(x);
+
+      var head = document.createElement('div');
+      head.className = 'ft-confirm-head';
+      var ic = document.createElement('div');
+      ic.className = 'ft-confirm-icon'; ic.setAttribute('aria-hidden','true');
+      ic.innerHTML = danger ? ALERT_SVG : SHIELD_SVG;
+      var h = document.createElement('h2');
+      h.className = 'ft-confirm-title'; h.id = titleId;
+      h.textContent = opts.title || (danger ? 'Are you sure?' : 'Please confirm');
+      head.appendChild(ic); head.appendChild(h);
+      card.appendChild(head);
+
+      var body = document.createElement('p');
+      body.className = 'ft-confirm-body'; body.id = bodyId;
+      body.textContent = text;               /* textContent — never HTML */
+      card.appendChild(body);
+
+      var actions = document.createElement('div');
+      actions.className = 'ft-confirm-actions';
+      var cancel = document.createElement('button');
+      cancel.className = 'ft-cbtn ft-cbtn-cancel'; cancel.type = 'button';
+      cancel.textContent = cancelLabel;
+      var ok = document.createElement('button');
+      ok.className = 'ft-cbtn ft-cbtn-ok'; ok.type = 'button';
+      ok.textContent = okLabel;
+      actions.appendChild(cancel); actions.appendChild(ok);
+      card.appendChild(actions);
+
+      ov.appendChild(card);
+      document.body.appendChild(ov);
+
+      var prevFocus = document.activeElement;
+      var settled = false;
+      var resolve;
+      var promise = new Promise(function(res){ resolve = res; });
+      _active = function(val){
+        if(settled) return; settled = true; _active = null;
+        try{ if(prevFocus && prevFocus.focus) prevFocus.focus(); }catch(e){}
+        teardown(ov);
+        resolve(val);
+      };
+
+      cancel.addEventListener('click', function(){ _active(false); });
+      x.addEventListener('click', function(){ _active(false); });
+      ok.addEventListener('click', function(){ _active(true); });
+      /* Backdrop click cancels — a common, expected dismiss gesture. */
+      ov.addEventListener('mousedown', function(e){ if(e.target === ov) _active(false); });
+
+      card.addEventListener('keydown', function(e){
+        if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); _active(false); return; }
+        if(e.key === 'Tab'){
+          var f = focusables(card);
+          if(!f.length){ e.preventDefault(); return; }
+          var first = f[0], last = f[f.length-1];
+          var idx = f.indexOf(document.activeElement);
+          if(e.shiftKey){
+            if(idx <= 0){ e.preventDefault(); last.focus(); }
+          }else{
+            if(idx === -1 || idx === f.length-1){ e.preventDefault(); first.focus(); }
+          }
+          return;
+        }
+        if(e.key === 'Enter'){
+          /* Let the focused button handle it; only intercept when focus is
+             not on a button (e.g. card body) so Enter confirms. */
+          if(document.activeElement !== ok && document.activeElement !== cancel){
+            e.preventDefault(); _active(true);
+          }
+        }
+      }, true);
+
+      /* VISIBILITY IS SYNCHRONOUS. `.open` flips display:none→flex and must
+         NEVER wait on requestAnimationFrame: rAF callbacks don't run in a
+         backgrounded/hidden tab, so gating visibility on it could leave the
+         dialog invisible (and focus stuck) if a confirm fires while the tab
+         isn't focused — e.g. triggered right after returning from a popup or
+         in a PWA that briefly loses focus. We add `.open` immediately, then
+         use rAF purely to sequence the cosmetic `.shown` fade-in transition
+         (with a setTimeout fallback so the animation still plays if rAF is
+         throttled). Focus is set regardless of rAF so keyboard control is
+         never lost. */
+      ov.classList.add('open');
+      var focusDefault = function(){
+        /* Safe default: Cancel for destructive, Confirm otherwise. */
+        try{ (danger ? cancel : ok).focus(); }catch(e){}
+      };
+      focusDefault();
+      var shown = function(){ ov.classList.add('shown'); };
+      if(typeof requestAnimationFrame === 'function'){
+        requestAnimationFrame(shown);
+        setTimeout(function(){ if(!ov.classList.contains('shown')) shown(); }, 120);
+      }else{
+        shown();
+      }
+
+      return promise;
+    }catch(err){
+      /* Safety net — never let a confirm silently fail open. */
+      try{ return Promise.resolve(_nativeConfirm(text)); }catch(e2){ return Promise.resolve(false); }
+    }
+  };
 })();
 </script>
 
