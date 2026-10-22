@@ -21354,7 +21354,7 @@ html:has(.backup-overlay.open){
         <div class="add-row">
           <button class="add-btn" onclick="openModal()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add time block <span class="kbd">N</span>
+            Add time block
           </button>
         </div>
       </div>
@@ -28302,7 +28302,7 @@ function renderDashboard(){
         ${graphBars}
       </div>
       <div class="db-graph-foot">
-        <span><i></i>Blocks, habits &amp; focus</span>
+        <span></span>
         <span>Best ${graphBest}%</span>
       </div>
     </div>` : `<div class="db-ra-empty">
@@ -100632,6 +100632,278 @@ html[data-theme="dark"] #view-dashboard .db-year-fill::after{display:none}
 }
 #view-dashboard .db-action-btn:hover svg{color:var(--text)}
 #view-dashboard .db-action-btn:active{transform:scale(.985)}
+</style>
+
+
+<style id="db-hero-polish">
+/* GREETING BAR — neutral dark theme only. Cleaner stats strip and a flatter theme button;
+   card surface, greeting and date are left exactly as they were. */
+html[data-theme="dark"] #view-dashboard .db-hero-stat{padding:10px 16px !important}
+html[data-theme="dark"] #view-dashboard .db-hero-stat-label{font-size:10px !important;margin-top:6px !important}
+/* theme button: flat circle, no lift */
+html[data-theme="dark"] #view-dashboard .db-hero-theme-btn{
+  background:color-mix(in srgb,var(--text) 5%,transparent) !important;
+  border:1px solid color-mix(in srgb,var(--text) 9%,transparent) !important;
+  box-shadow:none !important;
+  color:var(--text2) !important;
+}
+html[data-theme="dark"] #view-dashboard .db-hero-theme-btn:hover{
+  background:color-mix(in srgb,var(--text) 9%,transparent) !important;
+  border-color:color-mix(in srgb,var(--text) 15%,transparent) !important;
+  color:var(--text) !important;
+  transform:none !important;
+  box-shadow:none !important;
+}
+</style>
+
+
+<style id="db-widgets-polish">
+/* Lower dashboard widgets — journal, intentions, water, focus, matrix, goals. Neutral, flat, no glow. */
+#view-dashboard :is(.db-journal-textarea,.db-eisen-input,.db-goal-input,.db-goal-select){
+  background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;border-radius:10px !important;box-shadow:none !important;
+  transition:border-color .2s ease,background .2s ease;
+}
+#view-dashboard :is(.db-journal-textarea,.db-eisen-input,.db-goal-input,.db-goal-select):focus{
+  border-color:color-mix(in srgb,var(--text) 22%,transparent) !important;background:color-mix(in srgb,var(--text) 4%,transparent) !important;box-shadow:none !important;outline:none;
+}
+/* Journal */
+#view-dashboard .db-journal-mood-btn{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid transparent !important;box-shadow:none !important;transition:background .2s ease,border-color .2s ease}
+#view-dashboard .db-journal-mood-btn:hover{background:color-mix(in srgb,var(--text) 8%,transparent) !important;transform:none !important}
+#view-dashboard .db-journal-mood-btn.active{background:color-mix(in srgb,var(--text) 13%,transparent) !important;border-color:color-mix(in srgb,var(--text) 22%,transparent) !important}
+#view-dashboard .db-journal-foot,#view-dashboard .db-journal-meta{color:var(--text3)}
+#view-dashboard .db-journal-save-dot{box-shadow:none !important}
+/* Intentions */
+#view-dashboard .db-intention-item{border-radius:10px;transition:background .2s ease}
+#view-dashboard .db-intention-item:hover{background:color-mix(in srgb,var(--text) 3.5%,transparent)}
+#view-dashboard .db-intention-bullet{background:color-mix(in srgb,var(--text) 35%,transparent) !important;box-shadow:none !important}
+/* Water + Quick Focus buttons */
+#view-dashboard :is(.db-water-btn,.db-pomo-btn){
+  background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;box-shadow:none !important;
+  color:var(--text) !important;transition:background .2s ease,border-color .2s ease;
+}
+#view-dashboard :is(.db-water-btn,.db-pomo-btn):hover{
+  background:color-mix(in srgb,var(--text) 8%,transparent) !important;border-color:color-mix(in srgb,var(--text) 13%,transparent) !important;transform:none !important;box-shadow:none !important;
+}
+#view-dashboard :is(.db-water-count,.db-pomo-btn-num){font-variant-numeric:tabular-nums}
+#view-dashboard .db-pomo-btn-unit,#view-dashboard .db-pomo-btn-label{color:var(--text3)}
+/* Eisenhower */
+#view-dashboard .db-eisen-cell{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:12px !important;box-shadow:none !important}
+#view-dashboard :is(.db-eisen-item,.db-eisen-pool-item){border-radius:8px;transition:background .2s ease;box-shadow:none !important}
+#view-dashboard :is(.db-eisen-item,.db-eisen-pool-item):hover{background:color-mix(in srgb,var(--text) 3.5%,transparent) !important;transform:none !important}
+#view-dashboard .db-eisen-tag{background:none !important;box-shadow:none !important;color:var(--text3) !important}
+#view-dashboard :is(.db-eisen-add-btn,.db-eisen-pool-add button){background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;box-shadow:none !important;color:var(--text2) !important}
+#view-dashboard :is(.db-eisen-add-btn,.db-eisen-pool-add button):hover{background:color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text) !important}
+/* Goals */
+#view-dashboard .db-goal-card{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:12px !important;box-shadow:none !important;transition:border-color .2s ease}
+#view-dashboard .db-goal-card:hover{border-color:color-mix(in srgb,var(--text) 13%,transparent) !important;transform:none !important;box-shadow:none !important}
+#view-dashboard .db-goal-progress-track{height:6px !important;border-radius:99px !important;background:color-mix(in srgb,var(--text) 8%,transparent) !important;box-shadow:none !important}
+#view-dashboard .db-goal-progress-fill{background:color-mix(in srgb,var(--text) 80%,transparent) !important;box-shadow:none !important;border-radius:99px !important}
+#view-dashboard .db-goal-progress-val{color:var(--text2) !important;font-variant-numeric:tabular-nums}
+#view-dashboard .db-goal-tab{background:transparent !important;border:1px solid transparent !important;color:var(--text3) !important;box-shadow:none !important}
+#view-dashboard .db-goal-tab:hover{background:color-mix(in srgb,var(--text) 3.5%,transparent) !important;color:var(--text) !important}
+#view-dashboard .db-goal-tab.active{background:color-mix(in srgb,var(--text) 13%,transparent) !important;color:var(--text) !important;border-color:color-mix(in srgb,var(--text) 6%,transparent) !important}
+#view-dashboard .db-goal-add-btn{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;color:var(--text2) !important;box-shadow:none !important}
+#view-dashboard .db-goal-add-btn:hover{background:color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text) !important;transform:none !important}
+#view-dashboard .db-goal-btn-save{background:var(--text) !important;color:var(--bg) !important;box-shadow:none !important}
+#view-dashboard .db-goal-btn-save:hover{opacity:.88;transform:none !important}
+</style>
+
+
+<style id="tasks-page-polish-2">
+/* Tasks page — kept: mode toggle, add-task composer (fields, labels, Add button). */
+html body #view-tasks .task-mode-toggle{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;box-shadow:none !important;border-radius:12px !important}
+html body #view-tasks .task-mode-btn{background:transparent !important;color:var(--text3) !important;box-shadow:none !important;border-radius:9px !important;transition:background .2s ease,color .2s ease}
+html body #view-tasks .task-mode-btn:hover{color:var(--text) !important}
+html body #view-tasks .task-mode-btn.active{background:color-mix(in srgb,var(--text) 13%,transparent) !important;color:var(--text) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 10%,transparent) !important}
+html body #view-tasks .task-daily-date{background:none !important;border:none !important;box-shadow:none !important;color:var(--text3) !important}
+html body #view-tasks .tdd-dot{box-shadow:none !important;background:color-mix(in srgb,var(--text) 45%,transparent) !important;animation:none !important}
+html body #view-tasks .task-composer{border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important}
+html body #view-tasks .task-composer-label{color:var(--text3) !important;font-size:10.5px !important;letter-spacing:.09em !important;text-transform:uppercase}
+html body #view-tasks :is(.task-input,.task-dur-inp,.task-cat-inp,.task-time-inp,.task-pri-sel){
+  background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;border-radius:10px !important;box-shadow:none !important;
+  transition:border-color .2s ease,background .2s ease;
+}
+html body #view-tasks :is(.task-input,.task-dur-inp,.task-cat-inp,.task-time-inp,.task-pri-sel):focus{
+  border-color:color-mix(in srgb,var(--text) 22%,transparent) !important;background:color-mix(in srgb,var(--text) 4%,transparent) !important;box-shadow:none !important;outline:none;
+}
+html body #view-tasks .task-meta-label{color:var(--text3) !important;font-size:10px !important;letter-spacing:.08em !important;text-transform:uppercase}
+html body #view-tasks .task-add-btn{background:var(--text) !important;color:var(--bg) !important;border:none !important;border-radius:10px !important;box-shadow:none !important}
+html body #view-tasks .task-add-btn:hover{opacity:.88;transform:none !important;box-shadow:none !important}
+</style>
+
+
+<style id="blocks-subpages-polish">
+/* TIME BLOCKS subpages (Today / Week / Month) — neutral, flat, no glow. */
+html body #view-blocks .bvt-btns{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;box-shadow:none !important;border-radius:12px !important}
+html body #view-blocks .bvt-btn{background:transparent !important;color:var(--text3) !important;box-shadow:none !important;border-radius:9px !important;transition:background .2s ease,color .2s ease}
+html body #view-blocks .bvt-btn:hover{color:var(--text) !important}
+html body #view-blocks .bvt-btn.active{background:color-mix(in srgb,var(--text) 13%,transparent) !important;color:var(--text) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 10%,transparent) !important}
+html body #view-blocks .bvt-today-btn{background:color-mix(in srgb,var(--text) 4%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text2) !important;box-shadow:none !important;border-radius:8px !important}
+html body #view-blocks .bvt-today-btn:hover{background:color-mix(in srgb,var(--text) 9%,transparent) !important;color:var(--text) !important;transform:none !important}
+html body #view-blocks .bvt-nav-label{font-variant-numeric:tabular-nums}
+
+/* Today: summary cards + block rows */
+html body #view-blocks .stat-card{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:12px !important;box-shadow:none !important}
+html body #view-blocks .stat-card:hover{transform:none !important;border-color:color-mix(in srgb,var(--text) 10%,transparent) !important;box-shadow:none !important}
+html body #view-blocks .sc-value{font-variant-numeric:tabular-nums;font-weight:700 !important}
+html body #view-blocks .sc-label{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important;font-size:10px !important}
+html body #view-blocks .block-card{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:12px !important;box-shadow:none !important;transition:border-color .2s ease,background .2s ease}
+html body #view-blocks .block-card:hover{background:color-mix(in srgb,var(--text) 4.5%,transparent) !important;border-color:color-mix(in srgb,var(--text) 10%,transparent) !important;transform:none !important;box-shadow:none !important}
+html body #view-blocks .block-card.done{opacity:.55}
+html body #view-blocks .block-stripe{border-radius:99px !important;box-shadow:none !important}
+html body #view-blocks .t-time,html body #view-blocks .block-dur{font-variant-numeric:tabular-nums}
+
+/* Week */
+html body #view-blocks .bcal-event{border-radius:8px !important;box-shadow:none !important}
+html body #view-blocks .bcal-event:hover{transform:none !important;filter:brightness(1.08);box-shadow:none !important}
+html body #view-blocks .bcal-head-dow{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important}
+html body #view-blocks .bcal-head-num{font-variant-numeric:tabular-nums}
+html body #view-blocks .bcal-cell,html body #view-blocks .bcal-cell-half{border-color:color-mix(in srgb,var(--text) 5%,transparent) !important}
+
+/* Month */
+html body #view-blocks .cal-wd{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important;font-size:10px !important}
+html body #view-blocks .cal-day{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 5%,transparent) !important;border-radius:10px !important;box-shadow:none !important;transition:background .2s ease,border-color .2s ease}
+html body #view-blocks .cal-day:hover{background:color-mix(in srgb,var(--text) 5.5%,transparent) !important;border-color:color-mix(in srgb,var(--text) 11%,transparent) !important;transform:none !important;box-shadow:none !important}
+html body #view-blocks .cal-day.today{border-color:color-mix(in srgb,var(--text) 28%,transparent) !important;background:color-mix(in srgb,var(--text) 6%,transparent) !important}
+html body #view-blocks .cal-day.other-month{opacity:.4}
+html body #view-blocks .cal-day-num{font-variant-numeric:tabular-nums}
+</style>
+
+
+<style id="tracker-dark-polish">
+/* TRACKER — neutral dark themes only. Flat, hairline, no glow. */
+html[data-theme="dark"] body #view-tracker .trk-panel-head{border-bottom-color:color-mix(in srgb,var(--text) 6%,transparent) !important}
+
+/* add forms */
+
+/* habits table + week cards */
+html[data-theme="dark"] body #view-tracker .habit-table th{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important;font-size:10px !important}
+html[data-theme="dark"] body #view-tracker .habit-table td,html[data-theme="dark"] body #view-tracker .habit-table th{border-color:color-mix(in srgb,var(--text) 5%,transparent) !important}
+html[data-theme="dark"] body #view-tracker .habit-table tbody tr{transition:background .2s ease}
+html[data-theme="dark"] body #view-tracker .habit-table tbody tr:hover{background:color-mix(in srgb,var(--text) 3.5%,transparent) !important}
+html[data-theme="dark"] body #view-tracker .habit-streak{background:none !important;box-shadow:none !important;color:var(--text2) !important;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] body #view-tracker .habit-del-btn{background:none !important;box-shadow:none !important;color:var(--text3) !important}
+html[data-theme="dark"] body #view-tracker .habit-del-btn:hover{color:var(--text) !important;background:color-mix(in srgb,var(--text) 6%,transparent) !important}
+html[data-theme="dark"] body #view-tracker .habit-card{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker .habit-day-btn{box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker .habit-day-btn.done .hday-check{background:var(--text) !important;color:var(--bg) !important;border-color:var(--text) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker .habit-card-prog-bar{background:color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:99px !important}
+html[data-theme="dark"] body #view-tracker .habit-card-prog-fill{background:color-mix(in srgb,var(--text) 80%,transparent) !important;box-shadow:none !important;border-radius:99px !important}
+
+/* books / shows / skills / custom cards */
+html[data-theme="dark"] body #view-tracker .trk-card{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important;transition:border-color .2s ease,background .2s ease}
+html[data-theme="dark"] body #view-tracker .trk-card:hover{background:color-mix(in srgb,var(--text) 4%,transparent) !important;border-color:color-mix(in srgb,var(--text) 11%,transparent) !important;transform:none !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker .trk-card-icon{background:color-mix(in srgb,var(--text) 5%,transparent) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent) !important}
+html[data-theme="dark"] body #view-tracker .trk-progress-bar{background:color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:99px !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker .trk-progress-fill{background:color-mix(in srgb,var(--text) 80%,transparent) !important;box-shadow:none !important;border-radius:99px !important}
+html[data-theme="dark"] body #view-tracker .trk-progress-text,html[data-theme="dark"] body #view-tracker .trk-ring-text{font-variant-numeric:tabular-nums}
+html[data-theme="dark"] body #view-tracker .trk-status{background:color-mix(in srgb,var(--text) 5%,transparent) !important;color:var(--text2) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent) !important}
+html[data-theme="dark"] body #view-tracker :is(.trk-icon-btn,.trk-update-btn,.trk-step-btn,.trk-source-btn){background:color-mix(in srgb,var(--text) 4%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text2) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tracker :is(.trk-icon-btn,.trk-update-btn,.trk-step-btn,.trk-source-btn):hover{background:color-mix(in srgb,var(--text) 9%,transparent) !important;color:var(--text) !important;transform:none !important}
+html[data-theme="dark"] body #view-tracker .trk-empty,html[data-theme="dark"] body #view-tracker .trk-empty-title{color:var(--text3) !important}
+html[data-theme="dark"] body #view-tracker .tl-chip{background:color-mix(in srgb,var(--text) 4%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;box-shadow:none !important}
+</style>
+
+
+<style id="notes-dark-polish">
+/* NOTES — neutral dark themes only. Surfaces/darkness untouched; borders, buttons, hover only. */
+
+/* writing box */
+html[data-theme="dark"] body #view-notes .nb-capture-inner{border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:14px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-notes .nb-capture-inner:focus-within{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-notes .nb-capture-hint{color:var(--text3) !important}
+html[data-theme="dark"] body #view-notes :is(.nb-cancel-btn,.nb-note-cancel-btn){background:color-mix(in srgb,var(--text) 4%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text2) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-notes :is(.nb-cancel-btn,.nb-note-cancel-btn):hover{background:color-mix(in srgb,var(--text) 9%,transparent) !important;color:var(--text) !important}
+
+/* saved notes */
+html[data-theme="dark"] body #view-notes .nb-note-card{border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-notes .nb-note-card:hover{border-color:color-mix(in srgb,var(--text) 11%,transparent) !important;transform:none !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-notes .nb-note-text{line-height:1.65}
+html[data-theme="dark"] body #view-notes .nb-note-ts{color:var(--text3) !important;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] body #view-notes :is(.nb-note-edit-btn,.nb-note-copy-btn,.nb-note-del){background:none !important;border:none !important;box-shadow:none !important;color:var(--text3) !important}
+html[data-theme="dark"] body #view-notes :is(.nb-note-edit-btn,.nb-note-copy-btn,.nb-note-del):hover{background:color-mix(in srgb,var(--text) 7%,transparent) !important;color:var(--text) !important}
+@media (hover:hover){
+  html[data-theme="dark"] body #view-notes :is(.nb-note-edit-btn,.nb-note-copy-btn,.nb-note-del){opacity:0;transition:opacity .2s ease,color .2s ease,background .2s ease}
+  html[data-theme="dark"] body #view-notes .nb-note-card:hover :is(.nb-note-edit-btn,.nb-note-copy-btn,.nb-note-del){opacity:1}
+}
+html[data-theme="dark"] body #view-notes :is(.nb-empty-title,.nb-empty-sub){color:var(--text3) !important}
+</style>
+
+
+<style id="assistant-dark-polish">
+/* ASSISTANT — neutral dark themes only. No recoloring of buttons/active states; borders, spacing, hover only. */
+html[data-theme="dark"] body #view-assistant .asst-chat-header{border-bottom-color:color-mix(in srgb,var(--text) 6%,transparent) !important}
+html[data-theme="dark"] body #view-assistant .asst-composer-inner{border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:16px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-assistant .asst-composer-inner:focus-within{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-assistant .asst-msg-bubble{border-radius:16px !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-assistant .asst-msg-content,html[data-theme="dark"] body #view-assistant .asst-msg-body{line-height:1.65}
+html[data-theme="dark"] body #view-assistant .asst-msg-name{font-weight:650}
+html[data-theme="dark"] body #view-assistant .asst-msg-time{color:var(--text3) !important;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] body #view-assistant .asst-msg-model-tag{background:color-mix(in srgb,var(--text) 5%,transparent) !important;color:var(--text3) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent) !important;border:none !important}
+@media (hover:hover){
+  html[data-theme="dark"] body #view-assistant .asst-msg-actions{opacity:0;transition:opacity .2s ease}
+  html[data-theme="dark"] body #view-assistant .asst-msg:hover .asst-msg-actions{opacity:1}
+}
+html[data-theme="dark"] body #view-assistant .asst-typing-dot{background:var(--text3) !important;box-shadow:none !important}
+
+/* sidebar */
+html[data-theme="dark"] body #view-assistant .asst-sidebar-search{border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;box-shadow:none !important;border-radius:10px !important}
+html[data-theme="dark"] body #view-assistant .asst-sidebar-search:focus-within,html[data-theme="dark"] body #view-assistant .asst-sidebar-search:focus{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-assistant .asst-conv-group-label{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important;font-size:10px !important}
+html[data-theme="dark"] body #view-assistant .asst-conv-item{border-radius:10px !important;transition:background .2s ease !important}
+html[data-theme="dark"] body #view-assistant .asst-conv-item:hover{background:color-mix(in srgb,var(--text) 4.5%,transparent) !important;transform:none !important;box-shadow:none !important}
+
+/* welcome screen */
+html[data-theme="dark"] body #view-assistant .asst-empty-cat-label{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.08em !important}
+html[data-theme="dark"] body #view-assistant .asst-suggestion{background:color-mix(in srgb,var(--text) 2.5%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;border-radius:12px !important;box-shadow:none !important;transition:background .2s ease,border-color .2s ease !important}
+html[data-theme="dark"] body #view-assistant .asst-suggestion:hover{background:color-mix(in srgb,var(--text) 5%,transparent) !important;border-color:color-mix(in srgb,var(--text) 12%,transparent) !important;transform:none !important;box-shadow:none !important}
+</style>
+
+
+<style id="guidelines-dark-polish">
+/* GUIDELINES — neutral dark themes only. Borders, hover, spacing; no button/active recoloring. */
+html[data-theme="dark"] body #view-rules .rules-search-wrap{border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:12px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-rules .rules-search-wrap:focus-within{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-rules .rules-search-meta{color:var(--text3) !important}
+html[data-theme="dark"] body #view-rules .rule-accordion{border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-rules .rule-accordion:hover{border-color:color-mix(in srgb,var(--text) 11%,transparent) !important;transform:none !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-rules .rule-acc-head{transition:background .2s ease}
+html[data-theme="dark"] body #view-rules .rule-acc-head:hover{background:color-mix(in srgb,var(--text) 3.5%,transparent) !important}
+html[data-theme="dark"] body #view-rules .rule-acc-name{font-weight:650 !important}
+html[data-theme="dark"] body #view-rules .rule-acc-chevron{color:var(--text3) !important}
+html[data-theme="dark"] body #view-rules .rule-acc-emoji-badge{background:color-mix(in srgb,var(--text) 5%,transparent) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent) !important;border:none !important}
+html[data-theme="dark"] body #view-rules .rule-acc-body{border-top:1px solid color-mix(in srgb,var(--text) 5%,transparent) !important}
+html[data-theme="dark"] body #view-rules .rule-entry-input{background:color-mix(in srgb,var(--text) 3%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 7%,transparent) !important;border-radius:10px !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-rules .rule-entry-input:focus{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important;outline:none}
+html[data-theme="dark"] body #view-rules .rule-icon-btn{background:none !important;box-shadow:none !important;color:var(--text3) !important}
+html[data-theme="dark"] body #view-rules .rule-icon-btn:hover{background:color-mix(in srgb,var(--text) 7%,transparent) !important;color:var(--text) !important}
+@media (hover:hover){
+  html[data-theme="dark"] body #view-rules .rule-acc-actions{opacity:0;transition:opacity .2s ease}
+  html[data-theme="dark"] body #view-rules .rule-acc-head:hover .rule-acc-actions,html[data-theme="dark"] body #view-rules .rule-acc-actions:focus-within{opacity:1}
+}
+html[data-theme="dark"] body #view-rules .rules-reset-btn{background:color-mix(in srgb,var(--text) 4%,transparent) !important;border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;color:var(--text2) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-rules .rules-reset-btn:hover{background:color-mix(in srgb,var(--text) 9%,transparent) !important;color:var(--text) !important}
+html[data-theme="dark"] body #view-rules :is(.rule-empty-hint,.rules-empty){color:var(--text3) !important}
+</style>
+
+
+<style id="tools-dark-polish">
+/* TOOLS — neutral dark themes only. Borders, hover, spacing; no primary/active recoloring. */
+html[data-theme="dark"] body #view-tools .tools-search{border:1px solid color-mix(in srgb,var(--text) 8%,transparent) !important;border-radius:12px !important;box-shadow:none !important;transition:border-color .2s ease}
+html[data-theme="dark"] body #view-tools .tools-search:focus-within,html[data-theme="dark"] body #view-tools .tools-search:focus{border-color:color-mix(in srgb,var(--text) 20%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tools .tools-cat-label{color:var(--text3) !important;text-transform:uppercase;letter-spacing:.09em !important;font-size:10.5px !important}
+html[data-theme="dark"] body #view-tools .tool-card{border:1px solid color-mix(in srgb,var(--text) 6%,transparent) !important;border-radius:14px !important;box-shadow:none !important;transition:border-color .2s ease,background .2s ease}
+html[data-theme="dark"] body #view-tools .tool-card:hover{border-color:color-mix(in srgb,var(--text) 12%,transparent) !important;transform:none !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tools .tool-icon{background:color-mix(in srgb,var(--text) 5%,transparent) !important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 8%,transparent) !important;border:none !important}
+html[data-theme="dark"] body #view-tools .tool-name{font-weight:650 !important}
+html[data-theme="dark"] body #view-tools .tool-desc{color:var(--text3) !important;line-height:1.55}
+html[data-theme="dark"] body #view-tools .tool-btn-ghost{box-shadow:none !important}
+html[data-theme="dark"] body #view-tools .tool-btn-ghost:hover{background:color-mix(in srgb,var(--text) 7%,transparent) !important;color:var(--text) !important}
+html[data-theme="dark"] body #view-tools .tool-empty{color:var(--text3) !important}
+@media (hover:hover){
+  html[data-theme="dark"] body #view-tools .custom-tool-del{opacity:0;transition:opacity .2s ease}
+  html[data-theme="dark"] body #view-tools .tool-card:hover .custom-tool-del{opacity:1}
+}
 </style>
 
 </body>
