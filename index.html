@@ -103896,5 +103896,22 @@ html[data-theme="pure-light"] .logo-icon:not(#_a):not(#_b):not(#_c){animation:no
 #view-dashboard .db-hero-stats:not(#_a):not(#_b):not(#_c),
 .settings-row:not(#_a):not(#_b):not(#_c){animation-delay:0s !important;animation-duration:.22s !important;}
 </style>
+<style id="notes-topic-switch-sharp">
+/* Notes: topic switch rebuilds every card. The old entrance slid cards 6px
+   (fractional-pixel text rasterisation = soft/blurry text) and, via fill
+   "both", left a transform on each card afterwards. No entrance animation on topic switch: cards appear instantly, no transform, no filter. */
+@keyframes nbCardFade{from{opacity:0}to{opacity:1}}
+#view-notes .nb-note-card,
+#view-notes .nb-empty{
+  animation:none !important;
+  transform:none;
+  will-change:auto !important;
+  -webkit-font-smoothing:antialiased;
+}
+#view-notes .nb-note-card:hover{transform:none !important}
+@media (prefers-reduced-motion:reduce){
+  #view-notes .nb-note-card,#view-notes .nb-empty{animation:none !important}
+}
+</style>
 </body>
 </html>
