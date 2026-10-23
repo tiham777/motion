@@ -103805,7 +103805,9 @@ html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-su
 /* PERF: long lists (hundreds of notes / tasks) only lay out and paint the rows
    that are near the viewport. Off-screen rows keep a size estimate so the
    scrollbar stays stable. Remove this block to revert. */
-.nb-note-card,.task-item{content-visibility:auto;contain-intrinsic-size:auto 88px;}
+.task-item{content-visibility:auto;contain-intrinsic-size:auto 88px;}
+/* Notes excluded: after a topic switch the rebuilt cards below the first were
+   left unpainted until scrolled into view. */
 </style>
 <style id="ux-final-polish">
 /* UX polish pass — remove this block to revert.
@@ -103909,6 +103911,21 @@ html[data-theme="pure-light"] .logo-icon:not(#_a):not(#_b):not(#_c){animation:no
   -webkit-font-smoothing:antialiased;
 }
 #view-notes .nb-note-card:hover{transform:none !important}
+#view-notes .nb-note-card{content-visibility:visible !important;contain:none !important}
+/* ROOT CAUSE of "notes appear only after scroll" + blur: the global
+   scroll-fade-reveal layer hides every .nb-stream > * (opacity:0,
+   translateY(24px), .85s transition) until an IntersectionObserver adds
+   .alive-reveal-in. After a topic switch the rebuilt cards are picked up late
+   (400ms throttled rescan), so they stay invisible until you scroll, and
+   while sliding in the text is rasterised on fractional pixels (blurry).
+   Notes are always shown immediately instead. */
+#view-notes .nb-stream > *,
+#view-notes .nb-stream > *.alive-reveal-in,
+#view-notes .nb-stream > *.alive-reveal-out{
+  opacity:1 !important;
+  transform:none;
+  will-change:auto !important;
+}
 @media (prefers-reduced-motion:reduce){
   #view-notes .nb-note-card,#view-notes .nb-empty{animation:none !important}
 }
