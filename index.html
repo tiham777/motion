@@ -22640,7 +22640,7 @@ html:has(.backup-overlay.open){
             <div class="asst-attachment-preview" id="asstAttachmentPreview"></div>
             <input type="file" id="asstFileInput" style="display:none" accept="image/*,.pdf,.txt,.csv,.json,.md,.py,.js,.html,.css,.xml,.yaml,.yml,.log,.sh,.ts,.jsx,.tsx,.sql,.rb,.go,.rs,.java,.c,.cpp,.h" multiple onchange="asstHandleFiles(this.files)"/>
             <div class="asst-composer-inner">
-              <textarea class="asst-composer-input" id="asstInput" rows="1" placeholder="Ask anything..." onkeydown="asstHandleKeydown(event)" oninput="asstHandleInput()"></textarea>
+              <textarea class="asst-composer-input" id="asstInput" rows="1" placeholder="Ask anything…" onkeydown="asstHandleKeydown(event)" oninput="asstHandleInput()"></textarea>
               <div class="asst-composer-actions">
                 <button class="asst-composer-btn asst-websearch-btn" id="asstWebSearchBtn" onclick="asstToggleWebSearch()" title="Web search — ON: model can search when needed, OFF: pure chat">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -45016,13 +45016,12 @@ function asstRenderMessages(){
     // that adapt to the conversation.
     var hour = new Date().getHours();
     var greeting = hour < 5 ? 'Late night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Good night';
-    var greetingSub = 'Ask a question, or start from a suggestion below';
+    var greetingSub = 'What are we working on?';
 
     // Build suggestion chips
     var suggestionsHTML = '';
     suggestionsHTML =
-      '<div class="asst-empty-cat"><span class="asst-empty-cat-label">Try asking</span></div>'
-      +'<div class="asst-empty-suggestions">'
+      '<div class="asst-empty-suggestions">'
       +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Plan my day around my tasks and time blocks\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Plan my day</span><span class="asst-sg-desc">Shape today around your blocks</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
       +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'What should I focus on first today?\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">What to focus on</span><span class="asst-sg-desc">Find the one thing that matters</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
       +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Turn my brain dump into a short task list\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 11l3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Brain dump to tasks</span><span class="asst-sg-desc">Turn loose thoughts into a list</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
@@ -45041,6 +45040,13 @@ function asstRenderMessages(){
       +'</div>'
       + suggestionsHTML
       +'</div>';
+    container.querySelectorAll('.asst-suggestion').forEach(function(el){
+      el.setAttribute('role','button');
+      el.setAttribute('tabindex','0');
+      el.addEventListener('keydown',function(e){
+        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.click(); }
+      });
+    });
     return;
   }
   var html = '';
@@ -104497,6 +104503,94 @@ html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg
 html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-arrow{opacity:1;transform:none;color:var(--accent)}
 @media (prefers-reduced-motion:reduce){
   html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-arrow,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico{transition:none !important}
+}
+</style>
+<style id="assistant-empty-v4">
+/* Assistant empty screen (dark) v4: left-aligned headline on the composer's 760px column,
+   one grouped suggestion panel with hairline dividers instead of six floating cards.
+   Revert: delete this block. */
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty.asst-empty-premium{
+  container-type:inline-size;
+  align-items:center !important;justify-content:flex-start !important;
+  overflow-x:hidden !important;overflow-y:auto !important;scrollbar-width:none;
+  /* cancel .asst-messages' own padding so the empty state centers on the real chat area */
+  margin:-28px -30px -28px -30px !important;
+  padding:12px 24px 20px !important;background:none !important;background-image:none !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty.asst-empty-premium::-webkit-scrollbar{display:none}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-icon,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-cat{display:none !important}
+
+/* headline: two full lines, solid + muted, no gradient text */
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting{
+  width:100%;max-width:760px;align-items:flex-start !important;gap:0 !important;
+  text-align:left;margin:auto 0 24px !important;flex:none !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting h2,
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting p{
+  font-family:var(--font-head) !important;font-size:clamp(26px,4.6cqw,34px) !important;
+  font-weight:600 !important;letter-spacing:-.04em !important;line-height:1.08 !important;
+  margin:0 !important;max-width:none !important;text-align:left;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting h2{
+  background:none !important;background-image:none !important;
+  color:var(--text) !important;-webkit-text-fill-color:var(--text) !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting p{
+  color:color-mix(in srgb,var(--text) 36%,transparent) !important;
+  -webkit-text-fill-color:color-mix(in srgb,var(--text) 36%,transparent) !important;
+}
+
+/* suggestions: one panel, hairlines between cells */
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-suggestions{
+  display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px !important;
+  width:100%;max-width:760px !important;margin:0 0 auto !important;flex:none !important;justify-content:stretch !important;
+  background:color-mix(in srgb,var(--text) 9%,transparent);
+  border:1px solid color-mix(in srgb,var(--text) 9%,transparent);
+  border-radius:16px;overflow:hidden;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion{
+  position:relative;display:flex !important;align-items:center;gap:14px;
+  padding:13px 18px !important;border:0 !important;border-radius:0 !important;overflow:visible;
+  background:var(--bg) !important;box-shadow:none !important;transform:none !important;
+  text-align:left;cursor:pointer;
+  transition:background .15s ease !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover{
+  background:color-mix(in srgb,var(--text) 5%,var(--bg)) !important;
+  border:0 !important;box-shadow:none !important;transform:none !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:active{background:color-mix(in srgb,var(--text) 8%,var(--bg)) !important;transform:none !important}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:focus-visible{outline:2px solid color-mix(in srgb,var(--text) 55%,transparent);outline-offset:-2px}
+
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico,
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-ico{
+  flex:0 0 auto;width:20px;height:20px;border-radius:0;
+  background:none !important;border:0 !important;
+  color:var(--text3);transition:color .15s ease;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-ico{color:var(--text)}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico svg{width:18px;height:18px;stroke-width:1.6}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;text-align:left}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-title{font-size:14px;font-weight:600;line-height:1.3;letter-spacing:-.01em;color:var(--text)}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-desc{
+  font-size:12.5px;font-weight:400;line-height:1.35;color:var(--text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-arrow{
+  flex:0 0 auto;width:14px;height:14px;color:var(--text);opacity:0;
+  transform:translate(-4px,4px);transition:opacity .15s ease,transform .2s ease;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-arrow,
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:focus-visible .asst-sg-arrow{opacity:.7;transform:none;color:var(--text)}
+
+/* narrow chat area: single column */
+@container (max-width:560px){
+  html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-suggestions{grid-template-columns:minmax(0,1fr)}
+  html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting{margin-bottom:20px !important}
+  html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion{padding:12px 16px !important}
+}
+@media (prefers-reduced-motion:reduce){
+  html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-arrow{transition:none !important}
 }
 </style>
 </body>
