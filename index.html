@@ -22534,7 +22534,7 @@ html:has(.backup-overlay.open){
             <div class="nb-capture-inner">
               <textarea id="nbNoteInput" placeholder="Write a note…" rows="2" oninput="autoGrowTextarea(this)"></textarea>
               <div class="nb-capture-footer">
-                <span class="nb-capture-hint">Enter to save · Shift+Enter new line</span>
+                <span class="nb-capture-hint"><kbd>Enter</kbd> to save<span class="nb-hint-dot">·</span><kbd>Shift</kbd><span class="nb-hint-plus">+</span><kbd>Enter</kbd> new line</span>
                 <button class="nb-save-btn" onclick="nbAddNote()">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                   Save
@@ -45023,12 +45023,12 @@ function asstRenderMessages(){
     suggestionsHTML =
       '<div class="asst-empty-cat"><span class="asst-empty-cat-label">Try asking</span></div>'
       +'<div class="asst-empty-suggestions">'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Plan my day around my tasks and time blocks\')">Plan my day</div>'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'What should I focus on first today?\')">What to focus on</div>'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Turn my brain dump into a short task list\')">Brain dump to tasks</div>'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Review my habits and suggest one improvement\')">Review my habits</div>'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Summarise what I got done this week\')">Summarise my week</div>'
-      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Draft a short status update I can send to my team\')">Draft a status update</div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Plan my day around my tasks and time blocks\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Plan my day</span><span class="asst-sg-desc">Shape today around your blocks</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'What should I focus on first today?\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">What to focus on</span><span class="asst-sg-desc">Find the one thing that matters</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Turn my brain dump into a short task list\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 11l3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Brain dump to tasks</span><span class="asst-sg-desc">Turn loose thoughts into a list</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Review my habits and suggest one improvement\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"22 12 18 12 15 21 9 3 6 12 2 12\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Review my habits</span><span class="asst-sg-desc">Spot one thing to improve</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Summarise what I got done this week\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"/><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"/><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Summarise my week</span><span class="asst-sg-desc">See what you got done</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
+      +'<div class="asst-suggestion" onclick="asstUseSuggestion(\'Draft a short status update I can send to my team\')"><span class="asst-sg-ico"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"22\" y1=\"2\" x2=\"11\" y2=\"13\"/><polygon points=\"22 2 15 22 11 13 2 9 22 2\"/></svg></span><span class="asst-sg-txt"><span class="asst-sg-title">Draft a status update</span><span class="asst-sg-desc">Ready to send to your team</span></span><svg class=\"asst-sg-arrow\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"/><polyline points=\"7 7 17 7 17 17\"/></svg></div>'
       +'</div>';
 
     container.innerHTML = '<div class="asst-empty asst-empty-premium" id="asstEmpty">'
@@ -103999,6 +103999,504 @@ html[data-theme="pure-light"] .logo-icon:not(#_a):not(#_b):not(#_c){animation:no
 }
 @media (prefers-reduced-motion:reduce){
   #view-notes .nb-note-card,#view-notes .nb-empty{animation:none !important}
+}
+</style>
+<style id="light-polish-calm">
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT THEME — POLISH + CALM HOVER (appended last so it wins)
+   Scope: html[data-theme="light"] / "pure-light" only. Dark themes untouched.
+   1) Cleaner dashboard + app chrome in light mode.
+   2) Hover on bars / boxes / cards = colour + border change only.
+      No lift, slide, scale, brightness flash or glow.
+   Remove this <style id="light-polish-calm"> block to revert.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · POLISH ─────────────────────────────────────────────────── */
+html[data-theme="light"] body{background:var(--bg)}
+html[data-theme="light"] ::selection{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--text)}
+
+/* Sections: consistent spacing, quieter titles, clear hairline */
+html[data-theme="light"] #view-dashboard .db-section{padding:16px 18px !important;border-radius:14px !important}
+html[data-theme="light"] #view-dashboard .db-section-head{margin-bottom:14px !important}
+html[data-theme="light"] #view-dashboard .db-section-title{font-weight:650 !important;color:var(--text) !important;letter-spacing:-.01em !important}
+html[data-theme="light"] #view-dashboard .db-section-sub{color:var(--text3) !important}
+
+/* List rows: subtle tint on hover, never move */
+html[data-theme="light"] #view-dashboard :is(.db-sched-item,.db-task-item,.db-habit-item){
+  background:transparent !important;border:1px solid transparent !important;box-shadow:none !important;
+}
+html[data-theme="light"] #view-dashboard :is(.db-sched-item,.db-task-item,.db-habit-item):hover{
+  background:var(--bg3) !important;border-color:var(--border) !important;
+}
+html[data-theme="light"] #view-dashboard .db-sched-item.now{
+  background:color-mix(in srgb,var(--accent) 7%,var(--bg2)) !important;
+  border-color:color-mix(in srgb,var(--accent) 22%,var(--border)) !important;
+}
+
+/* Quick actions: neutral tile, accent border on hover */
+html[data-theme="light"] #view-dashboard .db-action-btn{
+  background:var(--bg2) !important;border:1px solid var(--border2) !important;box-shadow:none !important;color:var(--text) !important;
+}
+html[data-theme="light"] #view-dashboard .db-action-btn:hover{
+  background:color-mix(in srgb,var(--accent) 5%,var(--bg2)) !important;
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border2)) !important;box-shadow:none !important;
+}
+
+/* ── Bars: progress graph (flat, readable, no glow) ── */
+html[data-theme="light"] #view-dashboard .db-graph-track{
+  background:var(--bg3) !important;background-image:none !important;
+  box-shadow:inset 0 0 0 1px var(--border) !important;border-radius:8px !important;
+}
+html[data-theme="light"] #view-dashboard .db-graph-fill{
+  background:linear-gradient(180deg,var(--accent2),var(--accent)) !important;
+  box-shadow:none !important;opacity:.92;
+}
+html[data-theme="light"] #view-dashboard .db-graph-col.today .db-graph-fill{opacity:1}
+html[data-theme="light"] #view-dashboard .db-graph-col.future .db-graph-track{opacity:.55}
+html[data-theme="light"] #view-dashboard .db-graph-x{color:var(--text3)}
+html[data-theme="light"] #view-dashboard .db-graph-col.today .db-graph-x{color:var(--accent)}
+
+/* Time-allocation bar + year bar: flat */
+html[data-theme="light"] #view-dashboard .db-talloc-bar{height:10px !important;gap:2px !important}
+html[data-theme="light"] #view-dashboard .db-year-bar{background:var(--bg2) !important;background-image:none !important}
+html[data-theme="light"] #view-dashboard .db-year-track{background:var(--bg3) !important;box-shadow:inset 0 0 0 1px var(--border) !important}
+html[data-theme="light"] #view-dashboard .db-year-fill{box-shadow:none !important}
+html[data-theme="light"] #view-dashboard .db-year-fill::after{animation:none !important;background:none !important}
+
+
+/* ── Quick Focus (dashboard) — light mode ── */
+html[data-theme="light"] #view-dashboard .db-pomo{
+  background:var(--bg2) !important;background-image:none !important;
+  border:1px solid var(--border) !important;
+  box-shadow:var(--card-depth) !important;
+}
+html[data-theme="light"] #view-dashboard .db-pomo-presets{filter:none !important;gap:10px}
+html[data-theme="light"] #view-dashboard .db-pomo-btn{
+  background:var(--bg3) !important;background-image:none !important;
+  border:1px solid transparent !important;border-radius:12px !important;
+  box-shadow:none !important;padding:15px 10px 13px !important;
+  transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease !important;
+}
+html[data-theme="light"] #view-dashboard .db-pomo-btn::before{display:none !important}
+html[data-theme="light"] #view-dashboard .db-pomo-btn:hover{
+  background:color-mix(in srgb,var(--accent) 7%,var(--bg2)) !important;
+  border-color:color-mix(in srgb,var(--accent) 40%,var(--border2)) !important;
+  box-shadow:none !important;transform:none !important;
+}
+html[data-theme="light"] #view-dashboard .db-pomo-btn:active{
+  background:color-mix(in srgb,var(--accent) 12%,var(--bg2)) !important;transform:none !important;
+}
+html[data-theme="light"] #view-dashboard .db-pomo-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html[data-theme="light"] #view-dashboard .db-pomo-btn-num{font-size:24px !important;color:var(--text) !important;font-variant-numeric:tabular-nums}
+html[data-theme="light"] #view-dashboard .db-pomo-btn:hover .db-pomo-btn-num{color:var(--accent) !important}
+html[data-theme="light"] #view-dashboard .db-pomo-btn-unit{color:var(--text3) !important}
+html[data-theme="light"] #view-dashboard .db-pomo-btn-label{color:var(--text2) !important;font-weight:600 !important}
+
+/* ── App chrome: sidebar / nav / topbar ── */
+html[data-theme="light"] .sidebar{background:var(--bg2) !important;border-right:1px solid var(--border) !important;box-shadow:none !important}
+html[data-theme="light"] .nav-item{border-radius:10px;color:var(--text2)}
+html[data-theme="light"] .nav-item:hover{background:var(--bg3) !important;color:var(--text) !important;transform:none !important}
+html[data-theme="light"] .nav-item.active{
+  background:color-mix(in srgb,var(--accent) 9%,var(--bg2)) !important;color:var(--accent) !important;box-shadow:none !important;
+}
+html[data-theme="light"] .topbar{border-bottom-color:var(--border) !important}
+
+/* Primary buttons: steady, no glow */
+html[data-theme="light"] :is(.btn-save,.task-add-btn,.cat-add-btn,.habit-add-btn,.focus-btn-play){box-shadow:0 1px 2px rgba(16,18,24,.12) !important}
+
+/* Scrollbars: slim + neutral */
+html[data-theme="light"] ::-webkit-scrollbar{width:9px;height:9px}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(16,18,24,.18);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover{background:rgba(16,18,24,.32);background-clip:padding-box;border:2px solid transparent}
+html[data-theme="light"] ::-webkit-scrollbar-track{background:transparent}
+
+/* ── 2 · CALM HOVER — no movement on bars / boxes / cards ───────── */
+html[data-theme="light"] :is(
+  .db-kpi,.db-section,.db-sched-item,.db-task-item,.db-habit-item,
+  .db-action-btn,.db-goal-card,.db-goal-btn-save,.db-water-cup,.db-pomo-preset,.db-pomo-btn,.db-ra-empty-btn,.db-inline-add-btn,
+  .db-journal-mood,.db-journal-mood-btn,.db-quicknote-item,.db-intention-item,.db-week-grid>*,
+  .stat-card,.block-card,.task-item,.habit-card,.sound-card,.tool-card,.aih-card,.aih-source-card,.nb-note-card,.rule-accordion,
+  .da-kpi,.da-intel-card,.da-focus-card,.da-pulse-card,.da-habit-item,.da-habit-cell,.da-review-col,.da-journal-entry,
+  .da-journal-mood-btn,.da-cat-row,.da-rank-row,.da-alloc-legend-row,.da-heatmap-cell,.da-heatmap-cell *,
+  .bcal-event,.bcal-day-col,.cal-day,.trk-card,.ch-card,.tv-card,.fit-tpl-card,.focus-stat-card,.preset-btn,.sidebar-item
+):hover,
+html[data-theme="light"] :is(.db-kpi,.db-action-btn,.db-goal-btn-save,.stat-card,.block-card,.da-kpi):active{
+  transform:none !important;
+  filter:none !important;
+}
+
+/* Soften the edge/shadow change on hover so it reads as a tint, not a pop */
+html[data-theme="light"] #view-dashboard :is(.db-kpi,.db-section,.db-goal-card):hover{
+  box-shadow:var(--card-depth) !important;
+  border-color:var(--border2) !important;
+}
+html[data-theme="light"] :is(.stat-card,.block-card,.da-kpi,.da-intel-card,.da-focus-card,.da-pulse-card,.da-habit-item,.da-review-col,.habit-card,.sound-card,.tool-card,.aih-card,.nb-note-card):hover{
+  box-shadow:var(--card-depth) !important;
+}
+
+/* Short, colour-only transitions (no transform in the list) */
+html[data-theme="light"] #view-dashboard :is(.db-kpi,.db-section,.db-sched-item,.db-task-item,.db-habit-item,.db-action-btn,.db-goal-card,.db-water-cup){
+  transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease !important;
+}
+
+/* Bars: hover is a border/opacity cue only — no brightness flash, no scaleY, no height change */
+html[data-theme="light"] #view-dashboard .db-graph-col:hover .db-graph-fill{filter:none !important;transform:none !important}
+html[data-theme="light"] #view-dashboard .db-graph-col:hover .db-graph-track{
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 55%,var(--border2)) !important;
+}
+html[data-theme="light"] #view-dashboard .db-graph-fill{transition:height .3s ease !important}
+html[data-theme="light"] #view-dashboard .db-talloc-seg,
+html[data-theme="light"] #view-dashboard .db-talloc-seg:hover,
+html[data-theme="light"] .db-talloc-seg:hover{transform:none !important;filter:none !important}
+html[data-theme="light"] #view-dashboard .db-talloc-bar:hover .db-talloc-seg{opacity:.6}
+html[data-theme="light"] #view-dashboard .db-talloc-bar .db-talloc-seg:hover{opacity:1}
+html[data-theme="light"] .da-alloc-seg:hover{stroke-width:inherit !important;filter:none !important}
+html[data-theme="light"] .focus-energy-curve .fe-bar:hover,
+html[data-theme="light"] .fe-dot:hover{transform:none !important;filter:none !important}
+html[data-theme="light"] :is(.prog-fill,.progress-fill,.da-bar,.da-bar-fill):hover{transform:none !important;filter:none !important}
+
+/* Scroll-reveal "alive" layer: no hover re-transform on cards once shown */
+html[data-theme="light"] :is(.stat-card,.da-kpi,.db-kpi).alive-reveal-in:hover{transform:none !important}
+
+/* Respect users who ask for less motion, regardless of theme */
+@media (prefers-reduced-motion:reduce){
+  html[data-theme="light"] #view-dashboard .db-graph-fill{animation:none !important;transition:none !important}
+}
+</style>
+<style id="dark-notes-shape">
+/* ═══════════════════════════════════════════════════════════════════
+   NOTES PAGE — DARK THEMES: same shapes as the light-mode Notes page
+   (frosted tab bar, layered note cards with a faint accent top edge,
+   solid primary buttons, small bordered action pills, accent focus ring).
+   Token-based, so it follows each dark theme's accent. Hover is colour /
+   border only — no lift. Light themes are not affected.
+   ═══════════════════════════════════════════════════════════════════ */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes{
+  --nbd-line:rgba(255,255,255,.08);
+  --nbd-line2:rgba(255,255,255,.14);
+  --nbd-card:linear-gradient(160deg,rgba(255,255,255,.050) 0%,rgba(255,255,255,.028) 100%);
+  --nbd-top:color-mix(in srgb,var(--accent) 14%,transparent);
+}
+/* 1 · tab bar */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-topbar{
+  background:color-mix(in srgb,var(--bg) 82%,transparent) !important;
+  border-bottom:1px solid var(--nbd-line) !important;
+  backdrop-filter:blur(20px) saturate(1.4) !important;-webkit-backdrop-filter:blur(20px) saturate(1.4) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item{
+  border-bottom-color:transparent !important;
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item:hover{background:rgba(255,255,255,.04) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item.active{
+  border-bottom-color:var(--nb-item-color,var(--accent)) !important;
+  background:color-mix(in srgb,var(--accent) 6%,transparent) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item-name{color:var(--text3) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item:hover .nb-item-name{color:var(--text2) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-item.active .nb-item-name{color:var(--text) !important;font-weight:700 !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-add-btn{
+  background:transparent !important;border-color:var(--nbd-line) !important;color:var(--text3) !important;
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-add-btn:hover{
+  background:color-mix(in srgb,var(--accent) 8%,transparent) !important;
+  border-color:color-mix(in srgb,var(--accent) 26%,transparent) !important;color:var(--text) !important;
+}
+
+/* 2 · add-topic form */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-add-form{
+  background:var(--bg2) !important;border-top:1px solid var(--nbd-line) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-icon-picker-btn,
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-name-inp{
+  background:rgba(255,255,255,.035) !important;border-color:var(--nbd-line2) !important;color:var(--text) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-name-inp:focus{
+  background:rgba(255,255,255,.05) !important;
+  border-color:color-mix(in srgb,var(--accent) 45%,transparent) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-icon-picker-dropdown{
+  background:var(--bg3) !important;border:1px solid var(--nbd-line2) !important;box-shadow:0 10px 28px rgba(0,0,0,.45) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-icon-opt:hover{
+  background:color-mix(in srgb,var(--accent) 10%,transparent) !important;color:var(--accent) !important;transform:none !important;
+}
+
+/* 3 · header bar */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-header{
+  background:var(--bg2) !important;border-bottom:1px solid var(--nbd-line) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-header-name{color:var(--text) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-header-sub{color:var(--text3) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-clear-btn{
+  background:transparent !important;border-color:var(--nbd-line2) !important;color:var(--text3) !important;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-clear-btn:hover{
+  background:rgba(248,113,113,.10) !important;border-color:rgba(248,113,113,.32) !important;color:var(--red) !important;
+}
+
+/* 4 · composer */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture{
+  background:var(--bg2) !important;border-bottom:1px solid var(--nbd-line) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner{
+  background:var(--nbd-card) !important;
+  border:1px solid var(--nbd-line) !important;border-top-color:var(--nbd-top) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 4px 14px -6px rgba(0,0,0,.40) !important;
+  transition:border-color .15s ease,box-shadow .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:focus-within{
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 44%,transparent) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 11%,transparent),0 4px 14px -6px rgba(0,0,0,.40) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes #nbNoteInput{color:var(--text) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes #nbNoteInput::placeholder,
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-hint{color:var(--text3) !important}
+
+/* primary buttons: solid accent, steady */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-save-btn,.nb-confirm-btn,.nb-note-save-btn){
+  background:var(--accent) !important;background-image:none !important;
+  color:var(--btn-text,#08090a) !important;border:none !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.35) !important;
+  transition:background-color .15s ease,box-shadow .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-save-btn,.nb-confirm-btn,.nb-note-save-btn):hover{
+  background:var(--accent2) !important;transform:none !important;box-shadow:0 2px 6px rgba(0,0,0,.40) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-save-btn,.nb-confirm-btn,.nb-note-save-btn):active{transform:scale(.98) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-cancel-btn,.nb-note-cancel-btn){
+  background:rgba(255,255,255,.04) !important;border-color:var(--nbd-line2) !important;color:var(--text2) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-cancel-btn,.nb-note-cancel-btn):hover{
+  background:rgba(255,255,255,.08) !important;color:var(--text) !important;border-color:rgba(255,255,255,.22) !important;
+}
+
+/* 5 · note cards */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-card{
+  background:var(--nbd-card) !important;
+  border:1px solid var(--nbd-line) !important;border-top-color:var(--nbd-top) !important;
+  border-radius:var(--radius-sm,12px) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 4px 14px -6px rgba(0,0,0,.40) !important;
+  transition:border-color .15s ease,box-shadow .15s ease,background .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-card:hover{
+  transform:none !important;
+  background:linear-gradient(160deg,rgba(255,255,255,.065) 0%,rgba(255,255,255,.038) 100%) !important;
+  border-color:var(--nbd-line2) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 26%,transparent) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.34),0 6px 18px -6px rgba(0,0,0,.48) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-text{color:var(--text) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-text a{color:var(--accent) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-text a:hover{color:var(--accent2) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-ts{color:var(--text3) !important}
+
+/* action pills (copy / edit / delete) */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-note-del,.nb-note-edit-btn,.nb-note-copy-btn){
+  color:var(--text3) !important;background:rgba(255,255,255,.04) !important;
+  border:1px solid var(--nbd-line) !important;
+  transition:opacity .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes :is(.nb-note-edit-btn,.nb-note-copy-btn):hover{
+  background:color-mix(in srgb,var(--accent) 10%,transparent) !important;color:var(--accent) !important;
+  border-color:color-mix(in srgb,var(--accent) 26%,transparent) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-del:hover{
+  background:rgba(248,113,113,.12) !important;color:var(--red) !important;border-color:rgba(248,113,113,.30) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-note-edit-area{color:var(--text) !important;caret-color:var(--accent) !important}
+
+/* secret badge + empty state */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-secret-badge{
+  background:rgba(248,113,113,.10) !important;color:var(--red) !important;border:1px solid rgba(248,113,113,.24) !important;font-weight:700 !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-empty:hover .nb-empty-icon{transform:none !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-empty-title{color:var(--text2) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-empty-sub{color:var(--text3) !important}
+
+/* 6 · scrollbar */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-stream::-webkit-scrollbar-thumb{
+  background:color-mix(in srgb,var(--accent) 22%,transparent) !important;border-radius:2px !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-stream::-webkit-scrollbar-thumb:hover{
+  background:color-mix(in srgb,var(--accent) 38%,transparent) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTES COMPOSER — dark-mode polish (matches note cards / task composer)
+   Placed last so it wins over earlier layers.
+═══════════════════════════════════════════════════════════════ */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture{
+  background:transparent !important;border-bottom:none !important;
+  padding:16px 20px 6px !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner{
+  position:relative;overflow:hidden;gap:0 !important;padding:0 !important;
+  background:linear-gradient(160deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.026) 100%) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 16%,transparent) !important;
+  border-radius:14px !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 8px 24px -10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03) !important;
+  transition:border-color .25s ease,box-shadow .3s ease,background .25s ease !important;
+}
+/* soft accent hairline across the top, like the other cards */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent 6%,var(--accent-glow5,rgba(255,255,255,.12)) 50%,transparent 94%);
+  opacity:.55;transition:opacity .3s ease;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:hover{border-color:rgba(255,255,255,.13) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:focus-within{
+  background:linear-gradient(160deg,rgba(255,255,255,.065) 0%,rgba(255,255,255,.032) 100%) !important;
+  border-color:color-mix(in srgb,var(--accent) 38%,transparent) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 50%,transparent) !important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent),0 8px 24px -10px rgba(0,0,0,.55) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:focus-within::before{opacity:1}
+
+/* textarea */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes #nbNoteInput{
+  padding:16px 18px 10px !important;min-height:64px !important;
+  font-size:14.5px !important;line-height:1.7 !important;letter-spacing:-.003em;
+  color:var(--text) !important;caret-color:var(--accent) !important;
+  -webkit-font-smoothing:antialiased;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes #nbNoteInput::placeholder{
+  color:color-mix(in srgb,var(--text3) 85%,transparent) !important;
+  font-style:normal !important;letter-spacing:.005em;
+  transition:color .25s ease;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:focus-within #nbNoteInput::placeholder{
+  color:color-mix(in srgb,var(--text3) 55%,transparent) !important;
+}
+
+/* footer: subtle divider, hint on the left, save on the right */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-footer{
+  padding:9px 12px 10px 18px;
+  border-top:1px solid rgba(255,255,255,.045);
+  background:rgba(0,0,0,.10);
+  gap:12px;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-hint{
+  display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;
+  font-size:11px !important;color:var(--text3) !important;
+  transition:color .25s ease;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner:focus-within .nb-capture-hint{color:var(--text2) !important}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-hint kbd{
+  font-family:var(--font-mono,ui-monospace,monospace);font-size:10px;font-weight:600;line-height:1;
+  padding:3px 6px;border-radius:5px;color:var(--text2);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);border-bottom-width:2px;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-hint-dot{opacity:.45;margin:0 3px}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-hint-plus{opacity:.45;margin:0 -2px}
+
+/* save button */
+html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn{
+  padding:7px 16px !important;border-radius:9px !important;
+  background:linear-gradient(180deg,var(--surface2,#23262b) 0%,var(--surface,#171a1d) 100%) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  color:var(--text,#f6f6f6) !important;
+  font-size:12.5px !important;font-weight:700 !important;letter-spacing:.01em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.35) !important;
+  transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,transform .15s ease !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn svg{color:var(--accent);transition:transform .25s ease}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn:hover{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 14%,var(--surface2,#23262b)) 0%,var(--surface,#171a1d) 100%) !important;
+  border-color:color-mix(in srgb,var(--accent) 40%,transparent) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 14px -4px color-mix(in srgb,var(--accent) 45%,transparent) !important;
+  transform:translateY(-1px) !important;
+}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn:hover svg{transform:translate(1px,-1px)}
+html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn:active{transform:scale(.97) !important}
+
+@media (max-width:600px){
+  html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture{padding:12px 14px 4px !important}
+  html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes #nbNoteInput{padding:14px 14px 8px !important}
+  html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-footer{padding:8px 10px 9px 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner,html:not([data-theme="light"]):not([data-theme="pure-light"]) #view-notes .nb-capture-inner::before,html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn,html:not([data-theme="light"]):not([data-theme="pure-light"]) body:not(#_a):not(#_b):not(#_c) #view-notes .nb-save-btn svg{transition:none !important}
+}
+
+/* Notes — active notebook tab: no underline, clean transparent */
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active,
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active:hover,
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active:focus,
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active:focus-visible{
+  background:transparent !important;background-image:none !important;
+  border-bottom-color:transparent !important;border-color:transparent !important;
+  box-shadow:none !important;outline:none !important;
+}
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active::before,
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-topbar .nb-item.active::after{
+  display:none !important;content:none !important;
+}
+
+/* Notes composer — one seamless surface (no separate footer strip) */
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-capture-inner .nb-capture-footer{
+  background:transparent !important;background-image:none !important;
+  border-top:none !important;box-shadow:none !important;
+}
+html body:not(#_a):not(#_b):not(#_c) #view-notes .nb-capture-inner #nbNoteInput{
+  background:transparent !important;background-image:none !important;
+}
+</style>
+<style id="assistant-empty-v3">
+/* Assistant empty screen (dark): richer suggestion cards. Revert: delete this block. */
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty.asst-empty-premium{
+  background:radial-gradient(ellipse 55% 38% at 50% 30%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%) !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-greeting h2{
+  background:linear-gradient(180deg,var(--text) 30%,color-mix(in srgb,var(--text) 62%,transparent) 100%) !important;
+  -webkit-background-clip:text !important;background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;color:transparent !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-empty-suggestions{max-width:600px !important;gap:12px !important;margin-top:34px !important}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion{
+  position:relative;display:flex !important;align-items:center;gap:13px;cursor:pointer;
+  padding:14px 16px !important;border-radius:14px !important;overflow:hidden;
+  background:linear-gradient(160deg,rgba(255,255,255,.050) 0%,rgba(255,255,255,.022) 100%) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-top-color:color-mix(in srgb,var(--accent) 14%,transparent) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.30),0 8px 22px -12px rgba(0,0,0,.6) !important;
+  transition:background .2s ease,border-color .2s ease,box-shadow .25s ease,transform .2s ease !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover{
+  background:linear-gradient(160deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.035) 100%) !important;
+  border-color:color-mix(in srgb,var(--accent) 30%,transparent) !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.34),0 10px 26px -10px color-mix(in srgb,var(--accent) 35%,rgba(0,0,0,.6)) !important;
+  transform:translateY(-1px) !important;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:active{transform:scale(.985) !important}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico{
+  flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 11%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);
+  transition:background .2s ease,border-color .2s ease;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-ico{
+  background:color-mix(in srgb,var(--accent) 18%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 34%,transparent);
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico svg{width:16px;height:16px}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-txt{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left;flex:1}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-title{font-size:13.5px;font-weight:650;line-height:1.3;color:var(--text);letter-spacing:-.005em}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-desc{font-size:11.5px;font-weight:400;line-height:1.35;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-arrow{
+  flex:0 0 auto;width:14px;height:14px;color:var(--text3);opacity:0;
+  transform:translate(-4px,4px);transition:opacity .2s ease,transform .25s ease,color .2s ease;
+}
+html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion:hover .asst-sg-arrow{opacity:1;transform:none;color:var(--accent)}
+@media (prefers-reduced-motion:reduce){
+  html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-suggestion,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-arrow,html[data-theme="dark"] body:not(#_a):not(#_b):not(#_c) #view-assistant .asst-sg-ico{transition:none !important}
 }
 </style>
 </body>
