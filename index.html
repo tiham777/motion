@@ -25296,6 +25296,82 @@ let swMode=false; // false=timer, true=stopwatch
 let swRunning=false,swStarted=null,swElapsed=0,swIv=null;
 let swLaps=[];
 
+/* ═══ FOCUS TIMER — BACKGROUND-SAFE CLOCK + PERSISTENCE ═══
+   Browsers throttle (or freeze / discard) hidden tabs: main-thread timers drop
+   to ~1/min, so the tab-title countdown looked stuck, and a discarded or
+   reloaded tab lost the running timer completely.
+   1. A tiny Web Worker ticks while the tab is hidden (worker timers are not
+      throttled like page timers) and drives updFocus().
+   2. The running / paused timer is saved to localStorage and restored on load,
+      so a discarded/reloaded tab resumes from the absolute end time.
+   The remaining time is always derived from focusEndTime (wall clock). */
+const FOCUS_RUN_KEY='ft_focus_run_v1';
+let _focusRestored=false,_focusLastSaved=null,_focusWorker=null;
+function focusRemNow(){return Math.max(0,Math.ceil((focusEndTime-Date.now())/1000));}
+function persistFocusRun(){
+  if(!_focusRestored) return;
+  try{
+    let json=null;
+    if(!swMode){
+      if(focusOn&&focusEndTime) json=JSON.stringify({running:true,end:focusEndTime,dur:focusDur});
+      else if(!focusOn&&focusRem>0&&focusRem<focusDur) json=JSON.stringify({running:false,rem:focusRem,dur:focusDur});
+    }
+    if(json===_focusLastSaved) return;
+    _focusLastSaved=json;
+    if(json===null) localStorage.removeItem(FOCUS_RUN_KEY);
+    else localStorage.setItem(FOCUS_RUN_KEY,json);
+  }catch(e){}
+}
+function focusWorkerStart(){
+  try{
+    if(!_focusWorker){
+      const code='var t=null;onmessage=function(e){if(e.data==="start"){if(!t)t=setInterval(function(){postMessage(1)},250);}else{clearInterval(t);t=null;}};';
+      _focusWorker=new Worker(URL.createObjectURL(new Blob([code],{type:'application/javascript'})));
+      _focusWorker.onmessage=function(){
+        if(!focusOn){focusWorkerStop();return;}
+        if(document.hidden) updFocus();   /* visible tab is driven by focusIv */
+      };
+    }
+    _focusWorker.postMessage('start');
+  }catch(e){_focusWorker=null;}
+}
+function focusWorkerStop(){try{if(_focusWorker)_focusWorker.postMessage('stop');}catch(e){}}
+function startFocusClock(){
+  clearInterval(focusIv);
+  focusIv=setInterval(updFocus,500);
+  clearTimeout(focusCompleteTimeout);
+  // Precise completion timeout as a second safety net (checked against the end time)
+  focusCompleteTimeout=setTimeout(function(){
+    if(focusOn && focusEndTime && Date.now() >= focusEndTime) triggerFocusComplete();
+  },Math.max(0,focusEndTime-Date.now())+200);
+  focusWorkerStart();
+}
+function restoreFocusRun(){
+  if(_focusRestored) return;
+  _focusRestored=true;
+  let st=null;
+  try{st=JSON.parse(localStorage.getItem(FOCUS_RUN_KEY)||'null');}catch(e){}
+  if(!st||typeof st!=='object'||!(st.dur>0)||focusOn||swMode||swRunning) return;
+  focusDur=st.dur;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  if(st.running&&st.end){
+    focusEndTime=st.end;focusOn=true;focusRem=focusRemNow();
+    if(st.end<=Date.now()){triggerFocusComplete();return;}  /* finished while the tab was away */
+    setFocusIcon('pause');setFocusRunning(true);
+    startFocusClock();
+  }else if(st.rem>0){
+    focusRem=Math.min(st.rem,focusDur);focusPausedRem=null;focusEndTime=null;focusOn=false;
+  }
+  updFocus();
+}
+function resyncFocus(){
+  if(focusOn&&focusEndTime){focusRem=focusRemNow();updFocus();}
+}
+window.addEventListener('pageshow',resyncFocus);
+window.addEventListener('focus',resyncFocus);
+if(document.readyState==='complete') setTimeout(restoreFocusRun,0);
+else window.addEventListener('load',function(){setTimeout(restoreFocusRun,0);});
+
 function switchFocusMode(mode){
   swMode=(mode==='stopwatch');
   // Reset both
@@ -25420,7 +25496,7 @@ function updateTabTitle(){
       prefix=String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')+' ▸ ';
     }else if(focusOn && focusDur>0){
       let r=focusRem;
-      if(focusEndTime) r=Math.max(0,Math.round((focusEndTime-Date.now())/1000));
+      if(focusEndTime) r=focusRemNow();
       prefix=String(Math.floor(r/60)).padStart(2,'0')+':'+String(r%60).padStart(2,'0')+' ▸ ';
     }
     const want=prefix?prefix+tabTitleBase:tabTitleBase;
@@ -25430,12 +25506,17 @@ function updateTabTitle(){
 
 function updFocus(){
   if(focusOn && focusEndTime){
-    focusRem=Math.max(0,Math.round((focusEndTime-Date.now())/1000));
+    focusRem=focusRemNow();
   }
+  persistFocusRun();
   /* Refresh the tab title before the visibility bail-out — while this tab is
      hidden is exactly when the title countdown is the only live display. */
   updateTabTitle();
-  if(document.hidden) return;
+  if(document.hidden){
+    /* complete even while hidden (don't depend only on the throttled timeout) */
+    if(focusOn && focusRem<=0) triggerFocusComplete();
+    return;
+  }
   const m=Math.floor(focusRem/60),s=focusRem%60;
   const ft=document.getElementById('focusTime'), rp=document.getElementById('ringProg'), fpp=document.getElementById('focusProgressPct'), fpf=document.getElementById('focusProgFill'), lbl=document.getElementById('focusLabel');
   if(ft)ft.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -25455,7 +25536,7 @@ function updFocus(){
 }
 
 function triggerFocusComplete(){
-  clearInterval(focusIv);clearTimeout(focusCompleteTimeout);
+  clearInterval(focusIv);clearTimeout(focusCompleteTimeout);focusWorkerStop();
   focusOn=false;focusEndTime=null;focusCompleteTimeout=null;
   setFocusIcon('play');
   setFocusRunning(false);
@@ -25504,7 +25585,7 @@ function triggerFocusComplete(){
 document.addEventListener('visibilitychange',function(){
   if(!document.hidden){
     if(focusOn && focusEndTime){
-      focusRem=Math.max(0,Math.round((focusEndTime-Date.now())/1000));
+      focusRem=focusRemNow();
       // Allow completion check to run even if timer hit zero while hidden
       updFocus();
     }
@@ -25594,8 +25675,8 @@ function toggleFocus(){
   if(focusOn){
     clearInterval(focusIv);focusOn=false;
     clearTimeout(focusCompleteTimeout);focusCompleteTimeout=null;
-    if(focusEndTime)focusRem=Math.max(0,Math.round((focusEndTime-Date.now())/1000));
-    focusEndTime=null;
+    if(focusEndTime)focusRem=focusRemNow();
+    focusEndTime=null;focusWorkerStop();
     setFocusIcon('play');
     setFocusRunning(false);
     updFocus();
@@ -25611,17 +25692,7 @@ function toggleFocus(){
     focusEndTime=Date.now()+focusRem*1000;
     setFocusIcon('pause');
     setFocusRunning(true);
-    clearInterval(focusIv);
-    focusIv=setInterval(updFocus,500);
-    // Set a precise timeout for completion (fires even in background tabs)
-    clearTimeout(focusCompleteTimeout);
-    focusCompleteTimeout=setTimeout(function(){
-      // NOTE: do NOT check `focusRem<=0` here — updFocus() short-circuits while
-      // the tab is hidden, so focusRem stays stale and the guard would skip
-      // completion entirely. The timeout only fires after the intended duration
-      // has elapsed, so checking against the precise end time is the correct test.
-      if(focusOn && focusEndTime && Date.now() >= focusEndTime) triggerFocusComplete();
-    },focusRem*1000+200);
+    startFocusClock();   /* interval + completion timeout + background worker ticker */
     updFocus();
     // NOTE: Notification permission is no longer auto-requested on every focus
     // start — it was causing repeated browser prompts that the user found
@@ -25635,7 +25706,7 @@ function toggleFocus(){
 }
 
 function resetFocus(){
-  clearInterval(focusIv);clearInterval(swIv);clearTimeout(focusCompleteTimeout);focusCompleteTimeout=null;
+  clearInterval(focusIv);clearInterval(swIv);focusWorkerStop();clearTimeout(focusCompleteTimeout);focusCompleteTimeout=null;
   updateTabTitle();
   if(swMode){
     swRunning=false;swStarted=null;swElapsed=0;swLaps=[];
