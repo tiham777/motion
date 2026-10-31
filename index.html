@@ -191,6 +191,43 @@ body *{scrollbar-width:thin;scrollbar-color:var(--border2,rgba(255,255,255,.12))
 .sidebar,.tabs,.content,.thoughts-stream,.focus-scroll,.nb-topbar-inner{scrollbar-width:none}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
+<style id="dark-polish-v1">
+/* Subtle dark mode polish: slightly better text contrast, softer edges, nicer focus/selection */
+html[data-theme="dark"],
+html[data-theme="dark"] .content:is(.focus-active,.thoughts-active,.office-active,.rules-active,.tools-active,.aihub-active,.sound-active){--text2:#bcbcbc;--text3:#9a9a9a}
+html[data-theme="dark"] ::selection{background:rgba(255,255,255,.22);color:#fff}
+html[data-theme="dark"] ::placeholder{color:#808080;opacity:1}
+html[data-theme="dark"] *{scrollbar-color:#3a3a3a transparent}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb{background-color:#3a3a3a}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{background-color:#555}
+html[data-theme="dark"] :is(input,textarea,select):focus-visible{outline:none;border-color:rgba(255,255,255,.34);box-shadow:0 0 0 3px rgba(255,255,255,.07)}
+html[data-theme="dark"] :is(.modal,.tool-modal){border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 64px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.03)}
+html[data-theme="dark"] :is(.stat-card,.block-card,.task-item,.habit-card,.tool-card,.db-section,.db-kpi){border-color:rgba(255,255,255,.075)}
+html[data-theme="dark"] :is(a,button,[role="button"]){transition-property:background-color,border-color,color,opacity,box-shadow,transform;transition-duration:.18s}
+html[data-theme="dark"] .sidebar{border-right:1px solid rgba(255,255,255,.07)}
+html[data-theme="dark"] .nav-item{transition:background-color .15s ease,color .15s ease}
+html[data-theme="dark"] .nav-item:not(.active):hover{background:rgba(255,255,255,.05);color:var(--text)}
+html[data-theme="dark"] .nav-item.active{background:rgba(255,255,255,.08);color:var(--text)}
+html[data-theme="dark"] .topbar{border-bottom-color:rgba(255,255,255,.07)}
+html[data-theme="dark"] :is(.overlay,.modal-overlay,.tool-modal-overlay){background-color:rgba(0,0,0,.62)}
+html[data-theme="dark"] :is(button,a,[role="button"],[tabindex="0"]):focus-visible{outline:2px solid rgba(255,255,255,.5);outline-offset:2px}
+html[data-theme="dark"] :is(button,input,select,textarea):disabled{opacity:.45}
+html[data-theme="dark"] .task-item.done .task-text{color:#8a8a8a}
+html[data-theme="dark"] hr{border-color:rgba(255,255,255,.08)}
+html[data-theme="dark"] table :is(th,td){border-color:rgba(255,255,255,.07)}
+html[data-theme="dark"] img,html[data-theme="dark"] video{filter:brightness(.95)}
+@media (prefers-reduced-motion:reduce){html[data-theme="dark"] :is(a,button,[role="button"]){transition:none}}
+/* Tasks page: match the soft glass look used on Notes / Tracker */
+html[data-theme="dark"] body #view-tasks .task-composer{background:linear-gradient(160deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.026) 100%) !important;border:1px solid rgba(255,255,255,.08) !important;border-top-color:color-mix(in srgb,var(--accent) 16%,transparent) !important;border-radius:14px !important;box-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -10px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03) !important}
+html[data-theme="dark"] body #view-tasks .task-composer:focus-within{border-color:rgba(255,255,255,.16) !important;border-top-color:color-mix(in srgb,var(--accent) 36%,transparent) !important}
+html[data-theme="dark"] body #view-tasks .task-item{background:linear-gradient(160deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.026) 100%) !important;border:1px solid rgba(255,255,255,.075) !important;border-top-color:color-mix(in srgb,var(--accent) 12%,transparent) !important;border-radius:12px !important;box-shadow:0 1px 2px rgba(0,0,0,.28),0 4px 14px -6px rgba(0,0,0,.4) !important}
+html[data-theme="dark"] body #view-tasks .task-item:hover{background:linear-gradient(160deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.038) 100%) !important;border-color:rgba(255,255,255,.14) !important;border-top-color:color-mix(in srgb,var(--accent) 24%,transparent) !important;box-shadow:0 1px 2px rgba(0,0,0,.32),0 6px 18px -6px rgba(0,0,0,.48) !important;transform:none !important}
+html[data-theme="dark"] body #view-tasks .task-item.done{background:rgba(255,255,255,.02) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-tasks .task-mode-toggle{background:rgba(255,255,255,.035) !important;border-color:rgba(255,255,255,.08) !important;border-radius:12px !important}
+html[data-theme="dark"] body #view-tasks :is(.task-input,.task-dur-inp,.task-cat-inp,.task-time-inp,.task-pri-sel){background:rgba(255,255,255,.04) !important;border-color:rgba(255,255,255,.09) !important}
+html[data-theme="dark"] body #view-tasks :is(.task-input,.task-dur-inp,.task-cat-inp,.task-time-inp,.task-pri-sel):focus{background:rgba(255,255,255,.055) !important;border-color:rgba(255,255,255,.26) !important}
+html[data-theme="dark"] body #view-tasks .task-section-hdr{color:var(--text3)}
+</style>
 </head>
 <body>
 <!-- PREMIUM LOADING SPLASH v21 — WHATSAPP-STYLE BRAND LOADER -->
