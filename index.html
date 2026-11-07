@@ -4543,7 +4543,7 @@ D.addEventListener("pointercancel",function(e){
    the old CSS entrance animations are fast-forwarded so nothing plays twice. */
 var prev=window.setView;if(typeof prev!=="function"||prev.__pxDb)return;
 var H=document.documentElement,EASE="cubic-bezier(.22,1,.36,1)";
-var G=[["#dbWrap>.db-hero",0,0],["#dbWrap>.db-row-2",60,0],["#dbWrap>.db-grid",120,0],["#dbWrap>.db-journal",180,0],["#dbWrap>.db-week-grid",230,0],["#dbWrap>.db-year-bar",280,0],["#dbWrap>.db-goals",320,0]];
+var G=[["#dbWrap>.db-hero",50,0],["#dbWrap>.db-row-2",140,0],["#dbWrap>.db-grid",230,0],["#dbWrap>.db-journal",320,0],["#dbWrap>.db-week-grid",400,0],["#dbWrap>.db-year-bar",480,0],["#dbWrap>.db-goals",560,0]];
 var tok=0,ct;
 function reveal(){
   var v=document.getElementById("view-dashboard");if(!v||!v.animate)return;
@@ -4551,25 +4551,45 @@ function reveal(){
   try{v.getAnimations().forEach(function(a){try{a.finish()}catch(e){}})}catch(e){}
   var as=[],my=++tok,lite=H.classList.contains("px-lite");
   function A(el,kf,o){var a=el.animate(kf,o);a.pause();as.push(a)}
-  var rise=[{opacity:0,transform:"translate3d(0,14px,0)"},{opacity:1,transform:"translate3d(0,0,0)"}];
+  var rise=[{opacity:0,transform:"translate3d(0,14px,0) scale(.98)"},{opacity:1,transform:"none"}];
   /* only animate what is on screen: below-the-fold layers cost memory + raster for nothing */
   var vh=innerHeight+30;
   if(lite){
     var t=v.querySelectorAll("#dbWrap>.db-hero,#dbWrap>.db-row-2,#dbWrap>.db-grid");
-    for(var k=0;k<t.length;k++)if(t[k].getBoundingClientRect().top<vh)A(t[k],[{opacity:0,transform:"translate3d(0,10px,0)"},{opacity:1,transform:"translate3d(0,0,0)"}],{duration:320,delay:k*45,easing:EASE,fill:"backwards"});
+    for(var k=0;k<t.length;k++)if(t[k].getBoundingClientRect().top<vh)A(t[k],[{opacity:0,transform:"translate3d(0,14px,0) scale(.98)"},{opacity:1,transform:"none"}],{duration:420,delay:50+k*70,easing:"cubic-bezier(.16,1,.3,1)",fill:"backwards"});
   }else{
-    G.forEach(function(g){var n=v.querySelectorAll(g[0]);for(var i=0;i<n.length;i++)if(n[i].getBoundingClientRect().top<vh)A(n[i],rise,{duration:500,delay:g[1]+i*g[2],easing:EASE,fill:"backwards"})});
-    H.classList.add("px-dbanim");clearTimeout(ct);ct=setTimeout(function(){H.classList.remove("px-dbanim")},900);
+    G.forEach(function(g){var n=v.querySelectorAll(g[0]);for(var i=0;i<n.length;i++)if(n[i].getBoundingClientRect().top<vh)A(n[i],rise,{duration:650,delay:g[1]+i*g[2],easing:"cubic-bezier(.16,1,.3,1)",fill:"backwards"})});
+    H.classList.add("px-dbanim");clearTimeout(ct);ct=setTimeout(function(){H.classList.remove("px-dbanim")},1400);
   }
   /* start on a fresh frame AFTER the heavy render/layout, so the timeline never begins with a long-frame jump */
   requestAnimationFrame(function(){requestAnimationFrame(function(){if(my!==tok)return;as.forEach(function(a){try{a.play()}catch(e){}})})});
 }
+/* Unified page transition (Linear/Notion style): no exit animation, new page fades in with a 6px settle.
+   One timing for the whole app: 220ms, ease-out. Compositor-only (opacity+transform), started after layout. */
+var SKIP={office:1,sound:1,aihub:1,assistant:1};
+function pageReveal(name){
+  var v=document.getElementById("view-"+name);if(!v||!v.animate||SKIP[name]||H.dataset.fx==="off")return;
+  try{if(matchMedia("(prefers-reduced-motion:reduce)").matches)return}catch(e){}
+  try{v.getAnimations().forEach(function(a){try{a.finish()}catch(e){}})}catch(e){}
+  var vh=innerHeight+20,kids=[v],d=0;
+  function vis(c){var r=c.getBoundingClientRect(),p=getComputedStyle(c).position;return r.height>8&&r.width>8&&p!=="fixed"&&p!=="absolute"}
+  while(d<3){var ch=[].filter.call(kids[0].children,vis);
+    if(ch.length===1&&d<2){kids=[ch[0]];d++;continue}
+    if(ch.length>1)kids=ch;break}
+  var as=[],my=++tok;
+  for(var i=0;i<kids.length&&as.length<7;i++){var el=kids[i];
+    if(el!==v&&el.getBoundingClientRect().top>=vh)continue;
+    try{el.getAnimations().forEach(function(a){try{if(a.constructor.name==="CSSAnimation"&&a.effect.getComputedTiming().iterations!==Infinity)a.finish()}catch(e){}})}catch(e){}
+    var lt=H.classList.contains("px-lite"),an=el.animate([{opacity:0,transform:"translate3d(0,14px,0) scale(.98)"},{opacity:1,transform:"none"}],{duration:lt?420:650,delay:50+as.length*(lt?50:90),easing:"cubic-bezier(.16,1,.3,1)",fill:"backwards"});an.pause();as.push(an)}
+  requestAnimationFrame(function(){requestAnimationFrame(function(){if(my!==tok)return;as.forEach(function(a){try{a.play()}catch(e){}})})});
+}
 var last=H.dataset.view;
 var w=function(v,sideEl,opts){
-  var go=v==="dashboard"&&last!=="dashboard"&&!(opts&&opts.silent);last=v;
+  var quiet=!!(opts&&opts.silent),prevV=last;
+  var go=v==="dashboard"&&last!=="dashboard"&&!quiet,pg=v!=="dashboard"&&v!==prevV&&!quiet;last=v;
   if(go){try{window.renderDashboard()}catch(e){}}
   var r=prev.apply(this,arguments);
-  if(go)reveal();
+  if(go)reveal();else if(pg)pageReveal(v);
   return r};
 w.__pxDb=true;window.setView=w;
 })();</script>
@@ -4588,5 +4608,8 @@ w.__pxC=true;window.renderDashboard=w;
 })();</script>
 <style id="perf-pro-dbanim2">html.px-dbanim:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-dashboard *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}</style>
 <style id="perf-pro-dbcv">#dbWrap>.db-grid,#dbWrap>.db-journal,#dbWrap>.db-week-grid,#dbWrap>.db-year-bar,#dbWrap>.db-goals{content-visibility:auto;contain-intrinsic-size:auto 420px}</style>
+<style id="perf-pro-modal2">@keyframes pxPop{from{opacity:0;transform:translate3d(0,6px,0) scale(.985)}to{opacity:1;transform:none}}
+html[data-fx] body .modal-overlay.open>.modal,html[data-fx] body .modal-overlay.open>div:first-child{animation:pxPop 200ms cubic-bezier(.2,.8,.2,1) both}
+html[data-fx] body .modal-overlay{transition:opacity 160ms ease-out}</style>
 </body>
 </html>
