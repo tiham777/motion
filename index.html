@@ -4611,5 +4611,14 @@ w.__pxC=true;window.renderDashboard=w;
 <style id="perf-pro-modal2">@keyframes pxPop{from{opacity:0;transform:translate3d(0,6px,0) scale(.985)}to{opacity:1;transform:none}}
 html[data-fx] body .modal-overlay.open>.modal,html[data-fx] body .modal-overlay.open>div:first-child{animation:pxPop 200ms cubic-bezier(.2,.8,.2,1) both}
 html[data-fx] body .modal-overlay{transition:opacity 160ms ease-out}</style>
+<style id="mo-scroll-blank-fix">
+/* Fix: content going blank while scrolling.
+   Cause: ~30 stacked `content-visibility:auto` rules (dashboard sections, cards, rules, tools, sound,
+   settings, calendar, images...) make the browser skip painting off-screen content and re-render it late,
+   so areas flash blank when scrolling up/down. Force normal painting everywhere (parked keep-alive views excluded). */
+html body *:not(.mo-kalive){content-visibility:visible !important}
+/* 119 tiny blurred delete buttons in AI Hub each forced a GPU backdrop layer; drop the blur */
+html body .aih-del-btn{-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+</style>
 </body>
 </html>
