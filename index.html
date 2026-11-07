@@ -3,9 +3,15 @@
 <head>
 <script id="mo-live-fix-head">(function(){"use strict";
 /* mo-live-fix (head): runs before every other script */
-/* 1 · turn off the "keep every view laid out invisibly" engine. Its idle prewarm lays out ~17 big views
-      and its paused-animation parking leaves pages frozen at a blurred/faded first frame. */
-window.__moKAOff=true;
+/* 1 · keep-alive navigation is RE-ENABLED (mo-velvet-v1). The two problems that once justified
+      killing it are now structurally impossible:
+      · bulk prewarm is trimmed to the 4 core views inside mo-perf-engine-v3 (PREWARM_ORDER),
+        so the old "lays out ~17 big views at idle" cost no longer exists;
+      · a parked page can never stay frozen: mo-live-fix-css B forces animations to run on any
+        visible view, mo-live-fix-tail unfreeze() repairs the active view on every data-view
+        change, and mv-enter-replay-js restarts the enter cascade exactly once per visit.
+      Parking a visited view preserves its computed-style cache, so returning to it is a single
+      class flip instead of a full style+layout rebuild against ~2.8MB of CSS. */
 /* 2 · coalesce whole-page MutationObservers. Observers on body/html with {childList,subtree} used to run
       synchronously on every DOM change (Notes/Finance/Assistant rebuild lots of DOM). Now they run once,
       when the browser is idle, with all records merged. Everything else is untouched. */
@@ -3506,13 +3512,14 @@ W.addEventListener("keydown",function(e){
 W.__mvPalette={open:openPalette,close:closePalette};
 /* ---- per-view scroll memory ---- */
 (function(){
-  var mem={},lastSet=-1,ignoreUntil=0;
+  var mem={},lastSet=-1,ignoreUntil=0,lastUserScrollAt=0;
   function scroller(){return document.querySelector(".content")||document.querySelector(".main")}
   function view(){return html.getAttribute("data-view")||"dashboard"}
   document.addEventListener("scroll",function(e){
     var c=e.target;
     if(!c||!c.classList||!c.classList.contains("content"))return;
     if(Date.now()<ignoreUntil)return;
+    lastUserScrollAt=Date.now(); /* mo-velvet: a scroll that survives the ignore window is user-driven */
     if(c.scrollTop>0&&view()!=="dashboard")mem[view()]=c.scrollTop;
   },true,{passive:true});
   function apply(v){
@@ -3530,6 +3537,9 @@ W.__mvPalette={open:openPalette,close:closePalette};
   function toTopNow(){
     var c=scroller();
     if(!c)return;
+    /* mo-velvet: already at top — skip the two invalidating style writes and the
+       forced synchronous scroll/layout entirely (this ran 3x per dashboard visit) */
+    if(c.scrollTop===0){lastSet=0;return}
     var old=c.style.scrollBehavior;
     c.style.scrollBehavior="auto";
     c.scrollTop=0;
@@ -3543,8 +3553,10 @@ W.__mvPalette={open:openPalette,close:closePalette};
       try{delete mem.dashboard}catch(e){}
       lastSet=-1;
       requestAnimationFrame(function(){if(view()==="dashboard")toTopNow()});
-      setTimeout(function(){if(view()==="dashboard")toTopNow()},150);
-      setTimeout(function(){if(view()==="dashboard")toTopNow()},450);
+      /* mo-velvet: the 150/450ms catch-ups only run when the user has not scrolled
+         themselves — previously they yanked a scrolling user back to the top */
+      setTimeout(function(){if(view()==="dashboard"&&Date.now()-lastUserScrollAt>260)toTopNow()},150);
+      setTimeout(function(){if(view()==="dashboard"&&Date.now()-lastUserScrollAt>260)toTopNow()},450);
       return;
     }
     if(!mem[v])return;
@@ -4871,7 +4883,7 @@ try{document.head.appendChild(st)}catch(e){}
 
 /* ---- 2 · helpers ---- */
 var FLEXVIEWS={focus:1,notes:1,calendar:1,assistant:1,office:1};
-var PREWARM_ORDER=["blocks","tasks","focus","notes","dashboard","calendar","tracker","rules","settings","aihub","sound","tools","office","business","assistant","home","legal"];
+var PREWARM_ORDER=["dashboard","blocks","tasks","focus"]; /* mo-velvet-v1: core views only — hover/pointerdown intent prewarm covers the rest */
 var lastAct=0,warmBusy=false,lastWarm=0;
 function viewEl(v){try{return document.getElementById("view-"+v)}catch(e){return null}}
 function activeEl(){return viewEl((typeof currentView==="string"&&currentView)||"dashboard")}
@@ -5632,7 +5644,9 @@ html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_
 /* B · the visible page may never be frozen/parked mid-animation */
 html[data-view] #main .content>[id^="view-"]:not([style*="display: none"]):not([style*="display:none"]).anim-paused,
 html[data-view] #main .content>[id^="view-"]:not([style*="display: none"]):not([style*="display:none"]).anim-paused *{animation-play-state:running!important}
-.mo-kalive{display:none!important}
+/* .mo-kalive is no longer force-hidden (mo-velvet-v1): parking is exactly what makes
+   return navigation instant; visibility:hidden + content-visibility:hidden already
+   keep a parked view invisible and free. */
 /* C · Notes / Finance / Assistant: drop GPU-heavy blur layers and compositor hints */
 #view-notes,#view-notes *,#view-business,#view-business *,#view-assistant,#view-assistant *{
   backdrop-filter:none!important;-webkit-backdrop-filter:none!important;will-change:auto!important}
@@ -5658,9 +5672,116 @@ function unfreeze(){
   }catch(e){}},700);
 }
 try{new MutationObserver(unfreeze).observe(document.documentElement,{attributes:true,attributeFilter:["data-view"]})}catch(e){}
-function off(){try{if(window.__moKADisable)window.__moKADisable()}catch(e){}unfreeze()}
+function off(){unfreeze()}
 if(document.readyState==="complete")off();else window.addEventListener("load",off);
 })();
 </script>
+<script id="mo-velvet-v1-js">(function(){"use strict";
+if(window.__moVelvet)return;window.__moVelvet=1;
+/* ═══ mo-velvet-v1 — intent prewarm (first-visit navigation, zero click-path cost) ═══
+   InstantNav v3 parks every VISITED view (.mo-kalive), so return navigation is a
+   single class flip. First visits, however, were still cold: the whole
+   style+layout pass for the destination ran inside the click handler.
+   This layer moves that pass AHEAD of the click. A pointer press needs
+   ~60-120ms of hold time before the click event even fires, so warming the
+   destination in the frame after pointerdown means that by the time setView
+   runs, the target view is already laid out — and the switch paints in the
+   same frame. First visit or fiftieth, navigation feels weightless.
+   The warm itself is InstantNav's own __moWarmView(): it parks the view
+   (visibility:hidden + content-visibility:hidden) after one synchronous
+   layout pass, so an aborted press costs nothing visible and keeps the
+   win for whenever the click does land.
+   Skipped entirely while keep-alive is off or in any calm/degraded mode
+   (battery-saver · mp-lite · mv-quiet · prefers-reduced-motion). */
+var NAV2VIEW={dashboard:1,blocks:1,tasks:1,focus:1,rules:1,tracker:1,notes:1,calendar:1,sound:1,settings:1,aihub:1,assistant:1,tools:1,office:1,business:1,home:1,legal:1};
+
+/* ═══ bounce-render skip ═══
+   CPU profiles of navigation (4x throttled) show the dominant long-task is
+   NOT the render scripts (they cost 0-2ms) but the native parse+style+layout
+   storm triggered when a view's innerHTML is REPLACED on every single visit
+   — even when nothing changed since the last visit a second ago.
+   The v2 engine already skips identical innerHTML writes, but any volatile
+   token (a clock, "2 of 7 done", a relative time) makes the whole string
+   differ, so the full rebuild always ran.
+   This layer adds the missing dimension — TIME. When setView lands on a view
+   that was rendered less than SKIP_MS ago AND no data has been written since
+   (any Storage write marks everything dirty), the re-render is skipped
+   entirely and the parked DOM is shown as-is. Data edits, cloud syncs and
+   explicit render calls all still refresh immediately; only the redundant
+   rebuild of an already-fresh view is elided. */
+var SKIP_MS=2500;
+try{if(typeof window.__moRenderSkipMs==="number")SKIP_MS=Math.max(0,window.__moRenderSkipMs)}catch(e){}
+var __lastRenderAt={},__dataDirty=true;
+/* Dirty = real data changed. Two signals, both app-owned:
+   · lsSet / lsSetRaw — the app's data-write API (every task, block, note,
+     habit, setting save goes through these globals)
+   · raw Storage.setItem into a known DATA key — catches cloud sync and
+     older layers that persist data directly.
+   UI bookkeeping keys (ep5_recents, ft_theme, …) deliberately do NOT count:
+   they change on every navigation and would defeat the skip entirely —
+   measured live: two ep5_recents writes per view switch. */
+var DATA_KEYS={"ft_pro_prefs_v1":1,"ft_settings_v1":1,"ft_trash":1,"motion_api_keys":1,"motion_asst_convs":1,"motion_asst_memories":1,"ft_global_tasks_v1":1,"ft_daily_tasks_permanent_v1":1,"ft_rules_v1":1,"ft_habits_v1":1,"ft_habit_log_v1":1,"ft_journal_v1":1,"ft_tracker_v1":1,"ft_fitness_v1":1,"ft_challenges_v1":1,"ft_travel_v1":1,"ft_finance_v1":1,"ft_projects_v1":1,"ft_custom_tools_v1":1,"ft_mindmaps_v1":1,"ft_countdowns_v1":1,"ft_notebooks_v2":1,"ft_thoughts_v1":1,"ft_focus_log_v1":1,"ft_roadmaps_v1":1};
+function __markData(){__dataDirty=true}
+try{
+  var _vsi=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k){try{if(DATA_KEYS[k])__markData()}catch(e){}return _vsi.apply(this,arguments)};
+}catch(e){}
+try{if(typeof window.lsSet==="function"){var _ls=window.lsSet;window.lsSet=function(){__markData();return _ls.apply(this,arguments)}}}catch(e){}
+try{if(typeof window.lsSetRaw==="function"){var _lsr=window.lsSetRaw;window.lsSetRaw=function(){__markData();return _lsr.apply(this,arguments)}}}catch(e){}
+var __rvInner=window.__moRenderView;
+if(typeof __rvInner==="function"){
+  window.__moRenderView=function(v,silent){
+    try{
+      if(!silent&&SKIP_MS>0){
+        var lr=__lastRenderAt[v];
+        if(lr&&Date.now()-lr<SKIP_MS&&!__dataDirty)return true;
+      }
+    }catch(e){}
+    var r=__rvInner.apply(this,arguments);
+    try{
+      if(!silent){__lastRenderAt[v]=Date.now();__dataDirty=false}
+    }catch(e){}
+    return r;
+  };
+}
+
+function calmMode(){
+  try{
+    if(window.__moKAOff)return true;
+    var d=document.documentElement.classList;
+    if(d&&d.contains&&(d.contains("battery-saver")||d.contains("mp-lite")||d.contains("mv-quiet")))return true;
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return true;
+  }catch(e){}
+  return false;
+}
+var lastTry=0;
+document.addEventListener("pointerdown",function(ev){
+  try{
+    if(calmMode())return;
+    var t=ev.target&&ev.target.closest?ev.target.closest('.nav-item,.tab-btn,[id^="snav-"],[id^="tab-"],[onclick*="setView("],[onclick*="plannerOpen("]'):null;
+    if(!t)return;
+    var v=null;
+    if(t.id&&t.id.indexOf("snav-")===0)v=t.id.slice(5);
+    else if(t.id&&t.id.indexOf("tab-")===0)v=t.id.slice(4);
+    else{
+      var oc=t.getAttribute("onclick")||"";
+      var m=/setView\(["']([a-z]+)["']/.exec(oc);
+      if(m)v=m[1];
+      else if(oc.indexOf("plannerOpen")>-1)v="blocks";
+    }
+    if(!v||!NAV2VIEW[v])return;
+    var now=Date.now();
+    if(now-lastTry<250)return;
+    lastTry=now;
+    var el=document.getElementById("view-"+v);
+    if(!el||el.__moWarm||el.classList.contains("mo-kalive"))return;
+    requestAnimationFrame(function(){
+      try{
+        if(typeof window.__moWarmView==="function")window.__moWarmView(v);
+      }catch(e){}
+    });
+  }catch(e){}
+},{capture:true,passive:true});
+})();</script>
 </body>
 </html>
