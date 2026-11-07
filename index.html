@@ -4843,8 +4843,7 @@ var PREWARM_ORDER=["blocks","tasks","focus","notes","dashboard","calendar","trac
 var lastAct=0,warmBusy=false,lastWarm=0;
 function viewEl(v){try{return document.getElementById("view-"+v)}catch(e){return null}}
 function activeEl(){return viewEl((typeof currentView==="string"&&currentView)||"dashboard")}
-var kaW=0;
-function kaWidth(){try{if(kaW>50)return kaW}catch(e){}try{var el=activeEl();if(el){var r=el.getBoundingClientRect();if(r.width>50){kaW=r.width;return r.width}}}catch(e){}return 0}
+function kaWidth(){try{var el=activeEl();if(el){var r=el.getBoundingClientRect();if(r.width>50)return r.width}}catch(e){}return 0}
 
 function warm(v){
   if(window.__moKAOff)return false;
@@ -4857,6 +4856,7 @@ function warm(v){
     el.classList.add("anim-paused");
     el.classList.add("mo-kalive");
     el.__moWarm=1;
+    el.offsetWidth; /* one synchronous style+layout pass — the warm cost, paid once, off the click path */
     return true;
   }catch(e){try{el.classList.remove("mo-kalive")}catch(e2){} return false}
 }
@@ -4873,7 +4873,7 @@ try{
     window.setView=function(v,sideEl,opts){
       try{
         var pv=(typeof currentView==="string")?currentView:null;
-        if(pv&&pv!==v){var pe=viewEl(pv);if(pe&&pe.__moWarm){/* width is already pinned by warm() and on resize - do not force layout here */}}
+        if(pv&&pv!==v){var pe=viewEl(pv);if(pe&&pe.__moWarm){var r=pe.getBoundingClientRect();if(r.width>50)pe.style.setProperty("--mo-ka-w",r.width+"px")}}
       }catch(e){}
       return __prev.apply(this,arguments);
     };
@@ -4887,7 +4887,7 @@ try{
     clearTimeout(_rzT);
     _rzT=setTimeout(function(){
       try{
-        kaW=0;var w=kaWidth();if(!w)return;
+        var w=kaWidth();if(!w)return;
         document.querySelectorAll(".mo-kalive").forEach(function(el){el.style.setProperty("--mo-ka-w",w+"px")});
       }catch(e){}
     },220);
@@ -5592,14 +5592,20 @@ html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_
 </style>
 
 
-<style id="pc-no-blur-v1">
-/* Entry keyframes no longer animate filter:blur() or scale(): blurring a big
-   subtree is the literal "blurry while loading" and forces a full re-raster
-   on every animated frame. Fade + small rise keeps the motion, costs nothing. */
-@keyframes viewEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes settingsHeroIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes authCardPrem{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:none}}
-@keyframes dbKpiV5{0%{opacity:0;transform:translateY(10px)}60%{opacity:1;transform:none}100%{opacity:1;transform:none}}
+<style id="page-open-v3">
+/* Notes / Finance / Assistant - the old opening cascade is gone.
+   Those pages played the page fade AND a per-container stagger
+   (apRise on topbar/tabs/header/messages/composer, apHeroIn, apPanelIn,
+   asstFadeV2 on the empty state), so they opened in pieces and stuttered.
+   Inside the entry window every cascade now lands on its end state
+   instead of animating; the page itself opens once, as one piece. */
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-notes.ap-entering *,
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-business.ap-entering *,
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-assistant.ap-entering *{animation-duration:0s !important;animation-delay:0s !important;animation-fill-mode:both !important}
+@keyframes pageOpenV3{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-notes.view-enter,
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-business.view-enter,
+html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) #view-assistant.view-enter{animation:pageOpenV3 .52s cubic-bezier(.16,1,.3,1) both !important}
 </style>
 </body>
 </html>
