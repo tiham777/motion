@@ -5608,5 +5608,33 @@ html:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_) body:not(#_) [id^="view-"]{
 /* 3. optimizeLegibility makes Chromium shape every glyph of a 3 MB-CSS app slowly */
 html:not(#_):not(#_):not(#_){text-rendering:auto!important}
 </style>
+
+<script id="mo-no-entrance-anim">(function(){"use strict";
+/* Jump every finite entrance animation inside a page straight to its end state.
+   The app stacks ~490 keyframes (view fade, stagger-in, reveal, rise...) that all start at opacity 0 / translateY,
+   so each page opens dim and offset for 0.3-1s (more when the main thread is busy). Infinite loops (spinners, pulses) are untouched. */
+var until=0,raf=0;
+function sweep(){
+  raf=0;
+  var list;try{list=document.getAnimations()}catch(e){return}
+  for(var i=0;i<list.length;i++){
+    var a=list[i];
+    try{
+      if(!a.effect||a.constructor.name!=="CSSAnimation")continue;
+      var t=a.effect.target;if(!t||!t.closest||!t.closest('[id^="view-"]'))continue;
+      if(a.effect.getComputedTiming().iterations===Infinity)continue;
+      a.finish();
+    }catch(e){}
+  }
+  if(performance.now()<until)raf=requestAnimationFrame(sweep);
+}
+function kick(ms){until=performance.now()+(ms||1500);if(!raf)raf=requestAnimationFrame(sweep)}
+window.addEventListener("pointerdown",function(){kick(1500)},true);
+window.addEventListener("keydown",function(){kick(800)},true);
+window.addEventListener("load",function(){kick(3000)});
+document.addEventListener("DOMContentLoaded",function(){kick(3000)});
+try{new MutationObserver(function(){kick(1500)}).observe(document.documentElement,{attributes:true,attributeFilter:["data-view"]})}catch(e){}
+kick(3000);
+})();</script>
 </body>
 </html>
