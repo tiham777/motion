@@ -5595,12 +5595,17 @@ html body:not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_):not(#_
 /* 1) Hidden per-item hover buttons were each a backdrop-filter layer (1800+ on Notes) */
 html:not(#_):not(#_) body :is(.nb-note-card,.asst-msg,.asst-conv-item,.fn-tx,.aih-card,.aih-source-card,.note-card) *,
 html:not(#_):not(#_) body :is(.nb-note-copy-btn,.nb-note-edit-btn,.nb-note-del,.aih-del-btn){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* 1b) No dim/blur fade between pages: show content immediately */
+html:not(#_):not(#_) body .content>[id^="view-"]{opacity:1!important;transition:none!important;animation:none!important;filter:none!important}
+html:not(#_):not(#_) body :is(#view-notes,#view-assistant,#view-business,#view-aihub,#view-tools,#view-rules) *:not([class*="typing"]):not([class*="spin"]):not([class*="load"]):not([class*="pulse"]):not([class*="dot"]):not([class*="wave"]):not([class*="rec"]){animation-duration:.001s!important;animation-delay:0s!important;animation-iteration-count:1!important}
 /* 2) Skip layout/paint of off-screen list items */
 html:not(#_):not(#_) body .nb-note-card{content-visibility:auto;contain-intrinsic-size:auto 130px}
 html:not(#_):not(#_) body .fn-tx{content-visibility:auto;contain-intrinsic-size:auto 56px}
 html:not(#_):not(#_) body .nb-show-more,html:not(#_):not(#_) body .asst-show-earlier{display:block;margin:10px auto;padding:8px 16px;border-radius:10px;border:1px solid var(--border,rgba(128,128,128,.3));background:transparent;color:var(--text2,inherit);font:inherit;font-size:13px;cursor:pointer}
 </style>
 <script id="perf-fix-final-js">
+(function(){try{var h=document.documentElement;h.classList.add("mp-lite","mv-low-power");h.setAttribute("data-fx-tier","lean")}catch(e){}})();
+
 var __nbLims={};function __nbLim(id){return __nbLims[id]||30}
 function __nbMore(){try{__nbLims[nbActive]=__nbLim(nbActive)+50;nbRenderContent()}catch(e){console.warn(e)}}
 var __asstLims={};function __asstLim(id){return __asstLims[id]||20}
