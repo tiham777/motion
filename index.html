@@ -11612,9 +11612,18 @@ html[data-theme="dark"] ::selection{background:rgba(255,255,255,.22) !important;
 </style>
 <style id="dark-hero-btn-soft" data-px-th="D">
 @layer dark-polish{
-html[data-theme="dark"] body #view-dashboard .db-hero-theme-btn{background-color:color-mix(in srgb,var(--bg) 85%,#000 15%) !important;background-image:none !important;border:1px solid color-mix(in srgb,var(--text3) 20%,transparent) !important;box-shadow:none !important}
-html[data-theme="dark"] body #view-dashboard .db-hero-theme-btn:hover{background-color:color-mix(in srgb,var(--text) 5%,var(--bg)) !important;border-color:color-mix(in srgb,var(--text3) 32%,transparent) !important;box-shadow:none !important}
-html[data-theme="dark"] body #view-dashboard .db-hero-theme-btn svg,html[data-theme="dark"] body #view-dashboard .db-hero-theme-btn:hover svg{filter:none !important}
+html body #view-dashboard .db-hero-right.db-hero-right{grid-template-columns:minmax(0,1fr) 46px 46px !important;column-gap:0 !important}
+html body #view-dashboard .db-hero-right.db-hero-right::before{content:"";grid-column:1/-1;grid-row:2;align-self:stretch;border-radius:99px;pointer-events:none;background:var(--bg2);border:1px solid var(--border2)}
+html[data-theme="dark"] body #view-dashboard .db-hero-right.db-hero-right::before{background-color:color-mix(in srgb,var(--bg) 85%,#000 15%);border-color:color-mix(in srgb,var(--text3) 20%,transparent)}
+html:not([data-theme="dark"]) body #view-dashboard .db-hero-right.db-hero-right::before{background:#fff;border-color:rgba(0,0,0,.10)}
+html body #view-dashboard .db-hero-right.db-hero-right .db-hero-theme-btn{background:transparent !important;background-image:none !important;border:1px solid transparent !important;box-shadow:none !important;grid-row:2;position:relative;z-index:1}
+html body #view-dashboard .db-hero-right.db-hero-right .db-hero-theme-btn:hover{background:color-mix(in srgb,var(--text) 7%,transparent) !important;border-color:transparent !important;box-shadow:none !important}
+html body #view-dashboard .db-hero-right.db-hero-right .db-hero-theme-btn svg,html body #view-dashboard .db-hero-right.db-hero-right .db-hero-theme-btn:hover svg{filter:none !important}
+html body #view-dashboard .db-hero-right.db-hero-right .db-hero-theme-btn:not(.db-hero-profile-btn){grid-column:2 !important}
+html body #view-dashboard .db-hero-right.db-hero-right .db-hero-profile-btn{grid-column:3 !important}
+html body #view-dashboard .db-hero-right.db-hero-right .db-day-nav{grid-column:1 !important;grid-row:2;position:relative;z-index:1;background:transparent !important;background-image:none !important;border:0 !important;box-shadow:none !important;border-radius:0 !important}
+html[data-theme="dark"] body #view-dashboard .db-hero-right.db-hero-right .db-day-nav-btn{background:transparent !important;background-image:none !important;border:1px solid color-mix(in srgb,var(--text3) 12%,transparent) !important;box-shadow:none !important}
+html[data-theme="dark"] body #view-dashboard .db-hero-right.db-hero-right .db-day-nav-btn:hover:not(:disabled){background:color-mix(in srgb,var(--text) 5%,transparent) !important;border-color:color-mix(in srgb,var(--text3) 22%,transparent) !important}
 }
 </style>
 <style id="splash-nonblocking">@layer dark-polish{#motion-splash-screen,#motion-splash-screen *{pointer-events:none !important}}</style>
