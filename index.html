@@ -6318,7 +6318,7 @@ function _fbEnterGuestState(){if(!fbCurrentUser||!fbCurrentUser.isGuest){fbCurre
 function _initFirebase(){
   if(_fbInitDone)return;
   var guest=false;try{guest=localStorage.getItem("ft_guest_mode")==="1"}catch(e){}
-  if(guest)_fbEnterGuestState();
+  if(guest&&!_initFirebase.__g){_initFirebase.__g=1;_fbEnterGuestState()}
   if(typeof firebase==="undefined"||!firebase.auth||!firebase.firestore){
     _fbSdkWait++;
     if(_fbSdkWait>40){console.warn("[Auth] Firebase SDK did not load — running local-only");_fbInitDone=true;try{window.mvReleaseSync&&window.mvReleaseSync()}catch(e){}try{hideAuthOverlay()}catch(e){}try{updateFirebaseSyncUI(false)}catch(e){}return}
